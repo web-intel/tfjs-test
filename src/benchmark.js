@@ -39,6 +39,14 @@ async function startContext() {
       args: util['browserArgs'],
     });
     let page = await context.newPage();
+    page.on('console', async msg => {
+      for (let i = 0; i < msg.args().length; ++i)
+        util.log(`console ${i}: ${await msg.args()[i].jsonValue()}`);
+    });
+    page.on('pageerror', (err) => {
+      util.log(`pageerror: ${err}`);
+    });
+
     return [context, page];
   } else {
     return [undefined, undefined];
@@ -124,14 +132,16 @@ async function runBenchmark(target) {
   }
   let needWasmStatus = true;
   for (let i = 0; i < benchmarksLength; i++) {
-    if ('new-context' in util.args) {
-      [context, page] = await startContext();
-    }
-
     let benchmark = benchmarks[i];
     let benchmarkName = benchmark.slice(0, -1).join('-');
     let backend = benchmark[benchmark.length - 1];
     let backendIndex = util.targetBackends[target].indexOf(backend);
+
+    util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
+
+    if ('new-context' in util.args) {
+      [context, page] = await startContext();
+    }
 
     // prepare result placeholder
     if (benchmarkName != previousBenchmarkName) {
@@ -173,7 +183,12 @@ async function runBenchmark(target) {
       }
 
       // get value
-      await page.goto(url);
+      try {
+        await page.goto(url);
+      } catch (err) {
+        util.log(err);
+        continue;
+      }
       let metricIndex = 0;
       let typeIndex = 1;
       while (metricIndex < metricsLength) {
@@ -223,7 +238,6 @@ async function runBenchmark(target) {
       }
     }
 
-    util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
     util.log(result);
 
     if ('new-context' in util.args) {
