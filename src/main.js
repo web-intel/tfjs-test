@@ -3,6 +3,7 @@
 const fs = require('fs');
 const runBenchmark = require('./benchmark.js');
 const config = require('./config.js');
+const path = require('path');
 const report = require('./report.js')
 const runUnit = require('./unit.js');
 const util = require('./util.js');
@@ -100,6 +101,12 @@ function getTimestamp(format) {
 }
 
 async function main() {
+  util.timestamp = getTimestamp(util.args['timestamp']);
+  util.logFile = path.join(util.outDir, `${util.timestamp}.log`);
+  if (fs.existsSync(util.logFile)) {
+    fs.truncateSync(util.logFile, 0);
+  }
+
   let browserPath;
   if ('browser' in util.args) {
     browserPath = util.args['browser'];
@@ -126,7 +133,6 @@ async function main() {
     util.url = util.args['url'];
   }
 
-  util.timestamp = getTimestamp(util.args['timestamp']);
   await config();
 
   let targets = [];
@@ -136,18 +142,18 @@ async function main() {
     targets = ['conformance', 'performance', 'unit'];
   }
 
-  if (!fs.existsSync(util.resultsDir)) {
-    fs.mkdirSync(util.resultsDir, { recursive: true });
+  if (!fs.existsSync(util.outDir)) {
+    fs.mkdirSync(util.outDir, { recursive: true });
   }
 
   let results = {};
   for (let i = 0; i < util.args['repeat']; i++) {
     if (util.args['repeat'] > 1) {
-      console.log(`== Test round ${i + 1}/${util.args['repeat']} ==`);
+      util.log(`== Test round ${i + 1}/${util.args['repeat']} ==`);
     }
 
     for (let target of targets) {
-      console.log(`${target} test`);
+      util.log(`${target} test`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
         results[target] = await runBenchmark(target);
       } else if (target == 'unit') {

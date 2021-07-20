@@ -18,9 +18,9 @@ async function sendMail(to, subject, html) {
 
   transporter.verify(error => {
     if (error)
-      console.error('transporter error: ', error);
+      util.log('transporter error: ', error);
     else
-      console.log('Email was sent!');
+      util.log('Email was sent!');
   });
 
   let info = await transporter.sendMail({
@@ -195,18 +195,18 @@ async function report(results) {
     html += breakdownTable;
   }
 
-  await fs.writeFileSync(path.join(util.resultsDir, `${util.timestamp}.html`), html);
+  fs.writeFileSync(path.join(util.outDir, `${util.timestamp}.html`), html);
   if ('performance' in results) {
     results['performance'].pop();
     let fileName = `${util.timestamp.substring(0, 8)}.json`;
-    let file = path.join(util.resultsDir, fileName);
-    await fs.writeFileSync(file, JSON.stringify(results['performance']));
+    let file = path.join(util.outDir, fileName);
+    fs.writeFileSync(file, JSON.stringify(results['performance']));
     if ('upload' in util.args) {
       let result = spawnSync('scp', [file, `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/data/${util['gpuDeviceId']}/${fileName}`]);
       if (result.status !== 0) {
-        console.log('[ERROR] Failed to upload report');
+        util.log('[ERROR] Failed to upload report');
       } else {
-        console.log('[INFO] Report was successfully uploaded');
+        util.log('[INFO] Report was successfully uploaded');
       }
     }
   }

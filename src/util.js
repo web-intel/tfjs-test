@@ -39,6 +39,11 @@ if (platform === 'darwin') {
   userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/User Data`;
 }
 
+function log(info) {
+  console.log(info);
+  fs.appendFileSync(this.logFile, String(info) + '\n');
+}
+
 module.exports = {
   'browserArgs': ['--enable-unsafe-webgpu', '--enable-features=WebAssemblySimd,WebAssemblyThreads', '--start-maximized'],
   'hostname': os.hostname(),
@@ -47,8 +52,8 @@ module.exports = {
   'targetBackends': targetBackends,
   'targetMetrics': targetMetrics,
   'outDir': outDir,
-  'resultsDir': `${outDir}/results`,
   'userDataDir': userDataDir,
   'url': 'http://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark/',
   'timeout': 180 * 1000,
+  log: log,
 };

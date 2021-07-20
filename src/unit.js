@@ -10,7 +10,7 @@ async function runUnit() {
   if (util.dryrun) {
     results.push('Chrome 91.0.4472 (Windows 10.0.0): Executed 1266 of 3777[31m (6 FAILED)[39m (skipped 2511) (1 min 9.014 secs / 1 min 3.05 secs)');
   } else {
-    const logFile = path.join(util.resultsDir, `${util.timestamp}.txt`);
+    const logFile = path.join(util.outDir, `${util.timestamp}.txt`);
     let tfjsDir = '';
     if ('tfjs-dir' in util.args) {
       tfjsDir = util.args['tfjs-dir'];
@@ -28,7 +28,7 @@ async function runUnit() {
     }
   }
 
-  console.log(results[results.length - 1]);
+  util.log(results[results.length - 1]);
   return results;
 }
 module.exports = runUnit;

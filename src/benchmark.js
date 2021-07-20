@@ -223,8 +223,8 @@ async function runBenchmark(target) {
       }
     }
 
-    console.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
-    console.log(result);
+    util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
+    util.log(result);
 
     if ('new-context' in util.args) {
       await closeContext(context);
