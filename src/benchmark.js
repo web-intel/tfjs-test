@@ -41,10 +41,10 @@ async function startContext() {
     let page = await context.newPage();
     page.on('console', async msg => {
       for (let i = 0; i < msg.args().length; ++i)
-        util.log(`console ${i}: ${await msg.args()[i].jsonValue()}`);
+        util.log(`[console] ${i}: ${await msg.args()[i].jsonValue()}`);
     });
     page.on('pageerror', (err) => {
-      util.log(`pageerror: ${err}`);
+      util.log(`[pageerror] ${err}`);
     });
 
     return [context, page];
@@ -186,7 +186,7 @@ async function runBenchmark(target) {
       try {
         await page.goto(url);
       } catch (err) {
-        util.log(err);
+        util.log(`[page.goto] ${err}`);
         continue;
       }
       let metricIndex = 0;
