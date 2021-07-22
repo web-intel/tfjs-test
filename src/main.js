@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const runBenchmark = require('./benchmark.js');
+const { spawnSync } = require('child_process');
 const config = require('./config.js');
 const path = require('path');
 const report = require('./report.js')
@@ -39,6 +40,10 @@ util.args = yargs
     alias: 'e',
     type: 'string',
     describe: 'email to',
+  })
+  .option('kill-chrome', {
+    type: 'boolean',
+    describe: 'kill chrome before testing',
   })
   .option('new-context', {
     type: 'boolean',
@@ -109,6 +114,10 @@ async function main() {
   util.logFile = path.join(util.outDir, `${util.timestamp}.log`);
   if (fs.existsSync(util.logFile)) {
     fs.truncateSync(util.logFile, 0);
+  }
+
+  if ('kill-chrome' in util.args) {
+      spawnSync('cmd', ['/c', 'taskkill /F /IM chrome.exe /T']);
   }
 
   let browserPath;
