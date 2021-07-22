@@ -74,6 +74,10 @@ util.args = yargs
     type: 'string',
     describe: 'url to test against',
   })
+  .option('url-args', {
+    type: 'string',
+    describe: 'extra url args',
+  })
   .option('warmup-times', {
     type: 'number',
     describe: 'warmup times',
