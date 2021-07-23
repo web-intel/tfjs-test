@@ -136,6 +136,10 @@ async function main() {
     util.browserArgs = util.browserArgs.concat(util.args['browser-args'].split(','));
   }
 
+  if ('url-args' in util.args) {
+    util.urlArgs = util.args['url-args'];
+  }
+
   if ('dryrun' in util.args) {
     util.dryrun = true;
   } else {

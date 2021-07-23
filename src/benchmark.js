@@ -181,8 +181,8 @@ async function runBenchmark(target) {
           url += `&${util.parameters[index]}=${benchmarks[i][index]}`;
         }
       }
-      if ('url-args' in util.args) {
-        url += `&${util.args['url-args']}`;
+      if (util.args) {
+        url += `&${util.urlArgs}`;
       }
 
       // get value
