@@ -12,6 +12,10 @@ const yargs = require('yargs');
 
 util.args = yargs
   .usage('node $0 [args]')
+  .option('architecture', {
+    type: 'string',
+    describe: 'architecture to run, splitted by comma',
+  })
   .option('backend', {
     type: 'string',
     describe: 'backend to run, splitted by comma',
@@ -40,6 +44,14 @@ util.args = yargs
     alias: 'e',
     type: 'string',
     describe: 'email to',
+  })
+  .option('input-size', {
+    type: 'string',
+    describe: 'input size to run, splitted by comma',
+  })
+  .option('input-type', {
+    type: 'string',
+    describe: 'input type to run, splitted by comma',
   })
   .option('kill-chrome', {
     type: 'boolean',
@@ -89,6 +101,7 @@ util.args = yargs
   })
   .example([
     ['node $0 --email <email>', '# send report to <email>'],
+    ['node $0 --target performance --benchmark pose-detection --architecture BlazePose-heavy --input-size 256 --input-type tensor --backend webgpu'],
     ['node $0 --browser-args=--no-sandbox,--enable-zero-copy'],
     ['node $0 --target performance --benchmark mobilenet_v2 --warmup-times 0 --run-times 1 --backend wasm,webgl --new-context'],
   ])

@@ -26,6 +26,12 @@ function getDuration(start, end) {
 }
 
 function intersect(a, b) {
+  if (!Array.isArray(a)) {
+    a = [a];
+  }
+  if (!Array.isArray(b)) {
+    b = [b];
+  }
   return a.filter(v => b.includes(v));
 }
 
@@ -65,29 +71,50 @@ async function runBenchmark(target) {
   // get benchmarks
   let benchmarks = [];
   let benchmarkJson = path.join(path.resolve(__dirname), 'benchmark.json');
-  let targetBenchmarks = JSON.parse(fs.readFileSync(benchmarkJson));
-  let validBenchmarkNames = [];
-  if ('benchmark' in util.args) {
-    validBenchmarkNames = util.args['benchmark'].split(',');
-  } else {
-    for (let benchmark of targetBenchmarks) {
-      validBenchmarkNames.push(benchmark['benchmark']);
+  let targetConfigs = JSON.parse(fs.readFileSync(benchmarkJson));
+
+  for (let config of targetConfigs) {
+    if ('benchmark' in util.args) {
+      config['benchmark'] = intersect(config['benchmark'], util.args['benchmark'].split(','));
     }
-  }
-  for (let benchmark of targetBenchmarks) {
-    let benchmarkName = benchmark['benchmark'];
-    if (!validBenchmarkNames.includes(benchmarkName)) {
+    if (!config['benchmark']) {
       continue;
     }
+
     if ('backend' in util.args) {
-      benchmark['backend'] = intersect(benchmark['backend'], util.args['backend'].split(','));
+      config['backend'] = intersect(config['backend'], util.args['backend'].split(','));
     }
     if (target == 'conformance') {
-      benchmark['backend'] = intersect(benchmark['backend'], 'webgpu');
+      config['backend'] = intersect(config['backend'], 'webgpu');
     }
+    if (!config['backend']) {
+      continue;
+    }
+
+    if ('architecture' in config && 'architecture' in util.args) {
+      config['architecture'] = intersect(config['architecture'], util.args['architecture'].split(','));
+      if (!config['architecture']) {
+        continue;
+      }
+    }
+
+    if ('inputSize' in config && 'input-size' in util.args) {
+      config['inputSize'] = intersect(config['inputSize'], util.args['input-size'].split(',').map(Number));
+      if (!config['inputSize']) {
+        continue;
+      }
+    }
+
+    if ('inputType' in config && 'input-type' in util.args) {
+      config['inputType'] = intersect(config['inputType'], util.args['input-type'].split(','));
+      if (!config['inputType']) {
+        continue;
+      }
+    }
+
     let seqArray = [];
     for (let p of util.parameters) {
-      seqArray.push(p in benchmark ? (Array.isArray(benchmark[p]) ? benchmark[p] : [benchmark[p]]) : ['']);
+      seqArray.push(p in config ? (Array.isArray(config[p]) ? config[p] : [config[p]]) : ['']);
     }
     benchmarks = benchmarks.concat(cartesianProduct(seqArray));
   }
