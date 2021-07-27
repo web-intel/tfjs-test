@@ -14,10 +14,7 @@ let parameters = [
 
 let platform = os.platform();
 
-let targetBackends = {
-  'conformance': ['webgpu'],
-  'performance': ['webgpu', 'webgl', 'wasm']
-};
+let backends = ['webgpu', 'webgl', 'wasm'];
 
 // please make sure these metrics are shown up in order
 let targetMetrics = {
@@ -49,7 +46,7 @@ module.exports = {
   'hostname': os.hostname(),
   'parameters': parameters,
   'platform': platform,
-  'targetBackends': targetBackends,
+  'backends': backends,
   'targetMetrics': targetMetrics,
   'outDir': outDir,
   'userDataDir': userDataDir,

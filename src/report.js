@@ -48,6 +48,7 @@ async function report(results) {
   const goodStyle = 'style=color:green';
   const badStyle = 'style=color:red';
   const neutralStyle = 'style=color:black';
+  let backendsLength = util.backends.length;
 
   let html = '<style> \
 		* {font-family: Calibri (Body);} \
@@ -73,8 +74,8 @@ async function report(results) {
     for (let metricIndex = 0; metricIndex < metrics.length; metricIndex++) {
       let metric = metrics[metricIndex];
       let resultsTable = `<table><tr><th>${target} (${metric}, duration ${targetResults[targetResults.length - 1]})</th><th>webgpu${unit}</th>`;
-      for (let i = 1; i < util.targetBackends[target].length; i++) {
-        let backend = util.targetBackends[target][i];
+      for (let i = 1; i < backendsLength; i++) {
+        let backend = util.backends[i];
         resultsTable += `<th>${backend}${unit}</th>`;
         if (target == 'performance') {
           resultsTable += `<th>webgpu vs ${backend} (%)</th>`;
@@ -89,20 +90,34 @@ async function report(results) {
         let result = targetResults[resultIndex];
         let webgpuValue = result[metricIndex + 1];
         let style = neutralStyle;
-        if (target == 'conformance' && webgpuValue == 'false') {
-          style = badStyle;
+        if (target == 'conformance') {
+          if (webgpuValue == 'false') {
+            style = badStyle;
+          } else if (webgpuValue == 'true') {
+            style = goodStyle;
+          }
         }
+
         resultsTable += `<tr><td>${result[0]}</td><td ${style}>${webgpuValue}</td>`;
-        for (let i = 1; i < util.targetBackends[target].length; i++) {
+        for (let i = 1; i < backendsLength; i++) {
           let otherValue = result[i * metricsLength + metricIndex + 1];
-          resultsTable += `<td>${otherValue}</td>`;
+          let style = neutralStyle;
+          if (target == 'conformance') {
+            if (otherValue == 'false') {
+              style = badStyle;
+            } else if (otherValue == 'true') {
+              style = goodStyle;
+            }
+          }
+          resultsTable += `<td ${style}>${otherValue}</td>`;
           if (target == 'performance') {
             let percent = 'NA';
-            if (otherValue !== 0 && webgpuValue !== 0) {
+            let style = neutralStyle;
+            if (otherValue !== 'NA' && webgpuValue !== 'NA') {
               percent = parseFloat(otherValue / webgpuValue * 100).toFixed(2);
+              style = percent > 100 ? goodStyle : badStyle;
             }
-            let style = (webgpuValue == 0 || otherValue == 0 ? neutralStyle : (percent > 100 ? goodStyle : badStyle));
-            resultsTable += `<td ${style}>${percent}%</td>`;
+            resultsTable += `<td ${style}>${percent}</td>`;
           }
         }
         resultsTable += '</tr>';
@@ -138,13 +153,13 @@ async function report(results) {
   let target = 'performance';
   if (target in results && !('disable-breakdown' in util.args)) {
     let targetResults = results[target];
-    let backendLength = util.targetBackends[target].length;
+    let backendsLength = util.backends.length;
     let metricsLength = util.targetMetrics[target].length;
     let unit = ' (ms)';
     let style = neutralStyle;
     let breakdownTable = `<table><tr><th>benchmark</th><th>op</th><th>webgpu${unit}</th>`;
-    for (let i = 1; i < util.targetBackends[target].length; i++) {
-      let backend = util.targetBackends[target][i];
+    for (let i = 1; i < backendsLength; i++) {
+      let backend = util.backends[i];
       breakdownTable += `<th>${backend}${unit}</th>`;
       breakdownTable += `<th>webgpu vs ${backend} (%)</th>`;
     }
@@ -156,7 +171,7 @@ async function report(results) {
         break;
       }
       let result = targetResults[resultIndex];
-      let op_time = result[backendLength * metricsLength + 1];
+      let op_time = result[backendsLength * metricsLength + 1];
       let TOP = 5;
       let count = 0;
       let benchmarkNameDisplayed = false;
@@ -173,16 +188,16 @@ async function report(results) {
         }
 
         breakdownTable += `<tr><td>${benchmarkName}</td><td>${op}</td><td ${style}>${webgpuValue}</td>`;
-        for (let i = 1; i < util.targetBackends[target].length; i++) {
-          let backend = util.targetBackends[target][i];
-          let otherValue = time[util.targetBackends[target].indexOf(backend)];
+        for (let i = 1; i < backendsLength; i++) {
+          let otherValue = time[i];
           breakdownTable += `<td>${otherValue}</td>`;
           let percent = 'NA';
-          if (otherValue !== 0 && webgpuValue !== 0) {
+          let style = neutralStyle;
+          if (otherValue !== 'NA' && webgpuValue !== 'NA') {
             percent = parseFloat(otherValue / webgpuValue * 100).toFixed(2);
+            style = percent > 100 ? goodStyle : badStyle;
           }
-          let style = (webgpuValue == 0 || otherValue == 0 ? neutralStyle : (percent > 100 ? goodStyle : badStyle));
-          breakdownTable += `<td ${style}>${percent}%</td>`;
+          breakdownTable += `<td ${style}>${percent}</td>`;
         }
         breakdownTable += '</tr>';
         count += 1;

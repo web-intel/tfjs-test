@@ -16,10 +16,6 @@ util.args = yargs
     type: 'string',
     describe: 'architecture to run, splitted by comma',
   })
-  .option('backend', {
-    type: 'string',
-    describe: 'backend to run, splitted by comma',
-  })
   .option('benchmark', {
     type: 'string',
     describe: 'benchmark to run, splitted by comma',
@@ -31,6 +27,10 @@ util.args = yargs
   .option('browser-args', {
     type: 'string',
     describe: 'extra browser args splitted by comma',
+  })
+  .option('conformance-backend', {
+    type: 'string',
+    describe: 'backend for conformance, splitted by comma',
   })
   .option('disable-breakdown', {
     type: 'boolean',
@@ -60,6 +60,10 @@ util.args = yargs
   .option('new-context', {
     type: 'boolean',
     describe: 'start a new context for each test',
+  })
+  .option('performance-backend', {
+    type: 'string',
+    describe: 'backend for performance, splitted by comma',
   })
   .option('repeat', {
     type: 'number',

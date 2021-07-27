@@ -81,14 +81,18 @@ async function runBenchmark(target) {
       continue;
     }
 
-    if ('backend' in util.args) {
-      config['backend'] = intersect(config['backend'], util.args['backend'].split(','));
-    }
     if (target == 'conformance') {
-      config['backend'] = intersect(config['backend'], 'webgpu');
-    }
-    if (!config['backend']) {
-      continue;
+      if ('conformance-backend' in util.args) {
+        config['backend'] = util.args['conformance-backend'].split(',');
+      } else {
+        config['backend'] = ['webgpu'];
+      }
+    } else if (target == 'performance') {
+      if ('performance-backend' in util.args) {
+        config['backend'] = util.args['performance-backend'].split(',');
+      } else if (!('backend' in config)) {
+        config['backend'] = util.backends;
+      }
     }
 
     if ('architecture' in config && 'architecture' in util.args) {
@@ -123,13 +127,8 @@ async function runBenchmark(target) {
   let benchmarksLength = benchmarks.length;
   let previousBenchmarkName = '';
   let results = []; // format: testName, warmup_webgpu, average_webgpu, best_webgpu, warmup_webgl, average_webgl, best_webgl, warmup_wasm, average_wasm, best_wasm, {op: {webgpu, webgl, wasm}}
-  let defaultValue;
-  if (target == 'conformance') {
-    defaultValue = 'false';
-  } else if (target == 'performance') {
-    defaultValue = -1;
-  }
-  let backendsLength = util.targetBackends[target].length;
+  let defaultValue = 'NA';
+  let backendsLength = util.backends.length;
   let metrics = util.targetMetrics[target];
   let metricsLength = metrics.length;
   let context;
@@ -162,7 +161,7 @@ async function runBenchmark(target) {
     let benchmark = benchmarks[i];
     let benchmarkName = benchmark.slice(0, -1).join('-');
     let backend = benchmark[benchmark.length - 1];
-    let backendIndex = util.targetBackends[target].indexOf(backend);
+    let backendIndex = util.backends.indexOf(backend);
 
     util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
 
@@ -185,7 +184,7 @@ async function runBenchmark(target) {
       let metricIndex = 0;
       while (metricIndex < metricsLength) {
         if (target == 'conformance') {
-          result[metricIndex + 1] = 'true';
+          result[backendIndex * metricsLength + metricIndex + 1] = 'true';
         } else if (target == 'performance') {
           let tmpIndex = backendIndex * metricsLength + metricIndex;
           result[tmpIndex + 1] = tmpIndex + 1;
