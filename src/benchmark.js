@@ -214,16 +214,16 @@ async function runBenchmark(target) {
       // get value
       try {
         await page.goto(url);
+        await page.waitForSelector('#parameters > tbody > tr:nth-child(1)', { timeout: util.shortTimeout });
       } catch (err) {
-        util.log(`[page.goto] ${err}`);
         continue;
       }
       let metricIndex = 0;
       let typeIndex = 1;
       while (metricIndex < metricsLength) {
-        let selector = '#timings > tbody > tr:nth-child(' + typeIndex + ')';
+        let selector = `#timings > tbody > tr:nth-child(${typeIndex})`;
         try {
-          await page.waitForSelector(selector, { timeout: util.timeout });
+          await page.waitForSelector(selector, { timeout: util.longTimeout });
         } catch (err) {
           break;
         }
@@ -242,7 +242,7 @@ async function runBenchmark(target) {
       // get breakdown data
       if (target == 'performance' && !('disable-breakdown' in util.args)) {
         try {
-          await page.waitForSelector('#kernels > tbody > tr:nth-child(1)', { timeout: util.timeout });
+          await page.waitForSelector('#kernels > tbody > tr:nth-child(1)', { timeout: util.longTimeout });
           let row = 1;
           while (true) {
             let op = await page.$eval('#kernels > tbody > tr:nth-child(' + row + ') > td:nth-child(1) > span', el => el.title);
