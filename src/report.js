@@ -139,11 +139,12 @@ async function report(results) {
 
   // config table
   let configTable = '<table><tr><th>Category</th><th>Info</th></tr>';
-  if ('upload' in util.args) {
-    util['serverDate'] = execSync('ssh wp@wp-27.sh.intel.com cd /workspace/project/tfjswebgpu/tfjs && git log -1 --date=format:"%Y%m%d" --format="%cd"').toString();
+  if ('upload' in util.args || 'server-info' in util.args) {
+    util['serverDate'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=\"%cd\""').toString();
+    util['serverCommit'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git rev-parse HEAD"').toString();
   }
 
-  for (let category of ['browserArgs', 'browserPath', 'chromeRevision', 'chromeVersion', 'cpuName', 'hostname', 'gpuDeviceId', 'gpuDriverVersion', 'gpuName', 'platform', 'powerPlan', 'pthreadPoolSize', 'screenResolution', 'serverDate', 'url', 'urlArgs', 'wasmMultithread', 'wasmSIMD']) {
+  for (let category of ['browserArgs', 'browserPath', 'chromeRevision', 'chromeVersion', 'cpuName', 'hostname', 'gpuDeviceId', 'gpuDriverVersion', 'gpuName', 'platform', 'powerPlan', 'pthreadPoolSize', 'screenResolution', 'serverDate', 'serverCommit', 'url', 'urlArgs', 'wasmMultithread', 'wasmSIMD']) {
     configTable += `<tr><td>${category}</td><td>${util[category]}</td></tr>`;
   }
   configTable += '</table><br>'

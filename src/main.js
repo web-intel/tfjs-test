@@ -74,6 +74,10 @@ util.args = yargs
     type: 'number',
     describe: 'run times',
   })
+  .option('server-info', {
+    type: 'boolean',
+    describe: 'get server info and display it in report',
+  })
   .option('target', {
     type: 'string',
     describe: 'test target, splitted by comma',
@@ -105,9 +109,10 @@ util.args = yargs
   })
   .example([
     ['node $0 --email <email>', '# send report to <email>'],
-    ['node $0 --target performance --benchmark pose-detection --architecture BlazePose-heavy --input-size 256 --input-type tensor --backend webgpu'],
+    ['node $0 --target performance --benchmark pose-detection --architecture BlazePose-heavy --input-size 256 --input-type tensor --performance-backend webgpu'],
     ['node $0 --browser-args=--no-sandbox,--enable-zero-copy'],
-    ['node $0 --target performance --benchmark mobilenet_v2 --warmup-times 0 --run-times 1 --backend wasm,webgl --new-context'],
+    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
+    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
   ])
   .help()
   .wrap(120)
