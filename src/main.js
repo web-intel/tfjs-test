@@ -12,6 +12,7 @@ const yargs = require('yargs');
 
 util.args = yargs
   .usage('node $0 [args]')
+  .strict()
   .option('architecture', {
     type: 'string',
     describe: 'architecture to run, splitted by comma',
