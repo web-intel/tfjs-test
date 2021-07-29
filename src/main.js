@@ -62,6 +62,10 @@ util.args = yargs
     type: 'boolean',
     describe: 'start a new context for each test',
   })
+  .option('pause-test', {
+    type: 'boolean',
+    describe: 'pause after each performance test',
+  })
   .option('performance-backend', {
     type: 'string',
     describe: 'backend for performance, splitted by comma',
