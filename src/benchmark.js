@@ -52,6 +52,7 @@ async function startContext() {
     });
     page.on('pageerror', (err) => {
       util.log(`[pageerror] ${err}`);
+      util.hasError = true;
     });
 
     return [context, page];
@@ -212,19 +213,22 @@ async function runBenchmark(target) {
         url += `&${util.urlArgs}`;
       }
 
-      // get value
-      try {
-        await page.goto(url);
-        await page.waitForSelector('#parameters > tbody > tr:nth-child(1)', { timeout: util.shortTimeout });
-      } catch (err) {
+      await page.goto(url);
+      await Promise.any([
+        page.waitForSelector('#parameters > tbody > tr:nth-child(1)', { timeout: 0 }),
+        page.waitForEvent('pageerror', { timeout: 0 })
+      ]);
+      if (util.hasError) {
+        util.hasError = false;
         continue;
       }
+
       let metricIndex = 0;
       let typeIndex = 1;
       while (metricIndex < metricsLength) {
         let selector = `#timings > tbody > tr:nth-child(${typeIndex})`;
         try {
-          await page.waitForSelector(selector, { timeout: util.longTimeout });
+          await page.waitForSelector(selector, { timeout: util.timeout });
         } catch (err) {
           break;
         }
@@ -243,7 +247,7 @@ async function runBenchmark(target) {
       // get breakdown data
       if (target == 'performance' && !('disable-breakdown' in util.args)) {
         try {
-          await page.waitForSelector('#kernels > tbody > tr:nth-child(1)', { timeout: util.longTimeout });
+          await page.waitForSelector('#kernels > tbody > tr:nth-child(1)', { timeout: util.timeout });
           let row = 1;
           while (true) {
             let op = await page.$eval('#kernels > tbody > tr:nth-child(' + row + ') > td:nth-child(1) > span', el => el.title);

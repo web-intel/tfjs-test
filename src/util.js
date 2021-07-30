@@ -51,7 +51,6 @@ module.exports = {
   'outDir': outDir,
   'userDataDir': userDataDir,
   'url': 'http://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark/',
-  'shortTimeout': 30 * 1000,
-  'longTimeout': 180 * 1000,
+  'timeout': 180 * 1000,
   log: log,
 };
