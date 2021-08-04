@@ -28,6 +28,9 @@ async function runUnit() {
     }
   }
 
+  if (results.length == 0) {
+    results.push('FAILED to run unit test!');
+  }
   util.log(results[results.length - 1]);
   return results;
 }
