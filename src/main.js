@@ -27,7 +27,7 @@ util.args = yargs
   })
   .option('browser-args', {
     type: 'string',
-    describe: 'extra browser args splitted by comma',
+    describe: 'extra browser args',
   })
   .option('conformance-backend', {
     type: 'string',
@@ -115,7 +115,7 @@ util.args = yargs
   .example([
     ['node $0 --email <email>', '# send report to <email>'],
     ['node $0 --target performance --benchmark pose-detection --architecture BlazePose-heavy --input-size 256 --input-type tensor --performance-backend webgpu'],
-    ['node $0 --browser-args=--no-sandbox,--enable-zero-copy'],
+    ['node $0 --browser-args="--enable-dawn-features=disable_workgroup_init --no-sandbox --enable-zero-copy"'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
   ])
@@ -160,7 +160,7 @@ async function main() {
   util.browserPath = browserPath;
 
   if ('browser-args' in util.args) {
-    util.browserArgs = util.browserArgs.concat(util.args['browser-args'].split(','));
+    util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
   }
 
   if ('url-args' in util.args) {

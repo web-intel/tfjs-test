@@ -43,7 +43,7 @@ async function startContext() {
       executablePath: util['browserPath'],
       viewport: null,
       ignoreHTTPSErrors: true,
-      args: util['browserArgs'],
+      args: util['browserArgs'].split(' '),
     });
     let page = await context.newPage();
     page.on('console', async msg => {

@@ -42,7 +42,7 @@ function log(info) {
 }
 
 module.exports = {
-  'browserArgs': ['--enable-unsafe-webgpu', '--disable-dawn-features=disallow_unsafe_apis', '--enable-features=WebAssemblySimd,WebAssemblyThreads', '--start-maximized'],
+  'browserArgs': '--enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis --enable-features=WebAssemblySimd,WebAssemblyThreads --start-maximized',
   'hostname': os.hostname(),
   'parameters': parameters,
   'platform': platform,
