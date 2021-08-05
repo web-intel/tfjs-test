@@ -183,7 +183,9 @@ async function main() {
   if ('target' in util.args) {
     targets = util.args['target'].split(',');
   } else {
-    targets = ['conformance', 'performance', 'unit'];
+    // Skip unit test due to build issue in tflite, will return after problem fixed.
+    // targets = ['conformance', 'performance', 'unit'];
+    targets = ['conformance', 'performance'];
   }
 
   if (!fs.existsSync(util.outDir)) {
