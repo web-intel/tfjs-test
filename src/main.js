@@ -159,6 +159,18 @@ async function main() {
   }
   util.browserPath = browserPath;
 
+  let userDataDir;
+  if ('browser' in util.args) {
+    userDataDir = `${util.outDir}/user-data-dir`;
+  } else if (util.platform === 'darwin') {
+    userDataDir = `/Users/${os.userInfo().username}/Library/Application Support/Google/Chrome Canary`;
+  } else if (util.platform === 'linux') {
+    userDataDir = `/home/${os.userInfo().username}/.config/google-chrome-unstable`;
+  } else if (util.platform === 'win32') {
+    userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/User Data`;
+  }
+  util.userDataDir = userDataDir;
+
   if ('browser-args' in util.args) {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
   }
