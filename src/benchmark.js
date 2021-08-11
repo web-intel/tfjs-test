@@ -214,13 +214,15 @@ async function runBenchmark(target) {
       }
 
       await page.goto(url);
-      await Promise.any([
-        page.waitForSelector('#parameters > tbody > tr:nth-child(1)', { timeout: 0 }),
-        page.waitForEvent('pageerror', { timeout: 0 })
-      ]);
-      if (util.hasError) {
-        util.hasError = false;
-        continue;
+      if ('quit-pageerror' in util.args) {
+        await Promise.any([
+          page.waitForSelector('#parameters > tbody > tr:nth-child(1)', { timeout: 0 }),
+          page.waitForEvent('pageerror', { timeout: 0 })
+        ]);
+        if (util.hasError) {
+          util.hasError = false;
+          continue;
+        }
       }
 
       let metricIndex = 0;

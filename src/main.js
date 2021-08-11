@@ -62,6 +62,10 @@ util.args = yargs
     type: 'boolean',
     describe: 'start a new context for each test',
   })
+  .option('quit-pageerror', {
+    type: 'boolean',
+    describe: 'quit right after pageerror',
+  })
   .option('pause-test', {
     type: 'boolean',
     describe: 'pause after each performance test',
