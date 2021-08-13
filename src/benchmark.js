@@ -87,7 +87,7 @@ async function runBenchmark(target) {
       if ('conformance-backend' in util.args) {
         config['backend'] = util.args['conformance-backend'].split(',');
       } else {
-        config['backend'] = ['webgl', 'webgpu'];
+        config['backend'] = ['webgpu', 'webgl'];
       }
     } else if (target == 'performance') {
       if ('performance-backend' in util.args) {

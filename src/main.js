@@ -100,6 +100,10 @@ util.args = yargs
     describe: 'timestamp format, day or second',
     default: 'second',
   })
+  .option('unit-backend', {
+    type: 'string',
+    describe: 'backend for performance, splitted by comma',
+  })
   .option('upload', {
     type: 'boolean',
     describe: 'upload result to server',

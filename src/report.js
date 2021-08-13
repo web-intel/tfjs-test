@@ -130,10 +130,26 @@ async function report(results) {
   // unit table
   if ('unit' in results) {
     let targetResults = results['unit'];
-    let resultsTable = `<table><tr><th>Unit</th></tr>`;
-    let result = targetResults[targetResults.length - 1];
-    let style = result.includes('FAILED') ? badStyle : goodStyle;
-    resultsTable += `<tr><td ${style}>${result}</td></tr></table><br>`;
+    let resultsTable = `<table><tr><th>Unit</th><th>webgpu</th>`;
+    for (let i = 1; i < backendsLength; i++) {
+      let backend = util.backends[i];
+      resultsTable += `<th>${backend}</th>`;
+    }
+    resultsTable += '</tr>';
+
+    resultsTable += '<tr><td></td>';
+    for (let i = 0; i < backendsLength; i++) {
+      let style;
+      if (targetResults[i] == 'NA') {
+        style = neutralStyle;
+      } else if (targetResults[i].includes('FAILED')) {
+        style = badStyle;
+      } else {
+        style = goodStyle;
+      }
+      resultsTable += `<td ${style}>${targetResults[i]}</td>`;
+    }
+    resultsTable += '</tr></table><br>';
     html += resultsTable;
   }
 
