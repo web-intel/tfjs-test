@@ -13,7 +13,7 @@ async function runUnit() {
   if ('unit-backend' in util.args) {
     backends = util.args['unit-backend'].split(',');
   } else {
-    backends = ['webgpu'];
+    backends = ['webgpu', 'webgl'];
   }
 
   for (let i = 0; i < backends.length; i++) {
