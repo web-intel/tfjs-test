@@ -89,7 +89,7 @@ util.args = yargs
   })
   .option('target', {
     type: 'string',
-    describe: 'test target, splitted by comma',
+    describe: 'test target, splitted by comma. Choices can be conformance, performance and unit.',
   })
   .option('tfjs-dir', {
     type: 'string',
