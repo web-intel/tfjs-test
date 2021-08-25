@@ -22,14 +22,13 @@ async function runUnit() {
     let cmd;
     let timeout;
     if (util.dryrun) {
-      cmd = 'yarn test --grep nextFrame';
+      cmd = 'yarn && yarn test --grep nextFrame';
       timeout = 120 * 1000;
     } else {
-      cmd = 'yarn test';
+      cmd = 'yarn && yarn test';
       timeout = 600 * 1000;
     }
 
-    let logFile;
     let tfjsDir = '';
     if ('tfjs-dir' in util.args) {
       tfjsDir = util.args['tfjs-dir'];
@@ -38,11 +37,12 @@ async function runUnit() {
     }
     process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
     process.env['CHROME_BIN'] = util.browserPath;
+
+    let logFile = path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`);
     if (util.hostname == 'shwde7700') {
-      logFile = path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`).replace('\\', '/').replace(/\\/g, '/');
+      logFile = logFile.replace(/\\/g, '/');
       spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
     } else {
-      logFile = path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`);
       spawnSync('cmd', ['/c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
     }
     var lines = fs.readFileSync(logFile, 'utf-8').split('\n').filter(Boolean);
