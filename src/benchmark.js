@@ -203,15 +203,13 @@ async function runBenchmark(target) {
       }
     } else {
       // get url
-      let url = `${util.url}?localBuild=webgl,webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&task=${task}&warmup=${warmupTimes}&run=${runTimes}`;
+      let url = `${util.url}?task=${task}&warmup=${warmupTimes}&run=${runTimes}`;
       for (let index = 0; index < util.parameters.length; index++) {
         if (benchmarks[i][index]) {
           url += `&${util.parameters[index]}=${benchmarks[i][index]}`;
         }
       }
-      if ('url-args' in util.args) {
-        url += `&${util.urlArgs}`;
-      }
+      url += `&${util.urlArgs}`;
 
       await page.goto(url);
       if ('quit-pageerror' in util.args) {

@@ -184,7 +184,7 @@ async function main() {
   }
 
   if ('url-args' in util.args) {
-    util.urlArgs = util.args['url-args'];
+    util.urlArgs += `&${util.args['url-args']}`;
   }
 
   if ('dryrun' in util.args) {
