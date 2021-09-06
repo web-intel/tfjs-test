@@ -41,7 +41,7 @@ module.exports = {
   'targetMetrics': targetMetrics,
   'outDir': outDir,
   'url': 'http://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark/',
-  'urlArgs': 'localBuild=webgl,webgpu&WEBGL_USE_SHAPES_UNIFORMS=true',
+  'urlArgs': 'localBuild=webgl,webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&WEBGPU_USE_GLSL=false',
   'timeout': 180 * 1000,
   log: log,
 };
