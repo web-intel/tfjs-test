@@ -146,6 +146,7 @@ async function runBenchmark(target) {
   } else if (target == 'performance') {
     task = 'performance';
   }
+
   let warmupTimes;
   if ('warmup-times' in util.args) {
     warmupTimes = parseInt(util.args['warmup-times']);
@@ -158,6 +159,8 @@ async function runBenchmark(target) {
   } else {
     runTimes = 50;
   }
+  util.urlArgs += `&warmup=${warmupTimes}&run=${runTimes}`;
+
   let needWasmStatus = true;
   for (let i = 0; i < benchmarksLength; i++) {
     let benchmark = benchmarks[i];
@@ -203,7 +206,7 @@ async function runBenchmark(target) {
       }
     } else {
       // get url
-      let url = `${util.url}?task=${task}&warmup=${warmupTimes}&run=${runTimes}`;
+      let url = `${util.url}?task=${task}`;
       for (let index = 0; index < util.parameters.length; index++) {
         if (benchmarks[i][index]) {
           url += `&${util.parameters[index]}=${benchmarks[i][index]}`;
