@@ -183,6 +183,20 @@ async function main() {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
   }
 
+  let warmupTimes;
+  if ('warmup-times' in util.args) {
+    warmupTimes = parseInt(util.args['warmup-times']);
+  } else {
+    warmupTimes = 50;
+  }
+  let runTimes;
+  if ('run-times' in util.args) {
+    runTimes = parseInt(util.args['run-times']);
+  } else {
+    runTimes = 50;
+  }
+  util.urlArgs += `&warmup=${warmupTimes}&run=${runTimes}`;
+
   if ('url-args' in util.args) {
     util.urlArgs += `&${util.args['url-args']}`;
   }
