@@ -39,7 +39,7 @@ async function runUnit() {
     process.env['CHROME_BIN'] = util.browserPath;
 
     let logFile = path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`);
-    if (util.hostname == 'shwde7700') {
+    if (['shwde7700', 'shwde7777'].includes(util.hostname)) {
       logFile = logFile.replace(/\\/g, '/');
       spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
     } else {
