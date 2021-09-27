@@ -225,18 +225,22 @@ async function main() {
   }
 
   let results = {};
+  util.duration = '';
+  let startTime;
   for (let i = 0; i < util.args['repeat']; i++) {
     if (util.args['repeat'] > 1) {
       util.log(`== Test round ${i + 1}/${util.args['repeat']} ==`);
     }
 
     for (let target of targets) {
+      startTime = new Date();
       util.log(`${target} test`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
         results[target] = await runBenchmark(target);
       } else if (target == 'unit') {
         results[target] = await runUnit();
       }
+      util.duration += `${target}: ${(new Date() - startTime) / 1000} `;
     }
     await report(results);
   }
