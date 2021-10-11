@@ -11,7 +11,7 @@
     "benchmark": "bodypix",
     "architecture": ["MobileNetV1", "ResNet50"],
     "inputSize": [0.25, 0.5, 0.75],
-    "inputType": ["image", "tensor"],
+    "inputType": ["image"],
     "backend": ["wasm", "webgl", "webgpu"]
   },
   {
@@ -38,14 +38,14 @@
   "benchmark": "posenet",
     "architecture": ["MobileNetV1", "ResNet50"],
     "inputSize": [256, 512],
-    "inputType": ["image", "tensor", "imageBitmap"],
+    "inputType": ["image", "imageBitmap"],
     "backend": ["wasm", "webgl", "webgpu"]
   },
   {
     "benchmark": "pose-detection",
     "architecture": ["BlazePose-lite", "BlazePose-full", "BlazePose-heavy", "MoveNet-lightning", "MoveNet-thunder"],
     "inputSize": [256],
-    "inputType": ["image", "tensor", "imageBitmap"],
+    "inputType": ["image", "imageBitmap"],
     "backend": ["webgl", "webgpu"]
   },
   {
