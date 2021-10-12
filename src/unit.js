@@ -38,12 +38,11 @@ async function runUnit() {
     process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
     process.env['CHROME_BIN'] = util.browserPath;
 
-    let logFile = path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`);
-    if (['shwde7700', 'shwde7777'].includes(util.hostname)) {
-      logFile = logFile.replace(/\\/g, '/');
-      spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
-    } else {
+    let logFile = path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`).replace(/\\/g, '/');
+    if (['machineName'].includes(util.hostname)) {
       spawnSync('cmd', ['/c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+    } else {
+      spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
     }
     var lines = fs.readFileSync(logFile, 'utf-8').split('\n').filter(Boolean);
     for (let line of lines) {
