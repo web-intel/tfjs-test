@@ -38,14 +38,14 @@
   "benchmark": "posenet",
     "architecture": ["MobileNetV1", "ResNet50"],
     "inputSize": [256, 512],
-    "inputType": ["image", "imageBitmap"],
+    "inputType": ["image"],
     "backend": ["wasm", "webgl", "webgpu"]
   },
   {
     "benchmark": "pose-detection",
     "architecture": ["BlazePose-lite", "BlazePose-full", "BlazePose-heavy", "MoveNet-lightning", "MoveNet-thunder"],
     "inputSize": [256],
-    "inputType": ["image", "imageBitmap"],
+    "inputType": ["image"],
     "backend": ["webgl", "webgpu"]
   },
   {
