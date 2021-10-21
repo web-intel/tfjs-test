@@ -189,12 +189,15 @@ async function main() {
   } else {
     warmupTimes = 50;
   }
+  util.warmupTimes = warmupTimes;
+
   let runTimes;
   if ('run-times' in util.args) {
     runTimes = parseInt(util.args['run-times']);
   } else {
     runTimes = 50;
   }
+  util.runTimes = runTimes;
   util.urlArgs += `&warmup=${warmupTimes}&run=${runTimes}`;
 
   if ('url-args' in util.args) {
@@ -236,7 +239,9 @@ async function main() {
       startTime = new Date();
       util.log(`${target} test`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
-        results[target] = await runBenchmark(target);
+        if (!(target == 'performance' && util.warmupTimes == 0 && util.runTimes == 0)) {
+          results[target] = await runBenchmark(target);
+        }
       } else if (target == 'unit') {
         results[target] = await runUnit();
       }

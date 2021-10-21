@@ -132,6 +132,9 @@ async function runBenchmark(target) {
   let defaultValue = 'NA';
   let backendsLength = util.backends.length;
   let metrics = util.targetMetrics[target];
+  if (target == 'performance' && util.runTimes == 0) {
+    metrics.length = 1;
+  }
   let metricsLength = metrics.length;
   let context;
   let page;
