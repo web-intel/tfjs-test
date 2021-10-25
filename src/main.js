@@ -23,7 +23,8 @@ util.args = yargs
   })
   .option('browser', {
     type: 'string',
-    describe: 'browser path',
+    describe: 'browser specific path, chrome_canary, chrome_dev, chrome_beta or chrome_stable',
+    default: 'chrome_dev',
   })
   .option('browser-args', {
     type: 'string',
@@ -156,15 +157,42 @@ async function main() {
   }
 
   let browserPath;
-  if ('browser' in util.args) {
+  if (util.args['browser'] == 'chrome_canary') {
+    if (util.platform === 'darwin') {
+      browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary';
+    } else if (util.platform === 'linux') {
+      browserPath = '/usr/bin/google-chrome-unstable'; // There is no Canary channel for Linux
+    } else if (util.platform === 'win32') {
+      browserPath = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/Application/chrome.exe`;
+    }
+  } else if (util.args['browser'] == 'chrome_dev') {
+    if (util.platform === 'darwin') {
+      browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Dev';
+    } else if (util.platform === 'linux') {
+      browserPath = '/usr/bin/google-chrome-unstable';
+    } else if (util.platform === 'win32') {
+      browserPath = `${process.env.PROGRAMFILES}/Google/Chrome Dev/Application/chrome.exe`;
+    }
+  } else if (util.args['browser'] == 'chrome_beta') {
+    if (util.platform === 'darwin') {
+      browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Beta';
+    } else if (util.platform === 'linux') {
+      browserPath = '/usr/bin/google-chrome-beta';
+    } else if (util.platform === 'win32') {
+      browserPath = `${process.env.PROGRAMFILES}/Google/Chrome Beta/Application/chrome.exe`;
+    }
+  }  else if (util.args['browser'] == 'chrome_stable') {
+    if (util.platform === 'darwin') {
+      browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Stable';
+    } else if (util.platform === 'linux') {
+      browserPath = '/usr/bin/google-chrome-stable';
+    } else if (util.platform === 'win32') {
+      browserPath = `${process.env.PROGRAMFILES}/Google/Chrome/Application/chrome.exe`;
+    }
+  } else {
     browserPath = util.args['browser'];
-  } else if (util.platform === 'darwin') {
-    browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary';
-  } else if (util.platform === 'linux') {
-    browserPath = '/usr/bin/google-chrome-unstable';
-  } else if (util.platform === 'win32') {
-    browserPath = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/Application/chrome.exe`;
   }
+  console.log(`Use browser at ${browserPath}`);
   util.browserPath = browserPath;
 
   let userDataDir;
