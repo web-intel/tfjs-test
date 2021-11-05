@@ -59,6 +59,11 @@ util.args = yargs
     type: 'boolean',
     describe: 'kill chrome before testing',
   })
+  .option('local-build', {
+    type: 'string',
+    describe: 'local build packages instead of npm ones',
+    default: 'webgl,webgpu,core',
+  })
   .option('new-context', {
     type: 'boolean',
     describe: 'start a new context for each test',
@@ -226,7 +231,8 @@ async function main() {
     runTimes = 50;
   }
   util.runTimes = runTimes;
-  util.urlArgs += `&warmup=${warmupTimes}&run=${runTimes}`;
+
+  util.urlArgs += `&warmup=${warmupTimes}&run=${runTimes}&localBuild=${util.args['local-build']}`;
 
   if ('url-args' in util.args) {
     util.urlArgs += `&${util.args['url-args']}`;
