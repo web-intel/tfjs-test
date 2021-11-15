@@ -40,9 +40,29 @@ async function runUnit() {
 
     let logFile = path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`).replace(/\\/g, '/');
     if (['machineName'].includes(util.hostname)) {
-      spawnSync('cmd', ['/c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+      if (backend === 'webgpu') {
+        process.chdir(path.join(tfjsDir, `link-package-core`));
+        spawnSync('cmd', ['/c', `yarn build > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+        process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
+        spawnSync('cmd', ['/c', `yarn build && yarn bazel build src:tests > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+        fs.unlink(path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'), ()=>{});
+        fs.copyFile(path.join(tfjsDir, 'bazel-out', 'x64_windows-fastbuild', 'bin', 'tfjs-backend-webgpu', 'src', 'tests.ts'), path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'), ()=>{});
+        spawnSync('cmd', ['/c', `yarn karma start --browsers=chrome_webgpu > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+      } else {
+        spawnSync('cmd', ['/c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+      } 
     } else {
-      spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+      if (backend === 'webgpu') {
+        process.chdir(path.join(tfjsDir, `link-package-core`));
+        spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `yarn build > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+        process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
+        spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `yarn build && yarn bazel build src:tests > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+        fs.unlink(path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'), () => {});
+        fs.copyFile(path.join(tfjsDir, 'bazel-out', 'x64_windows-fastbuild', 'bin', 'tfjs-backend-webgpu', 'src', 'tests.ts'), path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'), () => {});
+        spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `yarn karma start --browsers=chrome_webgpu > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+      } else {
+          spawnSync('C:/Program Files/Git/git-bash.exe', ['-c', `${cmd} > ${logFile}`], {env: process.env, stdio: [process.stdin, process.stdout, process.stderr], timeout: timeout});
+      }
     }
     var lines = fs.readFileSync(logFile, 'utf-8').split('\n').filter(Boolean);
     for (let line of lines) {
