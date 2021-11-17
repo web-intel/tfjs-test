@@ -19,12 +19,16 @@ let backends = ['webgpu', 'webgl', 'wasm'];
 // please make sure these metrics are shown up in order
 let targetMetrics = {
   'conformance': ['Prediction'],
-  'performance': ['Warmup time','Subsequent average','Best time']
+  'performance': ['Warmup time', 'Subsequent average', 'Best time']
 };
 
 const outDir = path.join(path.resolve(__dirname), '../out');
-if (!fs.existsSync(outDir)) {
-  fs.mkdirSync(outDir);
+ensureDir(outDir);
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
 }
 
 function log(info) {

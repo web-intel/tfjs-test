@@ -36,14 +36,24 @@ function intersect(a, b) {
   return a.filter(v => b.includes(v));
 }
 
-async function startContext() {
+async function startContext(traceName='') {
+  let traceArgs = '';
+  if ('trace' in util.args) {
+    traceArgs = '--trace-startup --trace-startup-file=';
+    traceArgs += `${util.outDir}/${util.timestamp}`;
+    if (traceName) {
+      traceName = traceName.replace(/ /g, '_');
+      traceArgs += `-${traceName}`;
+    }
+    traceArgs += '.json';
+  }
   if (!util.dryrun) {
     let context = await chromium.launchPersistentContext(util.userDataDir, {
       headless: false,
       executablePath: util['browserPath'],
       viewport: null,
       ignoreHTTPSErrors: true,
-      args: util['browserArgs'].split(' '),
+      args: util['browserArgs'].split(' ').concat(traceArgs.split(' ')),
     });
     let page = await context.newPage();
     page.on('console', async msg => {
@@ -160,7 +170,7 @@ async function runBenchmark(target) {
     util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
 
     if ('new-context' in util.args) {
-      [context, page] = await startContext();
+      [context, page] = await startContext(benchmark.join('-'));
     }
 
     // prepare result placeholder

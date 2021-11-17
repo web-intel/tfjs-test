@@ -106,6 +106,10 @@ util.args = yargs
     describe: 'timestamp format, day or second',
     default: 'second',
   })
+  .option('trace', {
+    type: 'boolean',
+    describe: 'enable Chrome trace',
+  })
   .option('unit-backend', {
     type: 'string',
     describe: 'backend for performance, splitted by comma',
@@ -158,7 +162,7 @@ async function main() {
   }
 
   if ('kill-chrome' in util.args) {
-      spawnSync('cmd', ['/c', 'taskkill /F /IM chrome.exe /T']);
+    spawnSync('cmd', ['/c', 'taskkill /F /IM chrome.exe /T']);
   }
 
   let browserPath;
@@ -186,7 +190,7 @@ async function main() {
     } else if (util.platform === 'win32') {
       browserPath = `${process.env.PROGRAMFILES}/Google/Chrome Beta/Application/chrome.exe`;
     }
-  }  else if (util.args['browser'] == 'chrome_stable') {
+  } else if (util.args['browser'] == 'chrome_stable') {
     if (util.platform === 'darwin') {
       browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Stable';
     } else if (util.platform === 'linux') {
