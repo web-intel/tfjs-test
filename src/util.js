@@ -40,7 +40,7 @@ module.exports = {
   'backends': backends,
   'targetMetrics': targetMetrics,
   'outDir': outDir,
-  'url': 'http://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark/',
+  'url': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark/',
   'urlArgs': 'WEBGL_USE_SHAPES_UNIFORMS=true',
   'timeout': 180 * 1000,
   log: log,
