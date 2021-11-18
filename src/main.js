@@ -166,55 +166,60 @@ async function main() {
   }
 
   let browserPath;
+  let userDataDir;
   if (util.args['browser'] == 'chrome_canary') {
     if (util.platform === 'darwin') {
       browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary';
-    } else if (util.platform === 'linux') {
-      browserPath = '/usr/bin/google-chrome-unstable'; // There is no Canary channel for Linux
+      userDataDir = `/Users/${os.userInfo().username}/Library/Application Support/Google/Chrome Canary`;
+    } else if (util.platform === 'linux') { // There is no Canary channel for Linux, use dev channel instead
+      browserPath = '/usr/bin/google-chrome-unstable';
+      userDataDir = `/home/${os.userInfo().username}/.config/google-chrome-unstable`;
     } else if (util.platform === 'win32') {
       browserPath = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/Application/chrome.exe`;
+      userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/User Data`;
     }
   } else if (util.args['browser'] == 'chrome_dev') {
     if (util.platform === 'darwin') {
       browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Dev';
+      userDataDir = `/Users/${os.userInfo().username}/Library/Application Support/Google/Chrome Dev`;
     } else if (util.platform === 'linux') {
       browserPath = '/usr/bin/google-chrome-unstable';
+      userDataDir = `/home/${os.userInfo().username}/.config/google-chrome-unstable`;
     } else if (util.platform === 'win32') {
       browserPath = `${process.env.PROGRAMFILES}/Google/Chrome Dev/Application/chrome.exe`;
+      userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome Dev/User Data`;
     }
   } else if (util.args['browser'] == 'chrome_beta') {
     if (util.platform === 'darwin') {
       browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Beta';
+      userDataDir = `/Users/${os.userInfo().username}/Library/Application Support/Google/Chrome Beta`;
     } else if (util.platform === 'linux') {
       browserPath = '/usr/bin/google-chrome-beta';
+      userDataDir = `/home/${os.userInfo().username}/.config/google-chrome-beta`;
     } else if (util.platform === 'win32') {
       browserPath = `${process.env.PROGRAMFILES}/Google/Chrome Beta/Application/chrome.exe`;
+      userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome Beta/User Data`;
     }
   } else if (util.args['browser'] == 'chrome_stable') {
     if (util.platform === 'darwin') {
       browserPath = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Stable';
+      userDataDir = `/Users/${os.userInfo().username}/Library/Application Support/Google/Chrome Stable`;
     } else if (util.platform === 'linux') {
       browserPath = '/usr/bin/google-chrome-stable';
+      userDataDir = `/home/${os.userInfo().username}/.config/google-chrome-stable`;
     } else if (util.platform === 'win32') {
       browserPath = `${process.env.PROGRAMFILES}/Google/Chrome/Application/chrome.exe`;
+      userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome/User Data`;
     }
   } else {
     browserPath = util.args['browser'];
-  }
-  console.log(`Use browser at ${browserPath}`);
-  util.browserPath = browserPath;
-
-  let userDataDir;
-  if ('browser' in util.args) {
     userDataDir = `${util.outDir}/user-data-dir`;
-  } else if (util.platform === 'darwin') {
-    userDataDir = `/Users/${os.userInfo().username}/Library/Application Support/Google/Chrome Canary`;
-  } else if (util.platform === 'linux') {
-    userDataDir = `/home/${os.userInfo().username}/.config/google-chrome-unstable`;
-  } else if (util.platform === 'win32') {
-    userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/User Data`;
   }
+
+  util.browserPath = browserPath;
+  console.log(`Use browser at ${browserPath}`);
   util.userDataDir = userDataDir;
+  console.log(`Use user-data-dir at ${userDataDir}`);
 
   if ('browser-args' in util.args) {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
