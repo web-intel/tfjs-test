@@ -4,6 +4,7 @@ const fs = require('fs');
 const runBenchmark = require('./benchmark.js');
 const { spawnSync } = require('child_process');
 const config = require('./config.js');
+const os = require('os');
 const path = require('path');
 const report = require('./report.js')
 const runUnit = require('./unit.js');
