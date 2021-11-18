@@ -15,11 +15,11 @@ util.args = yargs
   .strict()
   .option('architecture', {
     type: 'string',
-    describe: 'architecture to run, splitted by comma',
+    describe: 'architecture to run, split by comma',
   })
   .option('benchmark', {
     type: 'string',
-    describe: 'benchmark to run, splitted by comma',
+    describe: 'benchmark to run, split by comma',
   })
   .option('browser', {
     type: 'string',
@@ -32,7 +32,7 @@ util.args = yargs
   })
   .option('conformance-backend', {
     type: 'string',
-    describe: 'backend for conformance, splitted by comma',
+    describe: 'backend for conformance, split by comma',
   })
   .option('disable-breakdown', {
     type: 'boolean',
@@ -49,11 +49,11 @@ util.args = yargs
   })
   .option('input-size', {
     type: 'string',
-    describe: 'input size to run, splitted by comma',
+    describe: 'input size to run, split by comma',
   })
   .option('input-type', {
     type: 'string',
-    describe: 'input type to run, splitted by comma',
+    describe: 'input type to run, split by comma',
   })
   .option('kill-chrome', {
     type: 'boolean',
@@ -78,7 +78,7 @@ util.args = yargs
   })
   .option('performance-backend', {
     type: 'string',
-    describe: 'backend for performance, splitted by comma',
+    describe: 'backend for performance, split by comma',
   })
   .option('repeat', {
     type: 'number',
@@ -95,7 +95,7 @@ util.args = yargs
   })
   .option('target', {
     type: 'string',
-    describe: 'test target, splitted by comma. Choices can be conformance, performance and unit.',
+    describe: 'test target, split by comma. Choices can be conformance, performance and unit.',
   })
   .option('tfjs-dir', {
     type: 'string',
@@ -107,12 +107,12 @@ util.args = yargs
     default: 'second',
   })
   .option('trace', {
-    type: 'boolean',
-    describe: 'enable Chrome trace',
+    type: 'string',
+    describe: 'Chrome trace categories, split by comma',
   })
   .option('unit-backend', {
     type: 'string',
-    describe: 'backend for performance, splitted by comma',
+    describe: 'backend for performance, split by comma',
   })
   .option('upload', {
     type: 'boolean',
@@ -136,6 +136,7 @@ util.args = yargs
     ['node $0 --browser-args="--enable-dawn-features=disable_workgroup_init --no-sandbox --enable-zero-copy"'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
+    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --trace disabled-by-default-gpu.dawn,base,net'],
   ])
   .help()
   .wrap(120)

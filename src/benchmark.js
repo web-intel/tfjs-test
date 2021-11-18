@@ -39,7 +39,7 @@ function intersect(a, b) {
 async function startContext(traceName='') {
   let traceArgs = '';
   if ('trace' in util.args) {
-    traceArgs = '--trace-startup --trace-startup-file=';
+    traceArgs = `--trace-startup=${util.args['trace']} --trace-startup-file=`;
     traceArgs += `${util.outDir}/${util.timestamp}`;
     if (traceName) {
       traceName = traceName.replace(/ /g, '_');
@@ -47,6 +47,7 @@ async function startContext(traceName='') {
     }
     traceArgs += '.json';
   }
+
   if (!util.dryrun) {
     let context = await chromium.launchPersistentContext(util.userDataDir, {
       headless: false,
