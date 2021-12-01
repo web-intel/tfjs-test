@@ -21,6 +21,7 @@ function TraceRecord(label, duration, timestamp) {
   this.timestamp = timestamp;
 }
 
+// Parse a single model from a json file.
 function parseSingleModel(jsonFile, apiNames) {
   let rawdata = fs.readFileSync(jsonFile);
   let parsedData = JSON.parse(rawdata);
@@ -47,8 +48,8 @@ function parseSingleModel(jsonFile, apiNames) {
   return resultData;
 }
 
+// Multiple model only. Used to get model boundary.
 function isModel(trace, modelUrlTag) {
-  // Multiple model only. Used to get model boundary.
   const modelNameTag = 'NavigationControllerImpl::LoadURLWithParams';
   if (trace[traceKey] == modelNameTag) {
     if ((trace['args']['url']).includes(modelUrlTag)) {
@@ -58,9 +59,9 @@ function isModel(trace, modelUrlTag) {
   return false;
 }
 
+// Multiple model only. Used to get model info.
 function getModelInfo(trace) {
   const url = new URL(trace['args']['url']);
-  // Multiple model only. Used to get model info.
   const modelKeys = [
     'task', 'backend', 'benchmark', 'architecture', 'inputType', 'inputSize'
   ];
@@ -74,8 +75,8 @@ function getModelInfo(trace) {
   return modelInfo;
 }
 
+// Parse multiple models from a json file.
 function parseMultipleModels(jsonFile, apiNames, modelUrlTag) {
-  console.log(jsonFile);
   let rawdata = fs.readFileSync(jsonFile);
   let parsedData = JSON.parse(rawdata);
   const resultData = {};

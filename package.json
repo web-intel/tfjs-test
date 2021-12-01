@@ -7,7 +7,6 @@
     "nodemailer": "^6.4.6",
     "playwright": "1.11.0",
     "systeminformation": "^4.26.4",
-    "xlsx": "^0.17.4",
     "yargs": "^16.2.0"
   }
 }

@@ -3,7 +3,6 @@ const yargs = require('yargs');
 // https://github.com/waylonflinn/xlsx-workbook.
 var Workbook = require('./xlsx-workbook').Workbook;
 const fs = require('fs');
-const url = require('url');
 const tracingJsonParser = require('./tracingJsonParser');
 
 /* Steps:
@@ -192,7 +191,6 @@ function isJsonFile(fileName) {
 
 function getAllJsonFiles() {
   const jsonFolder = './';
-  const fs = require('fs');
   const files = new Array();
 
   fs.readdirSync(jsonFolder).forEach(fileName => {
