@@ -38,8 +38,8 @@ function intersect(a, b) {
 
 async function startContext(traceName='') {
   let traceArgs = '';
-  if ('trace' in util.args) {
-    traceArgs = `--enable-tracing=${util.args['trace']} --trace-startup-file=`;
+  if ('trace-category' in util.args) {
+    traceArgs = `--enable-tracing=${util.args['trace-category']} --trace-startup-file=`;
     traceArgs += `${util.outDir}/${util.timestamp}`;
     if (traceName) {
       traceName = traceName.replace(/ /g, '_');

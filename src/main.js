@@ -1,15 +1,17 @@
 'use strict';
 
-const fs = require('fs');
-const runBenchmark = require('./benchmark.js');
 const { spawnSync } = require('child_process');
-const config = require('./config.js');
+const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const report = require('./report.js')
+const yargs = require('yargs');
+
+const runBenchmark = require('./benchmark.js');
+const config = require('./config.js');
+const report = require('./report.js');
+const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
 const util = require('./util.js');
-const yargs = require('yargs');
 
 util.args = yargs
   .usage('node $0 [args]')
@@ -97,6 +99,7 @@ util.args = yargs
   .option('target', {
     type: 'string',
     describe: 'test target, split by comma. Choices can be conformance, performance and unit.',
+    default: 'performance',
   })
   .option('tfjs-dir', {
     type: 'string',
@@ -107,9 +110,13 @@ util.args = yargs
     describe: 'timestamp format, day or second',
     default: 'second',
   })
-  .option('trace', {
+  .option('trace-category', {
     type: 'string',
     describe: 'Chrome trace categories, split by comma',
+  })
+  .option('trace-file', {
+    type: 'string',
+    describe: 'trace file',
   })
   .option('unit-backend', {
     type: 'string',
@@ -133,14 +140,15 @@ util.args = yargs
   })
   .example([
     ['node $0 --email <email>', '# send report to <email>'],
+    ['node $0 --target performance --url http://127.0.0.1/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark'],
     ['node $0 --target performance --benchmark pose-detection --architecture BlazePose-heavy --input-size 256 --input-type tensor --performance-backend webgpu'],
     ['node $0 --browser-args="--enable-dawn-features=disable_workgroup_init --no-sandbox --enable-zero-copy"'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
-    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --trace disabled-by-default-gpu.dawn,base,net'],
+    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --trace-category disabled-by-default-gpu.dawn,navigation'],
   ])
   .help()
-  .wrap(120)
+  .wrap(180)
   .argv;
 
 function padZero(str) {
@@ -245,6 +253,10 @@ async function main() {
 
   util.urlArgs += `&warmup=${warmupTimes}&run=${runTimes}&localBuild=${util.args['local-build']}`;
 
+  if ('trace-category' in util.args) {
+    util.args['new-context'] == true;
+  }
+
   if ('url-args' in util.args) {
     util.urlArgs += `&${util.args['url-args']}`;
   }
@@ -259,17 +271,14 @@ async function main() {
     util.url = util.args['url'];
   }
 
-  await config();
-
-  let targets = [];
-  if ('target' in util.args) {
-    targets = util.args['target'].split(',');
-  } else {
-    targets = ['conformance', 'performance', 'unit'];
-  }
+  let targets = util.args['target'].split(',');
 
   if (!fs.existsSync(util.outDir)) {
     fs.mkdirSync(util.outDir, { recursive: true });
+  }
+
+  if (targets.indexOf('conformance') >= 0 || targets.indexOf('performance') >= 0 || targets.indexOf('unit') >= 0) {
+    await config();
   }
 
   let results = {};
@@ -282,13 +291,15 @@ async function main() {
 
     for (let target of targets) {
       startTime = new Date();
-      util.log(`${target} test`);
+      util.log(`${target}`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
         if (!(target == 'performance' && util.warmupTimes == 0 && util.runTimes == 0)) {
           results[target] = await runBenchmark(target);
         }
       } else if (target == 'unit') {
         results[target] = await runUnit();
+      } else if (target == 'trace') {
+        await parseTrace();
       }
       util.duration += `${target}: ${(new Date() - startTime) / 1000} `;
     }

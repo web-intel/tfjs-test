@@ -25,6 +25,14 @@ let targetMetrics = {
 const outDir = path.join(path.resolve(__dirname), '../out');
 ensureDir(outDir);
 
+function capitalize(s) {
+  return s[0].toUpperCase() + s.slice(1);
+}
+
+function uncapitalize(s) {
+  return s[0].toLowerCase() + s.slice(1);
+}
+
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
@@ -44,8 +52,10 @@ module.exports = {
   'backends': backends,
   'targetMetrics': targetMetrics,
   'outDir': outDir,
-  'url': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark/',
+  'url': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark',
   'urlArgs': 'WEBGL_USE_SHAPES_UNIFORMS=true',
   'timeout': 180 * 1000,
+  capitalize: capitalize,
   log: log,
+  uncapitalize: uncapitalize,
 };
