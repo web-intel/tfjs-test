@@ -98,8 +98,8 @@ util.args = yargs
   })
   .option('target', {
     type: 'string',
-    describe: 'test target, split by comma. Choices can be conformance, performance and unit.',
-    default: 'performance',
+    describe: 'test target, split by comma. Choices can be conformance, performance, unit, trace, and so on.',
+    default: 'conformance,performance,unit',
   })
   .option('tfjs-dir', {
     type: 'string',
