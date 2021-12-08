@@ -145,7 +145,7 @@ util.args = yargs
     ['node $0 --browser-args="--enable-dawn-features=disable_workgroup_init --no-sandbox --enable-zero-copy"'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
-    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --trace-category disabled-by-default-gpu.dawn,navigation'],
+    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --trace-category disabled-by-default-gpu.dawn'],
   ])
   .help()
   .wrap(180)
@@ -254,7 +254,7 @@ async function main() {
   util.urlArgs += `&warmup=${warmupTimes}&run=${runTimes}&localBuild=${util.args['local-build']}`;
 
   if ('trace-category' in util.args) {
-    util.args['new-context'] == true;
+    util.args['new-context'] = true;
   }
 
   if ('url-args' in util.args) {

@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 const readline = require('readline');
+
+const parseTrace = require('./trace.js');
 const util = require('./util.js')
 
 function cartesianProduct(arr) {
@@ -36,16 +38,10 @@ function intersect(a, b) {
   return a.filter(v => b.includes(v));
 }
 
-async function startContext(traceName='') {
+async function startContext(traceFile='') {
   let traceArgs = '';
   if ('trace-category' in util.args) {
-    traceArgs = `--enable-tracing=${util.args['trace-category']} --trace-startup-file=`;
-    traceArgs += `${util.outDir}/${util.timestamp}`;
-    if (traceName) {
-      traceName = traceName.replace(/ /g, '_');
-      traceArgs += `-${traceName}`;
-    }
-    traceArgs += '.json';
+    traceArgs = `--enable-tracing=${util.args['trace-category']} --trace-startup-file=${traceFile}`;
   }
 
   if (!util.dryrun) {
@@ -167,11 +163,16 @@ async function runBenchmark(target) {
     let benchmarkName = benchmark.slice(0, -1).join('-');
     let backend = benchmark[benchmark.length - 1];
     let backendIndex = util.backends.indexOf(backend);
+    let traceFile = '';
+    let totalTime = -1;
 
     util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
 
     if ('new-context' in util.args) {
-      [context, page] = await startContext(benchmark.join('-'));
+      if ('trace-category' in util.args) {
+        traceFile = `${util.outDir}/${util.timestamp}-trace-${benchmark.join('-').replace(/ /g, '_')}.json`;
+      }
+      [context, page] = await startContext(traceFile);
     }
 
     // prepare result placeholder
@@ -242,6 +243,7 @@ async function runBenchmark(target) {
             value = parseFloat(value.replace(' ms', ''));
           }
           results[results.length - 1][backendIndex * metricsLength + metricIndex + 1] = value;
+          totalTime = value;
           metricIndex += 1;
         }
         typeIndex += 1;
@@ -286,6 +288,9 @@ async function runBenchmark(target) {
 
     if ('new-context' in util.args) {
       await closeContext(context);
+    }
+    if ('trace-category' in util.args) {
+      await parseTrace(traceFile, totalTime);
     }
   }
 
