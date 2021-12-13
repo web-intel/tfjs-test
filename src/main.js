@@ -27,7 +27,7 @@ util.args = yargs
   .option('browser', {
     type: 'string',
     describe: 'browser specific path, chrome_canary, chrome_dev, chrome_beta or chrome_stable',
-    default: 'chrome_dev',
+    default: 'chrome_canary',
   })
   .option('browser-args', {
     type: 'string',
