@@ -134,6 +134,10 @@ util.args = yargs
     type: 'string',
     describe: 'extra url args',
   })
+  .option('use-dxc', {
+    type: 'boolean',
+    describe: 'use dxc instead of fxc',
+  })
   .option('warmup-times', {
     type: 'number',
     describe: 'warmup times',
@@ -233,6 +237,9 @@ async function main() {
 
   if ('browser-args' in util.args) {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
+  }
+  if ('use-dxc' in util.args) {
+    util.browserArgs += ' --enable-dawn-features=use_dxc';
   }
 
   let warmupTimes;
