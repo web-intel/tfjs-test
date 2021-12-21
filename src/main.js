@@ -169,12 +169,6 @@ function getTimestamp(format) {
 }
 
 async function main() {
-  util.timestamp = getTimestamp(util.args['timestamp']);
-  util.logFile = path.join(util.outDir, `${util.timestamp}.log`);
-  if (fs.existsSync(util.logFile)) {
-    fs.truncateSync(util.logFile, 0);
-  }
-
   if ('kill-chrome' in util.args) {
     spawnSync('cmd', ['/c', 'taskkill /F /IM chrome.exe /T']);
   }
@@ -292,6 +286,12 @@ async function main() {
   util.duration = '';
   let startTime;
   for (let i = 0; i < util.args['repeat']; i++) {
+    util.timestamp = getTimestamp(util.args['timestamp']);
+    util.logFile = path.join(util.outDir, `${util.timestamp}.log`);
+    if (fs.existsSync(util.logFile)) {
+      fs.truncateSync(util.logFile, 0);
+    }
+
     if (util.args['repeat'] > 1) {
       util.log(`== Test round ${i + 1}/${util.args['repeat']} ==`);
     }
