@@ -122,6 +122,14 @@ util.args = yargs
     type: 'string',
     describe: 'backend for performance, split by comma',
   })
+  .option('unit-filter', {
+    type: 'string',
+    describe: 'filter for unit test',
+  })
+  .option('unit-skip-build', {
+    type: 'boolean',
+    describe: 'skip build for unit test',
+  })
   .option('upload', {
     type: 'boolean',
     describe: 'upload result to server',
@@ -150,6 +158,7 @@ util.args = yargs
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --trace-category disabled-by-default-gpu.dawn'],
+    ['node $0 --target unit --unit-filter=add --unit-skip-build'],
   ])
   .help()
   .wrap(180)

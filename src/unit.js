@@ -41,59 +41,28 @@ async function runUnit() {
     let logFile =
       path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`)
         .replace(/\\/g, '/');
+
+    let shell, shellOption;
     if (['machineName'].includes(util.hostname)) {
-      if (backend === 'webgpu') {
-        process.chdir(path.join(tfjsDir, `link-package-core`));
-        spawnSync('cmd', ['/c', `yarn build > ${logFile}`], {
-          env: process.env,
-          stdio: [process.stdin, process.stdout, process.stderr],
-          timeout: timeout
-        });
-        process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
-        spawnSync(
-          'cmd',
-          ['/c', `yarn && yarn build && yarn bazel build src:tests > ${logFile}`], {
-          env: process.env,
-          stdio: [process.stdin, process.stdout, process.stderr],
-          timeout: timeout
-        });
-        fs.unlink(
-          path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
-          () => { });
-        fs.copyFile(
-          path.join(
-            tfjsDir, 'bazel-out', 'x64_windows-fastbuild', 'bin',
-            'tfjs-backend-webgpu', 'src', 'tests.ts'),
-          path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
-          () => { });
-        spawnSync(
-          'cmd',
-          ['/c', `yarn karma start --browsers=chrome_webgpu > ${logFile}`], {
-          env: process.env,
-          stdio: [process.stdin, process.stdout, process.stderr],
-          timeout: timeout
-        });
-      } else {
-        spawnSync('cmd', ['/c', `${cmd} > ${logFile}`], {
-          env: process.env,
-          stdio: [process.stdin, process.stdout, process.stderr],
-          timeout: timeout
-        });
-      }
+      shell = 'cmd';
+      shellOption = '/c';
     } else {
-      if (backend === 'webgpu') {
+      shell = 'C:/Program Files/Git/git-bash.exe';
+      shellOption = '-c';
+    }
+
+    if (backend === 'webgpu') {
+      if (!(util.args['unit-skip-build'])) {
         process.chdir(path.join(tfjsDir, `link-package-core`));
-        spawnSync(
-          'C:/Program Files/Git/git-bash.exe',
-          ['-c', `yarn build > ${logFile}`], {
+        spawnSync(shell, [shellOption, `yarn build > ${logFile}`], {
           env: process.env,
           stdio: [process.stdin, process.stdout, process.stderr],
           timeout: timeout
         });
         process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
         spawnSync(
-          'C:/Program Files/Git/git-bash.exe',
-          ['-c', `yarn && yarn build && yarn bazel build src:tests > ${logFile}`], {
+          shell,
+          [shellOption, `yarn && yarn build && yarn bazel build src:tests > ${logFile}`], {
           env: process.env,
           stdio: [process.stdin, process.stdout, process.stderr],
           timeout: timeout
@@ -107,23 +76,27 @@ async function runUnit() {
             'tfjs-backend-webgpu', 'src', 'tests.ts'),
           path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
           () => { });
-        spawnSync(
-          'C:/Program Files/Git/git-bash.exe',
-          ['-c', `yarn karma start --browsers=chrome_webgpu > ${logFile}`], {
-          env: process.env,
-          stdio: [process.stdin, process.stdout, process.stderr],
-          timeout: timeout
-        });
-      } else {
-        spawnSync(
-          'C:/Program Files/Git/git-bash.exe', ['-c', `${cmd} > ${logFile}`],
-          {
-            env: process.env,
-            stdio: [process.stdin, process.stdout, process.stderr],
-            timeout: timeout
-          });
       }
+
+      let filter = '';
+      if ('unit-filter' in util.args) {
+        filter = ` --grep ${util.args['unit-filter']}`;
+      }
+      spawnSync(
+        shell,
+        [shellOption, `yarn karma start --browsers=chrome_webgpu${filter} > ${logFile}`], {
+        env: process.env,
+        stdio: [process.stdin, process.stdout, process.stderr],
+        timeout: timeout
+      });
+    } else {
+      spawnSync(shell, [shellOption, `${cmd} > ${logFile}`], {
+        env: process.env,
+        stdio: [process.stdin, process.stdout, process.stderr],
+        timeout: timeout
+      });
     }
+
     var lines = fs.readFileSync(logFile, 'utf-8').split('\n').filter(Boolean);
     for (let line of lines) {
       if (line.includes('FAILED') || line.includes('Executed')) {
