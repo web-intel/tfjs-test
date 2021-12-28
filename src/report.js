@@ -32,13 +32,13 @@ async function sendMail(to, subject, html) {
   return Promise.resolve();
 }
 
-function getSortedHash(inputHash){
+function getSortedHash(inputHash) {
   var resultHash = {};
 
   var keys = Object.keys(inputHash);
-  keys.sort(function(a, b) {
+  keys.sort(function (a, b) {
     return inputHash[a][0] - inputHash[b][0];
-  }).reverse().forEach(function(k) {
+  }).reverse().forEach(function (k) {
     resultHash[k] = inputHash[k];
   });
   return resultHash;
@@ -156,11 +156,12 @@ async function report(results) {
   // config table
   let configTable = '<table><tr><th>Category</th><th>Info</th></tr>';
   if ('upload' in util.args || 'server-info' in util.args) {
-    util['serverDate'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=\"%cd\""').toString();
-    util['serverCommit'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git rev-parse HEAD"').toString();
+    util['serverRepoDate'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=\"%cd\""').toString();
+    util['serverRepoCommit'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git rev-parse HEAD"').toString();
+    util['serverBuildDate'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && stat dist/bin/tfjs-backend-webgpu/dist/tf-backend-webgpu.js |grep Modify"').toString();
   }
 
-  for (let category of ['browserArgs', 'browserPath', 'chromeRevision', 'chromeVersion', 'cpuName', 'duration', 'hostname', 'gpuDeviceId', 'gpuDriverVersion', 'gpuName', 'platform', 'powerPlan', 'pthreadPoolSize', 'screenResolution', 'serverDate', 'serverCommit', 'url', 'urlArgs', 'wasmMultithread', 'wasmSIMD']) {
+  for (let category of ['browserArgs', 'browserPath', 'chromeRevision', 'chromeVersion', 'cpuName', 'duration', 'hostname', 'gpuDeviceId', 'gpuDriverVersion', 'gpuName', 'platform', 'powerPlan', 'pthreadPoolSize', 'screenResolution', 'serverRepoDate', 'serverRepoCommit', 'serverBuildDate', 'url', 'urlArgs', 'wasmMultithread', 'wasmSIMD']) {
     configTable += `<tr><td>${category}</td><td>${util[category]}</td></tr>`;
   }
   configTable += '</table><br>'
