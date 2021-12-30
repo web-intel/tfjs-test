@@ -38,7 +38,7 @@ function intersect(a, b) {
   return a.filter(v => b.includes(v));
 }
 
-async function startContext(traceFile='') {
+async function startContext(traceFile = '') {
   let traceArgs = '';
   if ('trace-category' in util.args) {
     traceArgs = `--enable-tracing=${util.args['trace-category']} --trace-startup-file=${traceFile}`;
@@ -261,7 +261,7 @@ async function runBenchmark(target) {
             if (!(op in op_time)) {
               op_time[op] = Array(backendsLength).fill(defaultValue);
             }
-            op_time[op][backendIndex] = time;
+            op_time[op][backendIndex] = parseFloat(time);
             row += 1;
           }
         } catch (err) {
@@ -280,7 +280,7 @@ async function runBenchmark(target) {
     util.log(result);
 
     if ('pause-test' in util.args) {
-      const readlineInterface = readline.createInterface({input: process.stdin, output: process.stdout});
+      const readlineInterface = readline.createInterface({ input: process.stdin, output: process.stdout });
       await new Promise(resolve => {
         readlineInterface.question('Press Enter to continue...\n', resolve);
       });

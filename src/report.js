@@ -73,12 +73,21 @@ async function report(results) {
     }
     for (let metricIndex = 0; metricIndex < metrics.length; metricIndex++) {
       let metric = metrics[metricIndex];
-      let resultsTable = `<table><tr><th>${target} (${metric}, duration ${targetResults[targetResults.length - 1]})</th><th>webgpu${unit}</th>`;
-      for (let i = 1; i < backendsLength; i++) {
-        let backend = util.backends[i];
-        resultsTable += `<th>${backend}${unit}</th>`;
+      let resultsTable = `<table><tr><th>${target} (${metric}, duration ${targetResults[targetResults.length - 1]})</th><th>webgpu total${unit}</th>`;
+      if (target == 'performance' && metric == 'Subsequent average') {
+        resultsTable += `<th>webgpu ops${unit}</th>`
+      }
+      for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
+        let backend = util.backends[backendIndex];
+        resultsTable += `<th>${backend} total${unit}</th>`;
+        if (target == 'performance' && metric == 'Subsequent average') {
+          resultsTable += `<th>${backend} ops${unit}</th>`
+        }
         if (target == 'performance') {
-          resultsTable += `<th>webgpu vs ${backend} (%)</th>`;
+          resultsTable += `<th>webgpu total vs ${backend} total (%)</th>`;
+          if (metric == 'Subsequent average') {
+            resultsTable += `<th>webgpu ops vs ${backend} ops (%)</th>`;
+          }
         }
       }
       resultsTable += '</tr>';
@@ -88,36 +97,66 @@ async function report(results) {
           break;
         }
         let result = targetResults[resultIndex];
-        let webgpuValue = result[metricIndex + 1];
+        let opsResult = result[result.length - 1];
+        let webgpuTotalValue = result[metricIndex + 1];
+        let webgpuIndex = util.backends.indexOf('webgpu');
         let style = neutralStyle;
         if (target == 'conformance') {
-          if (webgpuValue == 'false') {
+          if (webgpuTotalValue == 'false') {
             style = badStyle;
-          } else if (webgpuValue == 'true') {
+          } else if (webgpuTotalValue == 'true') {
             style = goodStyle;
           }
         }
+        resultsTable += `<tr><td>${result[webgpuIndex]}</td><td ${style}>${webgpuTotalValue}</td>`;
 
-        resultsTable += `<tr><td>${result[0]}</td><td ${style}>${webgpuValue}</td>`;
-        for (let i = 1; i < backendsLength; i++) {
-          let otherValue = result[i * metricsLength + metricIndex + 1];
+        let webgpuOpsValue = 0;
+        for (let op in opsResult) {
+          webgpuOpsValue += opsResult[op][webgpuIndex];
+        }
+        webgpuOpsValue = webgpuOpsValue.toFixed(2);
+
+        if (target == 'performance' && metric == 'Subsequent average') {
+          resultsTable += `<td>${webgpuOpsValue}</td>`
+        }
+
+        for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
+          let backendTotalValue = result[backendIndex * metricsLength + metricIndex + 1];
+          let backendOpsValue = 0.0;
+          for (let op in opsResult) {
+            backendOpsValue += opsResult[op][backendIndex];
+          }
+          backendOpsValue = backendOpsValue.toFixed(2);
           let style = neutralStyle;
           if (target == 'conformance') {
-            if (otherValue == 'false') {
+            if (backendTotalValue == 'false') {
               style = badStyle;
-            } else if (otherValue == 'true') {
+            } else if (backendTotalValue == 'true') {
               style = goodStyle;
             }
           }
-          resultsTable += `<td ${style}>${otherValue}</td>`;
+          resultsTable += `<td ${style}>${backendTotalValue}</td>`;
+          if (target == 'performance' && metric == 'Subsequent average') {
+            resultsTable += `<td>${backendOpsValue}</td>`
+          }
           if (target == 'performance') {
-            let percent = 'NA';
-            let style = neutralStyle;
-            if (otherValue !== 'NA' && webgpuValue !== 'NA') {
-              percent = parseFloat(otherValue / webgpuValue * 100).toFixed(2);
-              style = percent > 100 ? goodStyle : badStyle;
+            let totalPercent = 'NA';
+            let totalStyle = neutralStyle;
+            if (backendTotalValue !== 'NA' && webgpuTotalValue !== 'NA') {
+              totalPercent = parseFloat(backendTotalValue / webgpuTotalValue * 100).toFixed(2);
+              totalStyle = totalPercent > 100 ? goodStyle : badStyle;
             }
-            resultsTable += `<td ${style}>${percent}</td>`;
+            resultsTable += `<td ${totalStyle}>${totalPercent}</td>`;
+
+            if (metric == 'Subsequent average') {
+              let opsPercent = 'NA';
+              let opsStyle = neutralStyle;
+              if (backendOpsValue !== 'NA' && webgpuOpsValue !== 'NA') {
+                opsPercent = parseFloat(backendOpsValue / webgpuOpsValue * 100).toFixed(2);
+                opsStyle = opsPercent > 100 ? goodStyle : badStyle;
+              }
+              resultsTable += `<td ${opsStyle}>${opsPercent}</td>`;
+            }
           }
         }
         resultsTable += '</tr>';
@@ -131,23 +170,23 @@ async function report(results) {
   if ('unit' in results) {
     let targetResults = results['unit'];
     let resultsTable = `<table><tr><th>Unit</th><th>webgpu</th>`;
-    for (let i = 1; i < backendsLength; i++) {
-      let backend = util.backends[i];
+    for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
+      let backend = util.backends[backendIndex];
       resultsTable += `<th>${backend}</th>`;
     }
     resultsTable += '</tr>';
 
     resultsTable += '<tr><td></td>';
-    for (let i = 0; i < backendsLength; i++) {
+    for (let backendIndex = 0; backendIndex < backendsLength; backendIndex++) {
       let style;
-      if (targetResults[i] == 'NA') {
+      if (targetResults[backendIndex] == 'NA') {
         style = neutralStyle;
-      } else if (targetResults[i].includes('FAILED')) {
+      } else if (targetResults[backendIndex].includes('FAILED')) {
         style = badStyle;
       } else {
         style = goodStyle;
       }
-      resultsTable += `<td ${style}>${targetResults[i]}</td>`;
+      resultsTable += `<td ${style}>${targetResults[backendIndex]}</td>`;
     }
     resultsTable += '</tr></table><br>';
     html += resultsTable;
@@ -176,8 +215,8 @@ async function report(results) {
     let unit = ' (ms)';
     let style = neutralStyle;
     let breakdownTable = `<table><tr><th>benchmark</th><th>op</th><th>webgpu${unit}</th>`;
-    for (let i = 1; i < backendsLength; i++) {
-      let backend = util.backends[i];
+    for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
+      let backend = util.backends[backendIndex];
       breakdownTable += `<th>${backend}${unit}</th>`;
       breakdownTable += `<th>webgpu vs ${backend} (%)</th>`;
     }
@@ -191,12 +230,13 @@ async function report(results) {
       let result = targetResults[resultIndex];
       let op_time = result[backendsLength * metricsLength + 1];
       let TOP = 5;
+      let enableTOP = false;
       let count = 0;
       let benchmarkNameDisplayed = false;
 
       for (let op in getSortedHash(op_time)) {
         let time = op_time[op];
-        let webgpuValue = time[0];
+        let webgpuTotalValue = time[0];
         let benchmarkName;
         if (benchmarkNameDisplayed) {
           benchmarkName = '';
@@ -205,21 +245,21 @@ async function report(results) {
           benchmarkNameDisplayed = true;
         }
 
-        breakdownTable += `<tr><td>${benchmarkName}</td><td>${op}</td><td ${style}>${webgpuValue}</td>`;
-        for (let i = 1; i < backendsLength; i++) {
-          let otherValue = time[i];
-          breakdownTable += `<td>${otherValue}</td>`;
+        breakdownTable += `<tr><td>${benchmarkName}</td><td>${op}</td><td ${style}>${webgpuTotalValue}</td>`;
+        for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
+          let backendTotalValue = time[backendIndex];
+          breakdownTable += `<td>${backendTotalValue}</td>`;
           let percent = 'NA';
           let style = neutralStyle;
-          if (otherValue !== 'NA' && webgpuValue !== 'NA') {
-            percent = parseFloat(otherValue / webgpuValue * 100).toFixed(2);
+          if (backendTotalValue !== 'NA' && webgpuTotalValue !== 'NA') {
+            percent = parseFloat(backendTotalValue / webgpuTotalValue * 100).toFixed(2);
             style = percent > 100 ? goodStyle : badStyle;
           }
           breakdownTable += `<td ${style}>${percent}</td>`;
         }
         breakdownTable += '</tr>';
         count += 1;
-        if (count == TOP) {
+        if (enableTOP && count == TOP) {
           break;
         }
       }
