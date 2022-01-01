@@ -256,6 +256,10 @@ async function runBenchmark(target) {
           let row = 1;
           while (true) {
             let op = await page.$eval('#kernels > tbody > tr:nth-child(' + row + ') > td:nth-child(1) > span', el => el.title);
+            if (op.substr(-4, 4) == '__op') {
+              row += 1;
+              continue;
+            }
             let time = await page.$eval('#kernels > tbody > tr:nth-child(' + row + ') > td:nth-child(2)', el => el.textContent);
             let op_time = results[results.length - 1][backendsLength * metricsLength + 1];
             if (!(op in op_time)) {

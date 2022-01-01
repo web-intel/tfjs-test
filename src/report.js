@@ -114,7 +114,7 @@ async function report(results) {
         for (let op in opsResult) {
           webgpuOpsValue += opsResult[op][webgpuIndex];
         }
-        webgpuOpsValue = webgpuOpsValue.toFixed(2);
+        webgpuOpsValue = parseFloat(webgpuOpsValue).toFixed(2);
 
         if (target == 'performance' && metric == 'Subsequent average') {
           resultsTable += `<td>${webgpuOpsValue}</td>`
@@ -126,7 +126,7 @@ async function report(results) {
           for (let op in opsResult) {
             backendOpsValue += opsResult[op][backendIndex];
           }
-          backendOpsValue = backendOpsValue.toFixed(2);
+          backendOpsValue = parseFloat(backendOpsValue).toFixed(2);
           let style = neutralStyle;
           if (target == 'conformance') {
             if (backendTotalValue == 'false') {
