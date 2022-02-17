@@ -18,16 +18,6 @@ function cartesianProduct(arr) {
   }, [[]])
 }
 
-function getDuration(start, end) {
-  let diff = Math.abs(start - end);
-  const hours = Math.floor(diff / 3600000);
-  diff -= hours * 3600000;
-  const minutes = Math.floor(diff / 60000);
-  diff -= minutes * 60000;
-  const seconds = Math.floor(diff / 1000);
-  return `${hours}:${('0' + minutes).slice(-2)}:${('0' + seconds).slice(-2)}`;
-}
-
 function intersect(a, b) {
   if (!Array.isArray(a)) {
     a = [a];
@@ -75,8 +65,6 @@ async function closeContext(context) {
 }
 
 async function runBenchmark(target) {
-  let startTime = new Date();
-
   // get benchmarks
   let benchmarks = [];
   let benchmarkJson = path.join(path.resolve(__dirname), 'benchmark.json');
@@ -207,13 +195,13 @@ async function runBenchmark(target) {
       }
     } else {
       // get url
-      let url = `${util.url}?task=${task}`;
+      let url = `${util.benchmarkUrl}?task=${task}`;
       for (let index = 0; index < util.parameters.length; index++) {
         if (benchmarks[i][index]) {
           url += `&${util.parameters[index]}=${benchmarks[i][index]}`;
         }
       }
-      url += `&${util.urlArgs}`;
+      url += `&${util.benchmarkUrlArgs}`;
 
       await page.goto(url);
       if ('quit-pageerror' in util.args) {
@@ -302,7 +290,6 @@ async function runBenchmark(target) {
     await closeContext(context);
   }
 
-  results.push(getDuration(startTime, new Date()))
   return Promise.resolve(results);
 }
 

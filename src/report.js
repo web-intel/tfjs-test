@@ -73,7 +73,7 @@ async function report(results) {
     }
     for (let metricIndex = 0; metricIndex < metrics.length; metricIndex++) {
       let metric = metrics[metricIndex];
-      let resultsTable = `<table><tr><th>${target} (${metric}, duration ${targetResults[targetResults.length - 1]})</th><th>webgpu total${unit}</th>`;
+      let resultsTable = `<table><tr><th>${target} (${metric})</th><th>webgpu total${unit}</th>`;
       if (target == 'performance' && metric == 'Subsequent average') {
         resultsTable += `<th>webgpu ops${unit}</th>`
       }
@@ -92,10 +92,6 @@ async function report(results) {
       }
       resultsTable += '</tr>';
       for (let resultIndex = 0; resultIndex < targetResults.length; resultIndex++) {
-        // stop until duration
-        if (resultIndex == targetResults.length - 1) {
-          break;
-        }
         let result = targetResults[resultIndex];
         let opsResult = result[result.length - 1];
         let webgpuTotalValue = result[metricIndex + 1];
@@ -192,6 +188,18 @@ async function report(results) {
     html += resultsTable;
   }
 
+  // demo table
+  if ('demo' in results) {
+    let targetResults = results['demo'];
+    let resultsTable = `<table><tr><th>demo</th><th>webgpu (ms)</th></tr>`;
+
+    for (let index = 0; index < targetResults.length; index++) {
+      resultsTable += `<tr><td>${targetResults[index][0]}</td><td>${targetResults[index][1]}</td></tr>`;
+    }
+    resultsTable += '</table><br>';
+    html += resultsTable;
+  }
+
   // config table
   let configTable = '<table><tr><th>Category</th><th>Info</th></tr>';
   if ('upload' in util.args || 'server-info' in util.args) {
@@ -200,7 +208,7 @@ async function report(results) {
     util['serverBuildDate'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && stat dist/bin/tfjs-backend-webgpu/dist/tf-backend-webgpu.js |grep Modify"').toString();
   }
 
-  for (let category of ['browserArgs', 'browserPath', 'chromeRevision', 'chromeVersion', 'cpuName', 'duration', 'hostname', 'gpuDeviceId', 'gpuDriverVersion', 'gpuName', 'platform', 'powerPlan', 'pthreadPoolSize', 'screenResolution', 'serverRepoDate', 'serverRepoCommit', 'serverBuildDate', 'url', 'urlArgs', 'wasmMultithread', 'wasmSIMD']) {
+  for (let category of ['browserArgs', 'browserPath', 'chromeRevision', 'chromeVersion', 'cpuName', 'duration', 'hostname', 'gpuDeviceId', 'gpuDriverVersion', 'gpuName', 'platform', 'powerPlan', 'pthreadPoolSize', 'screenResolution', 'serverRepoDate', 'serverRepoCommit', 'serverBuildDate', 'benchmarkUrl', 'benchmarkUrlArgs', 'wasmMultithread', 'wasmSIMD']) {
     configTable += `<tr><td>${category}</td><td>${util[category]}</td></tr>`;
   }
   configTable += '</table><br>'
@@ -223,10 +231,6 @@ async function report(results) {
     breakdownTable += '</tr>';
 
     for (let resultIndex = 0; resultIndex < targetResults.length; resultIndex++) {
-      // stop until duration
-      if (resultIndex == targetResults.length - 1) {
-        break;
-      }
       let result = targetResults[resultIndex];
       let op_time = result[backendsLength * metricsLength + 1];
       let TOP = 5;

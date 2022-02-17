@@ -39,9 +39,23 @@ function ensureDir(dir) {
   }
 }
 
+function getDuration(start, end) {
+  let diff = Math.abs(start - end);
+  const hours = Math.floor(diff / 3600000);
+  diff -= hours * 3600000;
+  const minutes = Math.floor(diff / 60000);
+  diff -= minutes * 60000;
+  const seconds = Math.floor(diff / 1000);
+  return `${hours}:${('0' + minutes).slice(-2)}:${('0' + seconds).slice(-2)}`;
+}
+
 function log(info) {
   console.log(info);
   fs.appendFileSync(this.logFile, String(info) + '\n');
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = {
@@ -52,10 +66,13 @@ module.exports = {
   'backends': backends,
   'targetMetrics': targetMetrics,
   'outDir': outDir,
-  'url': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark',
-  'urlArgs': 'WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false',
+  'benchmarkUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark',
+  'benchmarkUrlArgs': 'WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false',
+  'demoUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos/live_video/dist/?backend=tfjs-webgpu&model=',
   'timeout': 180 * 1000,
   capitalize: capitalize,
+  getDuration: getDuration,
   log: log,
+  sleep: sleep,
   uncapitalize: uncapitalize,
 };

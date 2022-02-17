@@ -8,6 +8,7 @@ const yargs = require('yargs');
 
 const runBenchmark = require('./benchmark.js');
 const config = require('./config.js');
+const runDemo = require('./demo.js');
 const report = require('./report.js');
 const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
@@ -23,6 +24,14 @@ util.args = yargs
   .option('benchmark', {
     type: 'string',
     describe: 'benchmark to run, split by comma',
+  })
+  .option('benchmark-url', {
+    type: 'string',
+    describe: 'benchmark url to test against',
+  })
+  .option('benchmark-url-args', {
+    type: 'string',
+    describe: 'extra benchmark url args',
   })
   .option('browser', {
     type: 'string',
@@ -98,8 +107,8 @@ util.args = yargs
   })
   .option('target', {
     type: 'string',
-    describe: 'test target, split by comma. Choices can be conformance, performance, unit, trace, and so on.',
-    default: 'conformance,performance,unit',
+    describe: 'test target, split by comma. Choices can be conformance, performance, unit, trace, demo and so on.',
+    default: 'conformance,performance,unit,demo',
   })
   .option('tfjs-dir', {
     type: 'string',
@@ -134,14 +143,6 @@ util.args = yargs
     type: 'boolean',
     describe: 'upload result to server',
   })
-  .option('url', {
-    type: 'string',
-    describe: 'url to test against',
-  })
-  .option('url-args', {
-    type: 'string',
-    describe: 'extra url args',
-  })
   .option('use-dxc', {
     type: 'boolean',
     describe: 'use dxc instead of fxc',
@@ -152,7 +153,7 @@ util.args = yargs
   })
   .example([
     ['node $0 --email <email>', '# send report to <email>'],
-    ['node $0 --target performance --url http://127.0.0.1/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark'],
+    ['node $0 --target performance --benchmark-url http://127.0.0.1/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark'],
     ['node $0 --target performance --benchmark pose-detection --architecture BlazePose-heavy --input-size 256 --input-type tensor --performance-backend webgpu'],
     ['node $0 --browser-args="--enable-dawn-features=disable_workgroup_init --no-sandbox --enable-zero-copy"'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
@@ -261,14 +262,14 @@ async function main() {
   }
   util.runTimes = runTimes;
 
-  util.urlArgs += `&warmup=${warmupTimes}&run=${runTimes}&localBuild=${util.args['local-build']}`;
+  util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&localBuild=${util.args['local-build']}`;
 
   if ('trace-category' in util.args) {
     util.args['new-context'] = true;
   }
 
-  if ('url-args' in util.args) {
-    util.urlArgs += `&${util.args['url-args']}`;
+  if ('benchmark-url-args' in util.args) {
+    util.benchmarkUrlArgs += `&${util.args['benchmark-url-args']}`;
   }
 
   if ('dryrun' in util.args) {
@@ -277,8 +278,8 @@ async function main() {
     util.dryrun = false;
   }
 
-  if ('url' in util.args) {
-    util.url = util.args['url'];
+  if ('benchmark-url' in util.args) {
+    util.benchmarkUrl = util.args['benchmark-url'];
   }
 
   let targets = util.args['target'].split(',');
@@ -307,12 +308,15 @@ async function main() {
 
     for (let target of targets) {
       startTime = new Date();
-      util.log(`${target}`);
+      util.log(`=${target}=`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
         if (!(target == 'performance' && util.warmupTimes == 0 && util.runTimes == 0)) {
           results[target] = await runBenchmark(target);
         }
-      } else if (target == 'unit') {
+      } else if (target == 'demo') {
+        results[target] = await runDemo();
+      }
+        else if (target == 'unit') {
         results[target] = await runUnit();
       } else if (target == 'trace') {
         await parseTrace();
