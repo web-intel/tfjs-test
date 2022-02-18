@@ -68,7 +68,7 @@ module.exports = {
   'outDir': outDir,
   'benchmarkUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark',
   'benchmarkUrlArgs': 'WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false',
-  'demoUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos/live_video/dist/?backend=tfjs-webgpu&model=',
+  'demoUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos/live_video/dist',
   'timeout': 180 * 1000,
   capitalize: capitalize,
   getDuration: getDuration,

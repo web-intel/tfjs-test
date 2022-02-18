@@ -30,64 +30,83 @@ async function closeContext(context) {
 }
 
 async function runDemo() {
-  let demos = [
-    'posenet',
-    'movenet',
-    'blazepose',
-  ];
-  let demosLength = demos.length;
   let context;
+  let defaultValue = 'NA';
   let page;
   let results = [];
+  let timeout = 20 * 1000;
+  let backendsLength = util.backends.length;
+
+  let runDemos;
+  if ('demo' in util.args) {
+    runDemos = util.args['demo'].split(',');
+  } else {
+    runDemos = ['blazepose', 'movenet', 'posenet'];
+  }
+  let runDemosLength = runDemos.length;
+
+  let runBackends;
+  if ('demo-backend' in util.args) {
+    runBackends = util.args['demo-backend'].split(',');
+  } else {
+    runBackends = ['webgpu', 'webgl'];
+  }
 
   if (!('new-context' in util.args)) {
     [context, page] = await startContext();
   }
 
-  for (let i = 0; i < demosLength; i++) {
+  for (let runDemoIndex = 0; runDemoIndex < runDemosLength; runDemoIndex++) {
     let fps = 0;
-    let demo = demos[i];
-    let timeout = 10 * 1000;
+    let demo = runDemos[runDemoIndex];
+    util.log(`[${runDemoIndex + 1}/${runDemosLength}] ${demo}`);
+    results.push([demo].concat(Array(backendsLength).fill(defaultValue)));
 
-    results.push([demo, fps]);
-    util.log(`[${i + 1}/${demosLength}] ${demo}`);
-
-    if ('new-context' in util.args) {
-      [context, page] = await startContext(traceFile);
-    }
-
-    if (!util.dryrun) {
-      let url = `${util.demoUrl}${demo}`;
-      await page.goto(url);
-
-      // This has to be called so that camera can work properly
-      page.bringToFront();
-
-      let selector = '#fps';
-      try {
-        await page.waitForSelector(selector, { timeout: timeout });
-      } catch (err) {
-        console.log(`Could not get FPS of demo ${demo}`);
-        continue;
+    for (let runBackendIndex = 0; runBackendIndex < runBackends.length; runBackendIndex++) {
+      let runBackend = runBackends[runBackendIndex];
+      let backendIndex = util.backends.indexOf(runBackend);
+      if ('new-context' in util.args) {
+        [context, page] = await startContext(traceFile);
       }
 
-      let start = new Date();
-      while (new Date() - start < timeout) {
-        await util.sleep(1000);
-        let newFps = await page.$eval(selector, el => el.innerText);
-        if (Math.abs(newFps - fps) < fps * 5 / 100) {
-          break;
-        } else {
+      if (!util.dryrun) {
+        let url = `${util.demoUrl}/?backend=tfjs-${runBackend}&model=${demo}`;
+        await page.goto(url);
+
+        // This has to be called so that camera can work properly
+        page.bringToFront();
+
+        let selector = '#fps';
+        try {
+          await page.waitForSelector(selector, { timeout: timeout });
+        } catch (err) {
+          console.log(`Could not get FPS of demo ${demo}`);
+          continue;
+        }
+
+        let start = new Date();
+        let consecutiveGoodCount = 0;
+        while (new Date() - start < timeout) {
+          await util.sleep(1000);
+          let newFps = await page.$eval(selector, el => el.innerText);
+          if (Math.abs(newFps - fps) < fps * 10 / 100) {
+            consecutiveGoodCount++;
+            if (consecutiveGoodCount == 3) {
+              break;
+            }
+          } else {
+            consecutiveGoodCount = 0;
+          }
           fps = newFps;
         }
+        results[results.length - 1][backendIndex + 1] = fps;
       }
-      results[i][1] = fps;
-    }
 
-    util.log(results[i]);
+      util.log(results[results.length - 1]);
 
-    if ('new-context' in util.args) {
-      await closeContext(context);
+      if ('new-context' in util.args) {
+        await closeContext(context);
+      }
     }
   }
 

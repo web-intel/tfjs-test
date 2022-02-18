@@ -46,6 +46,14 @@ util.args = yargs
     type: 'string',
     describe: 'backend for conformance, split by comma',
   })
+  .option('demo', {
+    type: 'string',
+    describe: 'demo, split by comma',
+  })
+  .option('demo-backend', {
+    type: 'string',
+    describe: 'backend for demo, split by comma',
+  })
   .option('disable-breakdown', {
     type: 'boolean',
     describe: 'disable breakdown',
@@ -129,7 +137,7 @@ util.args = yargs
   })
   .option('unit-backend', {
     type: 'string',
-    describe: 'backend for performance, split by comma',
+    describe: 'backend for unit, split by comma',
   })
   .option('unit-filter', {
     type: 'string',

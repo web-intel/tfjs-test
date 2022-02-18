@@ -104,7 +104,7 @@ async function report(results) {
             style = goodStyle;
           }
         }
-        resultsTable += `<tr><td>${result[webgpuIndex]}</td><td ${style}>${webgpuTotalValue}</td>`;
+        resultsTable += `<tr><td>${result[0]}</td><td ${style}>${webgpuTotalValue}</td>`;
 
         let webgpuOpsValue = 0;
         for (let op in opsResult) {
@@ -165,7 +165,7 @@ async function report(results) {
   // unit table
   if ('unit' in results) {
     let targetResults = results['unit'];
-    let resultsTable = `<table><tr><th>Unit</th><th>webgpu</th>`;
+    let resultsTable = `<table><tr><th>unit</th><th>webgpu</th>`;
     for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
       let backend = util.backends[backendIndex];
       resultsTable += `<th>${backend}</th>`;
@@ -191,12 +191,22 @@ async function report(results) {
   // demo table
   if ('demo' in results) {
     let targetResults = results['demo'];
-    let resultsTable = `<table><tr><th>demo</th><th>webgpu (ms)</th></tr>`;
-
-    for (let index = 0; index < targetResults.length; index++) {
-      resultsTable += `<tr><td>${targetResults[index][0]}</td><td>${targetResults[index][1]}</td></tr>`;
+    let resultsTable = `<table><tr><th>demo</th><th>webgpu</th>`;
+    for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
+      let backend = util.backends[backendIndex];
+      resultsTable += `<th>${backend}</th>`;
     }
-    resultsTable += '</table><br>';
+    resultsTable += '</tr>';
+
+    for (let resultIndex = 0; resultIndex < targetResults.length; resultIndex++) {
+      let result = targetResults[resultIndex];
+      resultsTable += `<tr><td>${result[0]}</td>`;
+      for (let backendIndex = 0; backendIndex < backendsLength; backendIndex++) {
+        let style = neutralStyle;
+        resultsTable += `<td ${style}>${result[backendIndex + 1]}</td>`;
+      }
+    }
+    resultsTable += '</tr></table><br>';
     html += resultsTable;
   }
 
