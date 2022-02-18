@@ -56,56 +56,72 @@ async function runDemo() {
     [context, page] = await startContext();
   }
 
-  for (let runDemoIndex = 0; runDemoIndex < runDemosLength; runDemoIndex++) {
-    let fps = 0;
-    let demo = runDemos[runDemoIndex];
-    util.log(`[${runDemoIndex + 1}/${runDemosLength}] ${demo}`);
-    results.push([demo].concat(Array(backendsLength).fill(defaultValue)));
+  let runTypes;
+  if ('demo-type' in util.args) {
+    runTypes = util.args['demo-type'].split(',');
+  } else {
+    runTypes = ['camera', 'video'];
+  }
+  for (let runTypeIndex = 0; runTypeIndex < runTypes.length; runTypeIndex++) {
+    let runType = runTypes[runTypeIndex];
+    let runTypeInUrl;
+    if (runType == 'camera') {
+      runTypeInUrl = 'live';
+    } else {
+      runTypeInUrl = 'upload';
+    }
 
-    for (let runBackendIndex = 0; runBackendIndex < runBackends.length; runBackendIndex++) {
-      let runBackend = runBackends[runBackendIndex];
-      let backendIndex = util.backends.indexOf(runBackend);
-      if ('new-context' in util.args) {
-        [context, page] = await startContext(traceFile);
-      }
+    for (let runDemoIndex = 0; runDemoIndex < runDemosLength; runDemoIndex++) {
+      let fps = 0;
+      let demo = runDemos[runDemoIndex];
+      util.log(`[${runDemoIndex + 1}/${runDemosLength}] ${demo}`);
+      results.push([`${runType}-${demo}`].concat(Array(backendsLength).fill(defaultValue)));
 
-      if (!util.dryrun) {
-        let url = `${util.demoUrl}/?backend=tfjs-${runBackend}&model=${demo}`;
-        await page.goto(url);
-
-        // This has to be called so that camera can work properly
-        page.bringToFront();
-
-        let selector = '#fps';
-        try {
-          await page.waitForSelector(selector, { timeout: timeout });
-        } catch (err) {
-          console.log(`Could not get FPS of demo ${demo}`);
-          continue;
+      for (let runBackendIndex = 0; runBackendIndex < runBackends.length; runBackendIndex++) {
+        let runBackend = runBackends[runBackendIndex];
+        let backendIndex = util.backends.indexOf(runBackend);
+        if ('new-context' in util.args) {
+          [context, page] = await startContext(traceFile);
         }
 
-        let start = new Date();
-        let consecutiveGoodCount = 0;
-        while (new Date() - start < timeout) {
-          await util.sleep(1000);
-          let newFps = await page.$eval(selector, el => el.innerText);
-          if (Math.abs(newFps - fps) < fps * 10 / 100) {
-            consecutiveGoodCount++;
-            if (consecutiveGoodCount == 3) {
-              break;
-            }
-          } else {
-            consecutiveGoodCount = 0;
+        if (!util.dryrun) {
+          let url = `${util.demoUrl}/${runTypeInUrl}_video/dist?backend=tfjs-${runBackend}&model=${demo}`;
+          await page.goto(url);
+
+          // This has to be called so that camera can work properly
+          page.bringToFront();
+
+          let selector = '#fps';
+          try {
+            await page.waitForSelector(selector, { timeout: timeout });
+          } catch (err) {
+            console.log(`Could not get FPS of demo ${demo}`);
+            continue;
           }
-          fps = newFps;
+
+          let start = new Date();
+          let consecutiveGoodCount = 0;
+          while (new Date() - start < timeout) {
+            await util.sleep(1000);
+            let newFps = await page.$eval(selector, el => el.innerText);
+            if (Math.abs(newFps - fps) < fps * 10 / 100) {
+              consecutiveGoodCount++;
+              if (consecutiveGoodCount == 3) {
+                break;
+              }
+            } else {
+              consecutiveGoodCount = 0;
+            }
+            fps = newFps;
+          }
+          results[results.length - 1][backendIndex + 1] = fps;
         }
-        results[results.length - 1][backendIndex + 1] = fps;
-      }
 
-      util.log(results[results.length - 1]);
+        util.log(results[results.length - 1]);
 
-      if ('new-context' in util.args) {
-        await closeContext(context);
+        if ('new-context' in util.args) {
+          await closeContext(context);
+        }
       }
     }
   }

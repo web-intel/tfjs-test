@@ -35,7 +35,7 @@ util.args = yargs
   })
   .option('browser', {
     type: 'string',
-    describe: 'browser specific path, chrome_canary, chrome_dev, chrome_beta or chrome_stable',
+    describe: 'browser specific path, can be chrome_canary, chrome_dev, chrome_beta or chrome_stable',
     default: 'chrome_canary',
   })
   .option('browser-args', {
@@ -53,6 +53,10 @@ util.args = yargs
   .option('demo-backend', {
     type: 'string',
     describe: 'backend for demo, split by comma',
+  })
+  .option('demo-type', {
+    type: 'string',
+    describe: 'type for demo, split by comma, can be camera and video',
   })
   .option('disable-breakdown', {
     type: 'boolean',
@@ -115,7 +119,7 @@ util.args = yargs
   })
   .option('target', {
     type: 'string',
-    describe: 'test target, split by comma. Choices can be conformance, performance, unit, trace, demo and so on.',
+    describe: 'test target, split by comma, can be conformance, performance, unit, trace, demo and so on.',
     default: 'conformance,performance,unit,demo',
   })
   .option('tfjs-dir', {
