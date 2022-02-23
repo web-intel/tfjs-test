@@ -1,0 +1,145 @@
+<body>
+  <text>
+    <b>Usage</b>
+    <p>
+      Some parameters are supported in url, and you may use them as 'timeline.html?key0=value0&key1=value1'.
+      Supported parameters are:
+    <p>
+      1) cpufile=[json file name]. Example: date=20220223213754&cpufile=mobilenetv2.
+    <p>
+      2) cpufile=[json file name]&gpufile=[json file name]. Example: date=20220223213754&cpufile=mobilenetv2&gpufile=gpu_data.
+    <p>
+      3) gpufile=[json file name]. Example: date=20220223213754&gpufile=6_25-bodypix-ResNet50-image-0.25-webgpu-gpu.
+    <p>
+      Before run any commands below, git clone https://github.com/tensorflow/tfjs/pull/6202/ first, then setup it with npx-httpserver.
+      There are four possible usecases for timeline.
+    </p>
+    With webtest: GPU timeline only.
+    <p>
+    How to run with webtest:
+    </p>
+    <p>
+    1) node src/main.js --target performance  --performance-backend webgpu --warmup-times 10 --run-times 10 --benchmark-url https://localhost:8080/tfjs/e2e/benchmarks/local-benchmark/ --benchmark bodypix --disable-breakdown
+    </p>
+    <p>
+    2) copy data(such as 20220303161736) from webtest\out to webtest\src\timeline\timeline. Then setup a web server at webtest\src\timeline.
+    </p>
+    Without webtest:
+    <p>
+    1) CPU-GPU timeline;
+      Input data: tracing json + copy from console.log.
+    </p>
+    <p>
+    2) GPU timeline only;
+      Input data: copy from console.log.
+    </p>
+    <p>
+    3) CPU timeline only;
+      Input data: tracing json.
+    </p>
+    <p>
+     How to run without webtest(before start chrome, export IS_RAW_TIMESTAMP = true first):
+    </p>
+    <p>
+      1) CPU tracing:
+      chrome.exe --disable-dawn-features=disallow_unsafe_apis
+      --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion
+      --enable-unsafe-webgpu --enable-tracing=disabled-by-default-gpu.dawn
+      --trace-startup-format=json
+      --trace-startup-file=file.json
+    <p>
+      2) GPU time, open the console, copy the time related data to a json file.
+    <p>
+    <p>
+      3) Create a folder (such as 20220303161736) under webtest\src\timeline\timeline, copy above two json file. Then setup a web server at webtest\src\timeline.
+    <p>
+  </text>
+  <h1 align='center' height=500>TFJS Timeline</h1>
+  <script src='echarts.min.js'></script>
+  <script src='echarts_util.js'></script>
+  <script src='timeline_model.js'></script>
+  <script src='timeline_trace.js'></script>
+  <!-- script src='../util/base.js'></script-->
+  <script>
+    // From util base.js.
+    function getRandomColor() {
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    // From util base.js.
+    function getParamByName(name, url) {
+      if (!url)
+        url = window.location.href;
+      name = name.replace(/[\[\]]/g, '\\$&');
+      let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)', 'i');
+      let match = regex.exec(url);
+      if (!match)
+        return null;
+      if (!match[2])
+        return '';
+      return decodeURIComponent(match[2].replace(/\+/g, ' '));
+    }
+
+    function updateDOMUI(option) {
+      let div = document.createElement('div');
+      div.style.width = '100%';
+      div.style.height = '100%';
+      document.body.appendChild(div);
+      echarts.init(div).setOption(option);
+    }
+
+    (async function () {
+      // Get the data URL.
+      const cpuDataPara = getParamByName('cpufile');
+      const gpuDataPara = getParamByName('gpufile');
+      const datestampPara = getParamByName('date');
+      const isRawTimestamp = getParamByName('rawtimestamp') != 'false';
+      let gpuFreq = Number(getParamByName('gpufreq'));
+      const dadaRootDir = `timeline/${datestampPara}/`;
+      const dataSuffix = ".json";
+      const cpuDataUrl = dadaRootDir + cpuDataPara + dataSuffix;
+      const gpuDataUrl = dadaRootDir + gpuDataPara + dataSuffix;
+
+      // Data used for echart.
+      let categories = [];
+      let categoriesIndex = 0;
+      let data = [];
+
+      // 1. Get the base time from tracing time clock calibration. For GPU only, this is nop.
+      let baseTime = (cpuDataPara != null) ? await getBaseTimeFromTracing(cpuDataUrl) : [0, 0, gpuFreq];
+
+      // 2. Create CPU model.
+      if (cpuDataPara != null) {
+        const cpuTraces = await parseCPUTraceWithBase(cpuDataUrl, 0, baseTime[0]);
+        const [cpuCategories, cpuCategoriesIndex] = createCPUModel(cpuTraces, data, categoriesIndex);
+        categoriesIndex = cpuCategoriesIndex;
+        categories = categories.concat(cpuCategories);
+      }
+
+      if (cpuDataPara != null) {
+        gpuFreq = baseTime[2];
+      } else if (gpuFreq == 0) {
+        gpuFreq = 19200000;
+        console.warn("No CPU file, and no GPU freq is set, use 19200000 as default.");
+      }
+
+      // 3. Create GPU model.
+      if (gpuDataPara != null) {
+        const gpuTraces = await parseGPUTraceWithBase(gpuDataUrl, 0, baseTime[1], gpuFreq, isRawTimestamp);
+        const [gpuCategories, gpuCategoriesIndex] = createGPUModel(gpuTraces, data, categoriesIndex);
+        categoriesIndex = gpuCategoriesIndex;
+        categories = categories.concat(gpuCategories);
+      }
+
+      let option = getOption(categories, data);
+
+      // 4. Update DOM UI.
+      updateDOMUI(option);
+    })();
+  </script>
+</body>

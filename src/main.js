@@ -13,6 +13,9 @@ const report = require('./report.js');
 const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
 const util = require('./util.js');
+const modelUtil = require('./trace_model.js');
+require('dotenv').config();
+
 
 util.args = yargs
   .usage('node $0 [args]')
@@ -274,7 +277,11 @@ async function main() {
   }
   util.runTimes = runTimes;
 
-  util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&localBuild=${util.args['local-build']}`;
+  util.gpuFreqBenchmarkUrlArgs = util.benchmarkUrlArgs;
+  util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&localBuild=${
+      util.args['local-build']}&tracing=true`;
+  util.gpuFreqBenchmarkUrlArgs +=
+      `&warmup=1&run=1&localBuild=${util.args['local-build']}`;
 
   if ('trace-category' in util.args) {
     util.args['new-context'] = true;
@@ -282,7 +289,9 @@ async function main() {
 
   if ('benchmark-url-args' in util.args) {
     util.benchmarkUrlArgs += `&${util.args['benchmark-url-args']}`;
+    util.gpuFreqBenchmarkUrlArgs += `&${util.args['benchmark-url-args']}`;
   }
+
 
   if ('dryrun' in util.args) {
     util.dryrun = true;
@@ -302,6 +311,12 @@ async function main() {
 
   if (targets.indexOf('conformance') >= 0 || targets.indexOf('performance') >= 0 || targets.indexOf('unit') >= 0) {
     await config();
+  }
+
+  let gpuFreqFile = null;
+  const tracing= true;
+  if (tracing == true) {
+    gpuFreqFile = await getGPUFreq();
   }
 
   let results = {};
@@ -335,8 +350,58 @@ async function main() {
       }
       util.duration += `${target}: ${(new Date() - startTime) / 1000} `;
     }
+
+    if (tracing == true) {
+      const isRawTimestamp = process.env.IS_RAW_TIMESTAMP != 'false';
+      const rawTimestampFlag =
+          isRawTimestamp ? ',disable_timestamp_query_conversion' : '';
+      await modelUtil.modelSummary(util.logFile, results, util.benchmarkUrlArgs,gpuFreqFile);
+    }
     await report(results);
   }
+}
+
+async function getGPUFreq() {
+  util.timestamp = getTimestamp(util.args['timestamp']);
+  util.logFile = path.join(util.outDir, `${util.timestamp}.log`);
+  const gpufreqFile = path.join(util.outDir, `gpufreq-${util.timestamp}.json`);
+  const target = 'performance';
+  const fsasync = require('fs').promises;
+  const benchmarkFileForGpufreq = 'benchmark_getinfo.json';
+  let benchmarkFileForGpufreqFullPath = path.join(path.resolve(__dirname), benchmarkFileForGpufreq);
+  const benchmarkStrForGpufreq = JSON.parse(await fsasync.readFile(benchmarkFileForGpufreqFullPath));
+
+  const isRawTimestamp = process.env.IS_RAW_TIMESTAMP != 'false';
+  const rawTimestampFlag =
+      isRawTimestamp ? 'disable_timestamp_query_conversion' : '';
+
+  // benchamark flags(default):
+  // --enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis --enable-features=WebAssemblySimd,WebAssemblyThreads --start-maximized
+  // gpu freq flags:
+  // benchamark flags + --enable-tracing=disabled-by-default-gpu.dawn --trace-startup-file=${gpufreqFile} --trace-startup-format=json
+  // tracing flags(GPU only. CPU tracing in webtest is not supported):
+  // benchamark flags + --enable-dawn-features=record_detailed_timing_in_trace_events${rawTimestampFlag}
+  // To make it simple, currently benchamark flags is the same as tracing flags.
+  const lastBrowserArgs = util['browserArgs'];
+  util['browserArgs'] += ` --enable-tracing=disabled-by-default-gpu.dawn --trace-startup-file=${gpufreqFile} --trace-startup-format=json`;
+
+  const lastBenchmarkUrlArgs = util.benchmarkUrlArgs;
+  util.benchmarkUrlArgs = util.gpuFreqBenchmarkUrlArgs;
+
+  const lastArgs =  util.args['benchmark'];
+  util.args['benchmark'] = benchmarkStrForGpufreq[0]['benchmark'];
+  console.log(benchmarkStrForGpufreq[0]['benchmark']);
+  console.log(benchmarkFileForGpufreqFullPath);
+
+  const startTime = new Date();
+  util.log(`=Get GPU Frequency=` + util.args['benchmark']);
+  await runBenchmark(target, benchmarkFileForGpufreq);
+  // Restore this for real benchmark.
+  util['browserArgs'] = lastBrowserArgs + `--enable-dawn-features=record_detailed_timing_in_trace_events,${rawTimestampFlag}`;
+  util.args['benchmark'] = lastArgs;
+  util['targetMetrics']['performance'].push('Tracing average');
+  util.benchmarkUrlArgs = lastBenchmarkUrlArgs;
+  return gpufreqFile;
 }
 
 main();
