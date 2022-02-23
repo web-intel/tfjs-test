@@ -64,14 +64,14 @@ async function closeContext(context) {
   }
 }
 
-async function runBenchmark(target) {
+async function runBenchmark(target, benchmarkJsonFile = 'benchmark.json') {
   // get benchmarks
   let benchmarks = [];
-  let benchmarkJson = path.join(path.resolve(__dirname), 'benchmark.json');
+  let benchmarkJson = path.join(path.resolve(__dirname), benchmarkJsonFile);
   let targetConfigs = JSON.parse(fs.readFileSync(benchmarkJson));
 
   for (let config of targetConfigs) {
-    if ('benchmark' in util.args) {
+    if ('benchmark' in util.args && util.args['benchmark']) {
       config['benchmark'] = intersect(config['benchmark'], util.args['benchmark'].split(','));
     }
     if (!config['benchmark']) {
