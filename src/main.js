@@ -13,6 +13,7 @@ const report = require('./report.js');
 const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
 const util = require('./util.js');
+const { modelSummary } = require('./trace.js');
 
 util.args = yargs
   .usage('node $0 [args]')
@@ -142,6 +143,10 @@ util.args = yargs
   .option('trace-file', {
     type: 'string',
     describe: 'trace file',
+  })
+  .option('tracing', {
+    type: 'string',
+    describe: 'Enable tracing: all, gpu',
   })
   .option('unit-backend', {
     type: 'string',
@@ -290,6 +295,7 @@ async function main() {
 
   if ('trace-category' in util.args) {
     util.args['new-context'] = true;
+    util.benchmarkUrlArgs +=`&tracing=true`;
   }
 
   if ('benchmark-url-args' in util.args) {
@@ -316,6 +322,18 @@ async function main() {
     await config();
   }
 
+  const tracing = 'tracing' in util.args || 'trace-category' in util.args;
+  if (tracing == true) {
+    console.log("Tracing is ON: "+ util.args['tracing']);
+    if (util.args['tracing'] === 'all' && util.args['trace-category'] == null) {
+      throw new Error("Tracing all mode, but trace-category is not defined");
+    }
+    util.benchmarkUrlArgs +=`&tracing=${tracing}`;
+    util.timestamp = getTimestamp(util.args['timestamp']);
+    util.logFile = path.join(util.outDir, `${util.timestamp}-gpufreq.log`);
+    await getGPUFreq(util.outDir);
+  }
+
   let results = {};
   util.duration = '';
   let startTime;
@@ -326,6 +344,8 @@ async function main() {
       fs.truncateSync(util.logFile, 0);
     }
 
+    const modelSummaryDir = tracing ? createSummaryFolder(util.logFile) : '';
+
     if (util.args['repeat'] > 1) {
       util.log(`== Test round ${i + 1}/${util.args['repeat']} ==`);
     }
@@ -335,7 +355,7 @@ async function main() {
       util.log(`=${target}=`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
         if (!(target == 'performance' && util.warmupTimes == 0 && util.runTimes == 0)) {
-          results[target] = await runBenchmark(target);
+          results[target] = await runBenchmark(target, modelSummaryDir);
         }
       } else if (target == 'demo') {
         results[target] = await runDemo();
@@ -347,8 +367,34 @@ async function main() {
       }
       util.duration += `${target}: ${(new Date() - startTime) / 1000} `;
     }
+
+    if (tracing == true) {
+      await modelSummary(modelSummaryDir, util.logFile, results, util.benchmarkUrlArgs, util.gpufreqTraceFile, util.args['tracing']);
+    }
     await report(results);
   }
+}
+
+function createSummaryFolder(logfileName) {
+  const modelSummaryDir = logfileName.split('.')[0];
+  try {
+    if (!fs.existsSync(modelSummaryDir)) {
+      fs.mkdirSync(modelSummaryDir)
+    }
+  } catch (err) {
+    console.error(err)
+  }
+  return modelSummaryDir;
+}
+
+async function getGPUFreq(modelSummaryDir) {
+  const target = 'performance';
+  const benchmarkFileForGpufreq = 'benchmark_getinfo.json';
+  util.log(`=Get GPU Frequency=` + util.args['benchmark']);
+  const lastArgs = util.args['benchmark'];
+  util.args['benchmark'] = null;
+  await runBenchmark(target, modelSummaryDir, benchmarkFileForGpufreq);
+  util.args['benchmark'] = lastArgs;
 }
 
 main();

@@ -1,0 +1,6 @@
+[
+  {
+    "benchmark": "mobilenet_v2",
+    "backend": ["webgpu"]
+  }
+]

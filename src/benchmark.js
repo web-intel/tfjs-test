@@ -30,8 +30,12 @@ function intersect(a, b) {
 
 async function startContext(traceFile = '') {
   let traceArgs = '';
-  if ('trace-category' in util.args) {
-    traceArgs = `--enable-tracing=${util.args['trace-category']} --trace-startup-file=${traceFile}`;
+  if (util.args['tracing'] === 'all' || util.gpufreqTraceFile === '') {
+    traceArgs = ` --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion
+      --trace-startup-format=json --enable-tracing=${util.args['trace-category']} --trace-startup-file=${traceFile}`;
+  } else  if (util.args['tracing'] === 'gpu') {
+    traceArgs = ` --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion
+      --trace-startup-file=${traceFile}`;
   }
 
   if (!util.dryrun) {
@@ -64,14 +68,14 @@ async function closeContext(context) {
   }
 }
 
-async function runBenchmark(target) {
+async function runBenchmark(target, modelSummaryDir, benchmarkJsonFile = 'benchmark.json') {
   // get benchmarks
   let benchmarks = [];
-  let benchmarkJson = path.join(path.resolve(__dirname), 'benchmark.json');
+  let benchmarkJson = path.join(path.resolve(__dirname), benchmarkJsonFile);
   let targetConfigs = JSON.parse(fs.readFileSync(benchmarkJson));
 
   for (let config of targetConfigs) {
-    if ('benchmark' in util.args) {
+    if ('benchmark' in util.args && util.args['benchmark']) {
       config['benchmark'] = intersect(config['benchmark'], util.args['benchmark'].split(','));
     }
     if (!config['benchmark']) {
@@ -158,7 +162,10 @@ async function runBenchmark(target) {
 
     if ('new-context' in util.args) {
       if ('trace-category' in util.args) {
-        traceFile = `${util.outDir}/${util.timestamp}-trace-${benchmark.join('-').replace(/ /g, '_')}.json`;
+        traceFile = `${modelSummaryDir}/${benchmark.join('-').replace(/ /g, '_')}-trace.json`;
+        if (util.gpufreqTraceFile === '') {
+          util.gpufreqTraceFile = traceFile;
+        }
       }
       [context, page] = await startContext(traceFile);
     }
@@ -280,9 +287,6 @@ async function runBenchmark(target) {
 
     if ('new-context' in util.args) {
       await closeContext(context);
-    }
-    if ('trace-category' in util.args) {
-      await parseTrace(traceFile, totalTime);
     }
   }
 
