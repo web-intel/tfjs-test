@@ -13,6 +13,7 @@ const report = require('./report.js');
 const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
 const util = require('./util.js');
+const { modelSummary } = require('./trace.js');
 
 util.args = yargs
   .usage('node $0 [args]')
@@ -142,6 +143,10 @@ util.args = yargs
   .option('trace-file', {
     type: 'string',
     describe: 'trace file',
+  })
+  .option('trace', {
+    type: 'string',
+    describe: 'Enable tracing',
   })
   .option('unit-backend', {
     type: 'string',
@@ -288,10 +293,6 @@ async function main() {
 
   util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&profile=${profileTimes}&localBuild=${util.args['local-build']}`;
 
-  if ('trace-category' in util.args) {
-    util.args['new-context'] = true;
-  }
-
   if ('benchmark-url-args' in util.args) {
     util.benchmarkUrlArgs += `&${util.args['benchmark-url-args']}`;
   }
@@ -316,6 +317,16 @@ async function main() {
     await config();
   }
 
+  const trace = util.getTraceFlag();
+  if (trace == true) {
+    util.args['new-context'] = true;
+    if (util.args['trace-category'] == null) {
+      util.args['trace-category'] = 'disabled-by-default-gpu.dawn';
+    }
+    util.args['disable-breakdown'] = true;
+    util.benchmarkUrlArgs +=`&tracing=${trace}`;
+  }
+
   let results = {};
   util.duration = '';
   let startTime;
@@ -326,6 +337,8 @@ async function main() {
       fs.truncateSync(util.logFile, 0);
     }
 
+    const modelSummaryDir = trace ? createSummaryFolder(util.logFile) : '';
+
     if (util.args['repeat'] > 1) {
       util.log(`== Test round ${i + 1}/${util.args['repeat']} ==`);
     }
@@ -335,7 +348,7 @@ async function main() {
       util.log(`=${target}=`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
         if (!(target == 'performance' && util.warmupTimes == 0 && util.runTimes == 0)) {
-          results[target] = await runBenchmark(target);
+          results[target] = await runBenchmark(target, modelSummaryDir);
         }
       } else if (target == 'demo') {
         results[target] = await runDemo();
@@ -347,8 +360,24 @@ async function main() {
       }
       util.duration += `${target}: ${(new Date() - startTime) / 1000} `;
     }
+
+    if (trace == true) {
+      await modelSummary(modelSummaryDir, util.logFile, results, util.benchmarkUrlArgs, util.gpufreqTraceFile, 'all');
+    }
     await report(results);
   }
+}
+
+function createSummaryFolder(logfileName) {
+  const modelSummaryDir = logfileName.split('.')[0];
+  try {
+    if (!fs.existsSync(modelSummaryDir)) {
+      fs.mkdirSync(modelSummaryDir)
+    }
+  } catch (err) {
+    console.error(err)
+  }
+  return modelSummaryDir;
 }
 
 main();
