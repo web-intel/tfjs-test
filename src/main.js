@@ -383,8 +383,9 @@ async function getGPUFreq() {
   // benchamark flags + --enable-dawn-features=record_detailed_timing_in_trace_events${rawTimestampFlag}
   // To make it simple, currently benchamark flags is the same as tracing flags.
   const lastBrowserArgs = util['browserArgs'];
-  util['browserArgs'] += ` --enable-tracing=disabled-by-default-gpu.dawn --trace-startup-file=${gpufreqFile} --trace-startup-format=json`;
+  util['browserArgs'] += ` --enable-dawn-features=record_detailed_timing_in_trace_events --enable-tracing=disabled-by-default-gpu.dawn --trace-startup-file=${gpufreqFile} --trace-startup-format=json`;
 
+  console.log("util['browserArgs'] for get GPU freqency: "+util['browserArgs']);
   const lastBenchmarkUrlArgs = util.benchmarkUrlArgs;
   util.benchmarkUrlArgs = util.gpuFreqBenchmarkUrlArgs;
 
@@ -396,8 +397,10 @@ async function getGPUFreq() {
   const startTime = new Date();
   util.log(`=Get GPU Frequency=` + util.args['benchmark']);
   await runBenchmark(target, benchmarkFileForGpufreq);
+
   // Restore this for real benchmark.
-  util['browserArgs'] = lastBrowserArgs + `--enable-dawn-features=record_detailed_timing_in_trace_events,${rawTimestampFlag}`;
+  util['browserArgs'] = lastBrowserArgs + ` --enable-dawn-features=record_detailed_timing_in_trace_events,${rawTimestampFlag}`;
+  console.log("util['browserArgs'] for benchmark: "+util['browserArgs']);
   if (lastArgs == null) {
     delete util.args['benchmark'];
   } else {

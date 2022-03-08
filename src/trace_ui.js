@@ -80,7 +80,7 @@ function createRowWithLink(data, modelName, linkInfo) {
   let tr = '<tr>';
   const lintStr = getParaFromLinkInfo(linkInfo);
   const rawTimestamp =
-      process.env.IS_RAW_TIMESTAMP != 'false' ? '' : '&ramtimestamp=false';
+      process.env.IS_RAW_TIMESTAMP != 'false' ? '' : '&rawtimestamp=false';
   for (key in data) {
     if (data[key] != 'name') {
       const gpuDataFile = `${modelName}-${key}`;

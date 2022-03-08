@@ -33,7 +33,7 @@ function getBaseTime(rawTime, cpuTracingBase) {
     return [cpuTracingBase, gpuBase * S2US / gpuFreq + diff, gpuFreq];
   } else {
     // For GPU only, cpuBase is not used.
-    return [cpuBase / cpuFreq * S2US, gpuBase * S2US / gpuFreq, gpuFreq];
+    return [cpuBase * S2US / cpuFreq, gpuBase * S2US / gpuFreq, gpuFreq];
   }
 }
 

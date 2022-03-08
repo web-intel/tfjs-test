@@ -13,8 +13,7 @@ function getAdjustTime(rawTime, isRawTimestamp, gpuFreq) {
 
 // Data. For Profile data, lastFirst is false. For tracing data, lastFirst i strue.
 async function parseGPUTrace(
-    jsonData, lastFirst = true, isRawTimestamp = false) {
-  const gpuFreq = 19200000;
+    jsonData, lastFirst = true, isRawTimestamp = false, gpuFreq) {
   if (isRawTimestamp && gpuFreq == 0) {
     throw 'isRawTimeStamp is true but gpuFreq is 0';
   }
@@ -67,7 +66,7 @@ function getBaseTime(rawTime, cpuTracingBase) {
     return [cpuTracingBase, gpuBase * S2US / gpuFreq + diff, gpuFreq];
   } else {
     // For GPU only, cpuBase is not used.
-    return [cpuBase / cpuFreq * S2US, gpuBase, gpuFreq];
+    return [cpuBase / cpuFreq * S2US, gpuBase * S2US / gpuFreq, gpuFreq];
   }
 }
 
