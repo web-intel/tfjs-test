@@ -71,7 +71,7 @@ async function runBenchmark(target, benchmarkJsonFile = 'benchmark.json') {
   let targetConfigs = JSON.parse(fs.readFileSync(benchmarkJson));
 
   for (let config of targetConfigs) {
-    if ('benchmark' in util.args) {
+    if ('benchmark' in util.args && util.args['benchmark']) {
       config['benchmark'] = intersect(config['benchmark'], util.args['benchmark'].split(','));
     }
     if (!config['benchmark']) {

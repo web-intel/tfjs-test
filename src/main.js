@@ -398,7 +398,11 @@ async function getGPUFreq() {
   await runBenchmark(target, benchmarkFileForGpufreq);
   // Restore this for real benchmark.
   util['browserArgs'] = lastBrowserArgs + `--enable-dawn-features=record_detailed_timing_in_trace_events,${rawTimestampFlag}`;
-  util.args['benchmark'] = lastArgs;
+  if (lastArgs == null) {
+    delete util.args['benchmark'];
+  } else {
+    util.args['benchmark'] = lastArgs;
+  }
   util['targetMetrics']['performance'].push('Tracing average');
   util.benchmarkUrlArgs = lastBenchmarkUrlArgs;
   return gpufreqFile;
