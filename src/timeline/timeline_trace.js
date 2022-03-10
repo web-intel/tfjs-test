@@ -37,10 +37,16 @@ function getBaseTime(rawTime, cpuTracingBase) {
   }
 }
 
+/*
 const eventNames = [
   'DeviceBase::APICreateComputePipeline', 'CreateComputePipelineAsyncTask::Run',
-  'DeviceBase::APICreateShaderModule'
+  'DeviceBase::APICreateShaderModule', 'Queue::Submit'
 ];
+*/
+// {"args":{"label":"BinaryOpProgram"},"cat":"disabled-by-default-gpu.dawn","dur":11760,"name":"DeviceBase::APICreateComputePipeline","ph":"X","pid":11796,"tdur":11334,"tid":20064,"ts":270964747815,"tts":659272},
+const eventNames = ['Queue::Submit'];
+// {"args":{"data":{"frame":"EF3396E8F82869C69967F248FA9EDDC7","message":"JSSubmitQueue"}},"cat":"devtools.timeline","name":"TimeStamp","ph":"I","pid":20240,"s":"t","tid":18700,"ts":270964739579,"tts":425256},
+const eventJSTimestampNames = ['timeInferenceForTracing', 'JSSubmitQueue'];
 const baseTimeName =
     'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing';
 
@@ -86,6 +92,7 @@ async function getBaseTimeFromTracing(traceFile = '') {
 async function parseCPUTraceWithBase(
     traceFile = '', totalTime = 0, baseCPUTime) {
   let results = {};
+  let resultsJSTimestamp = {};
   let base_ts = 0;
   let baseTime = '';
 
@@ -99,10 +106,36 @@ async function parseCPUTraceWithBase(
       // Event is us. Result is ms.
       results[eventName].push(
           [(event['ts'] - baseCPUTime) / 1000, event['dur'] / 1000]);
+    } else {
+      let jsEventName;
+      if (event['args'] && event['args']['data'] &&
+          event['args']['data']['message']) {
+        jsEventName = event['args']['data']['message'];
+      }
+      // For console.timeStamp. {data: [{name: 'xxxx', xAxis: 9}]},
+      if (eventJSTimestampNames.indexOf(jsEventName) >= 0) {
+        if (!(jsEventName in resultsJSTimestamp)) {
+          resultsJSTimestamp[jsEventName] = [];
+        }
+        // Event is us. Result is ms.
+        let timestamp = (event['ts'] - baseCPUTime);
+        timestamp = timestamp >= 0 ? timestamp : 0;
+        const color = jsEventName == 'JSSubmitQueue' ? 'red' : 'green';
+        resultsJSTimestamp[jsEventName].push({
+          name: jsEventName,
+          xAxis: timestamp / 1000,
+          lineStyle: {
+            normal: {
+              type: 'dashed',
+              color: color,
+            }
+          }
+        });
+      }
     }
   }
   results['total'] = [[0, totalTime]];
-  return results;
+  return [results, resultsJSTimestamp];
 }
 
 function getAdjustTimeWithBase(rawTime, baseGPUTime, isRawTimestamp, gpuFreq) {

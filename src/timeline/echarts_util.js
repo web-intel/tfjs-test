@@ -1,4 +1,4 @@
-function getOption(categories, data) {
+function getOption(categories, data, marklineData) {
   let option = {
     tooltip: {
       formatter: function(params) {
@@ -32,6 +32,7 @@ function getOption(categories, data) {
       renderItem: renderItem,
       itemStyle: {opacity: 0.8},
       encode: {x: [1, 2], y: 0},
+      markLine: {data: marklineData},
       data: data
     }]
   };

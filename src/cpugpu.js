@@ -59,9 +59,9 @@ function saveJson(gpuJsonData, modelSummarDir, modelName) {
     console.error(err)
   }
 
-  const modelName = 'mobilenet_v2';
+  const modelName = 'blazeface';
   const tracingJsonFileName = modelSummarDir + '\\' + modelName + '.json'
-  let url = `https://10.239.47.14:8080/tfjs/e2e/benchmarks/local-benchmark/`;
+  let url = `https://localhost/tfjs/e2e/benchmarks/local-benchmark/`;
   url += `?task=performance&benchmark=${
       modelName}&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false&tracing=true&warmup=1&run=1&localBuild=webgl,webgpu,core`;
   let logFile = modelSummarDir + '\\' + modelName + '.log';
