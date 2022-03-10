@@ -11,7 +11,8 @@ function getAdjustTime(rawTime, isRawTimestamp, gpuFreq) {
   return adjustTime;
 }
 
-// Data. For Profile data, lastFirst is false. For tracing data, lastFirst i strue.
+// Data. For Profile data, lastFirst is false. For tracing data, lastFirst i
+// strue.
 async function parseGPUTrace(
     jsonData, lastFirst = true, isRawTimestamp = false, gpuFreq) {
   if (isRawTimestamp && gpuFreq == 0) {
@@ -75,7 +76,7 @@ function getBaseTime(rawTime, cpuTracingBase) {
  * @param traceFile The tracing file.
  * @returns [cpuBase, gpuBase, gpuFreq].
  */
- async function getBaseTimeFromTracing(traceFile = '') {
+async function getBaseTimeFromTracing(traceFile = '') {
   if (traceFile == null) {
     console.warn('No tracing file!');
     return [0, 0, 0];
@@ -105,7 +106,7 @@ function getBaseTime(rawTime, cpuTracingBase) {
     }
   }
   if (baseTime == '') {
-    console.warn('Tracing has no Detailed Timing!' + traceFile );
+    console.warn('Tracing has no Detailed Timing!' + traceFile);
   }
   return [0, 0, 0];
 }

@@ -1,12 +1,7 @@
-const {
-  parseGPUTrace, getBaseTimeFromTracing
-} = require('./trace_model_util.js');
-const {
-  createTableHead,
-  createModelTableHead,
-  createTableHeadEnd,
-  createRows
-} = require('./trace_ui.js');
+const {parseGPUTrace, getBaseTimeFromTracing} =
+    require('./trace_model_util.js');
+const {createTableHead, createModelTableHead, createTableHeadEnd, createRows} =
+    require('./trace_ui.js');
 const fs = require('fs');
 const fsasync = require('fs').promises;
 require('dotenv').config();
@@ -165,7 +160,7 @@ async function modelSummary(
   if (logfileName == null) {
     console.error('No log file!');
   }
-  console.log("logfileName = "+ logfileName);
+  console.log('logfileName = ' + logfileName);
   const logStr = await fsasync.readFile(logfileName, 'binary');
   const modelNames =
       results == null ? getModelNamesFromLog(logStr) : getModelNames(results);
@@ -192,7 +187,11 @@ async function modelSummary(
   let html = `<div>${benchmarkUrlArgs}</div>`;
   const splitLogfileName = logfileName.split('\\');
   const date = splitLogfileName[splitLogfileName.length - 1].split('.')[0];
-  const linkInfo = {date: date, gpufreq: gpuFreq};
+  const linkInfo = {
+    date: date,
+    gpufreq: gpuFreq,
+    benchmarkUrlArgs: benchmarkUrlArgs
+  };
 
   // predictJsonData.length is the model number.
   const modelCount = predictJsonData.length;
