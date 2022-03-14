@@ -1,10 +1,13 @@
-function getOption(categories, data, marklineData) {
+
+function getOption(categories, data, marklineData, tooltip = 0) {
+  const pointerTooltip = {trigger: 'none', axisPointer: {type: 'cross'}};
   let option = {
-    tooltip: {
+    tooltip: tooltip == 0 ? {
       formatter: function(params) {
         return params.marker + params.name + ': ' + params.value[3] + ' ms';
       }
-    },
+    } :
+                            pointerTooltip,
     title: {left: 'center'},
     dataZoom: [
       {
@@ -24,7 +27,19 @@ function getOption(categories, data, marklineData) {
         formatter: function(val) {
           return val + ' ms';
         }
-      }
+      },
+      axisTick: {alignWithLabel: true},
+      axisLine: {onZero: false},
+      axisPointer: {
+        label: {
+          formatter: function(params) {
+            return (
+                'X  ' + params.value.toFixed(2) +
+                (params.seriesData.length ? '：' + params.seriesData[0].data :
+                                            ''));
+          }
+        }
+      },
     },
     yAxis: {data: categories},
     series: [{

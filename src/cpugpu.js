@@ -1,6 +1,6 @@
 'use strict';
 
-const runURL = require('./open_page.js');
+const openPage = require('./open_page.js');
 const fs = require('fs');
 
 function getJsonFromString(str, start, end) {
@@ -65,7 +65,7 @@ function saveJson(gpuJsonData, modelSummarDir, modelName) {
   url += `?task=performance&benchmark=${
       modelName}&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false&tracing=true&warmup=1&run=1&localBuild=webgl,webgpu,core`;
   let logFile = modelSummarDir + '\\' + modelName + '.log';
-  await runURL(url, tracingJsonFileName, logFile);
+  await openPage(url, tracingJsonFileName, logFile);
   const fsasync = require('fs').promises;
   const logStr = await fsasync.readFile(logFile, 'binary');
   const gpuJsonData = getJsonFromString(logStr, 'gpudatabegin', 'gpudataend');

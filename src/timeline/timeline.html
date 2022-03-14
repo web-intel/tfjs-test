@@ -11,6 +11,8 @@
     <p>
       3) gpufile=[json file name]. Example: date=20220223213754&gpufile=6_25-bodypix-ResNet50-image-0.25-webgpu-gpu.
     <p>
+      4) tooltip=[tooltip type]. 0 show data under cursor. 1 show current xAxis value.
+    <p>
       Before run any commands below, git clone https://github.com/tensorflow/tfjs/pull/6202/ first, then setup it with npx-httpserver.
       There are four possible usecases for timeline.
     </p>
@@ -94,6 +96,7 @@
     }
 
     (async function () {
+      const tooltipType = Number(getParamByName('tooltip'));
       // Get the data URL.
       const cpuDataPara = getParamByName('cpufile');
       const gpuDataPara = getParamByName('gpufile');
@@ -141,8 +144,9 @@
         categoriesIndex = gpuCategoriesIndex;
         categories = categories.concat(gpuCategories);
       }
+      console.log(JSON.stringify(data));
 
-      let option = getOption(categories, data, marklineData);
+      let option = getOption(categories, data, marklineData, tooltipType);
 
       // 4. Update DOM UI.
       updateDOMUI(option);
