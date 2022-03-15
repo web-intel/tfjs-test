@@ -90,7 +90,7 @@ async function getBaseTimeFromTracing(traceFile = '') {
 }
 
 async function parseCPUTraceWithBase(
-    traceFile = '', totalTime = 0, baseCPUTime) {
+    traceFile = '', totalTime = 0, baseCPUTime, xoffset = 0) {
   let results = {};
   let resultsJSTimestamp = {};
   let base_ts = 0;
@@ -118,19 +118,20 @@ async function parseCPUTraceWithBase(
           resultsJSTimestamp[jsEventName] = [];
         }
         // Event is us. Result is ms.
-        let timestamp = (event['ts'] - baseCPUTime);
-        timestamp = timestamp >= 0 ? timestamp : 0;
-        const color = jsEventName == 'JSSubmitQueue' ? 'red' : 'green';
-        resultsJSTimestamp[jsEventName].push({
-          name: jsEventName,
-          xAxis: timestamp / 1000,
-          lineStyle: {
-            normal: {
-              type: 'dashed',
-              color: color,
+        let timestamp = (event['ts'] - baseCPUTime) / 1000;
+        if (timestamp >= xoffset) {
+          const color = jsEventName == 'JSSubmitQueue' ? 'red' : 'green';
+          resultsJSTimestamp[jsEventName].push({
+            name: jsEventName,
+            xAxis: timestamp,
+            lineStyle: {
+              normal: {
+                type: 'dashed',
+                color: color,
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
   }
@@ -153,6 +154,7 @@ function getAdjustTimeWithBase(rawTime, baseGPUTime, isRawTimestamp, gpuFreq) {
   return adjustTime;
 }
 
+// TODO: Merge this with createGPUModel.
 async function parseGPUTraceWithBase(
     traceFile = '', totalTime = 0, baseGPUTime, gpuFreq = 19200000,
     isRawTimestamp = false) {

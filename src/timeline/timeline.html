@@ -97,6 +97,7 @@
 
     (async function () {
       const tooltipType = Number(getParamByName('tooltip'));
+      const xoffset = Number(getParamByName('xoffset'));
       // Get the data URL.
       const cpuDataPara = getParamByName('cpufile');
       const gpuDataPara = getParamByName('gpufile');
@@ -119,12 +120,12 @@
 
       // 2. Create CPU model.
       if (cpuDataPara != null) {
-        const [cpuTraces, jsTraceTimestamp] = await parseCPUTraceWithBase(cpuDataUrl, 0, baseTime[0]);
+        const [cpuTraces, jsTraceTimestamp] = await parseCPUTraceWithBase(cpuDataUrl, 0, baseTime[0], xoffset);
 
         for (let key in jsTraceTimestamp) {
           marklineData = marklineData.concat(jsTraceTimestamp[key]);
         }
-        const [cpuCategories, cpuCategoriesIndex] = createCPUModel(cpuTraces, data, categoriesIndex);
+        const [cpuCategories, cpuCategoriesIndex] = createCPUModel(cpuTraces, data, categoriesIndex, xoffset);
         categoriesIndex = cpuCategoriesIndex;
         categories = categories.concat(cpuCategories);
       }
@@ -140,7 +141,7 @@
       if (gpuDataPara != null) {
         const gpuTraces = await parseGPUTraceWithBase(gpuDataUrl, 0, baseTime[1], gpuFreq, isRawTimestamp);
         console.log("gpuTraces length: " + gpuTraces.length);
-        const [gpuCategories, gpuCategoriesIndex] = createGPUModel(gpuTraces, data, categoriesIndex);
+        const [gpuCategories, gpuCategoriesIndex] = createGPUModel(gpuTraces, data, categoriesIndex, xoffset);
         categoriesIndex = gpuCategoriesIndex;
         categories = categories.concat(gpuCategories);
       }

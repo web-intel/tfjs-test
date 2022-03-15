@@ -1,6 +1,6 @@
 'use strict';
 
-function createCPUModel(jsonData, data, categoriesIndex) {
+function createCPUModel(jsonData, data, categoriesIndex, xoffset = 0) {
   // handle createComputePipelineAsync
   let createComputePipelineAsyncName = 'CreateComputePipelineAsyncTask::Run';
   if (createComputePipelineAsyncName in jsonData) {
@@ -36,19 +36,22 @@ function createCPUModel(jsonData, data, categoriesIndex) {
     let categoryData = jsonData[category];
     for (let i = 0; i < categoryData.length; i++) {
       let startTime = categoryData[i][0];
-      let duration = categoryData[i][1];
-      data.push({
-        name: category,
-        value: [categoriesIndex, startTime, (startTime += duration), duration],
-        itemStyle: {normal: {color: `${getRandomColor()}`}}
-      });
+      if (startTime >= xoffset) {
+        let duration = categoryData[i][1];
+        data.push({
+          name: category,
+          value:
+              [categoriesIndex, startTime, (startTime += duration), duration],
+          itemStyle: {normal: {color: `${getRandomColor()}`}}
+        });
+      }
     }
     categoriesIndex++;
   });
   return [cpuCategories, categoriesIndex];
 }
 
-function createGPUModel(jsonData, data, categoriesIndex) {
+function createGPUModel(jsonData, data, categoriesIndex, xoffset = 0) {
   // Generate mock data
   const gpuCategories = ['GPU'];
   gpuCategories.forEach(function(category, index) {
@@ -56,13 +59,15 @@ function createGPUModel(jsonData, data, categoriesIndex) {
     for (var i = 0; i < dataCount; i++) {
       const item = jsonData[i];
       let startTime = item.query[0];
-      let endTime = item.query[1];
-      let duration = item.query[1] - item.query[0];
-      data.push({
-        name: item.name,
-        value: [categoriesIndex, startTime, endTime, duration],
-        itemStyle: {normal: {color: `${getRandomColor()}`}}
-      });
+      if (startTime >= xoffset) {
+        let endTime = item.query[1];
+        let duration = item.query[1] - item.query[0];
+        data.push({
+          name: item.name,
+          value: [categoriesIndex, startTime, endTime, duration],
+          itemStyle: {normal: {color: `${getRandomColor()}`}}
+        });
+      }
     }
     categoriesIndex++;
   });
