@@ -46,7 +46,13 @@ const eventNames = [
 // {"args":{"label":"BinaryOpProgram"},"cat":"disabled-by-default-gpu.dawn","dur":11760,"name":"DeviceBase::APICreateComputePipeline","ph":"X","pid":11796,"tdur":11334,"tid":20064,"ts":270964747815,"tts":659272},
 const eventNames = ['Queue::Submit'];
 // {"args":{"data":{"frame":"EF3396E8F82869C69967F248FA9EDDC7","message":"JSSubmitQueue"}},"cat":"devtools.timeline","name":"TimeStamp","ph":"I","pid":20240,"s":"t","tid":18700,"ts":270964739579,"tts":425256},
-const eventJSTimestampNames = ['timeInferenceForTracing', 'JSSubmitQueue'];
+const eventJSTimestampNames = [
+  'timeInferenceForTracing', 'JSSubmitQueue', 'getBufferData',
+  'getBufferDataEnd'
+];
+
+const eventJSTimestampColors = ['green', 'red', 'purple', 'yellow'];
+
 const baseTimeName =
     'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing';
 
@@ -113,14 +119,16 @@ async function parseCPUTraceWithBase(
         jsEventName = event['args']['data']['message'];
       }
       // For console.timeStamp. {data: [{name: 'xxxx', xAxis: 9}]},
-      if (eventJSTimestampNames.indexOf(jsEventName) >= 0) {
+      const eventJSTimestampNameIndex =
+          eventJSTimestampNames.indexOf(jsEventName);
+      if (eventJSTimestampNameIndex >= 0) {
         if (!(jsEventName in resultsJSTimestamp)) {
           resultsJSTimestamp[jsEventName] = [];
         }
         // Event is us. Result is ms.
         let timestamp = (event['ts'] - baseCPUTime) / 1000;
         if (timestamp >= xoffset) {
-          const color = jsEventName == 'JSSubmitQueue' ? 'red' : 'green';
+          const color = eventJSTimestampColors[eventJSTimestampNameIndex];
           resultsJSTimestamp[jsEventName].push({
             name: jsEventName,
             xAxis: timestamp,
@@ -154,7 +162,7 @@ function getAdjustTimeWithBase(rawTime, baseGPUTime, isRawTimestamp, gpuFreq) {
   return adjustTime;
 }
 
-// TODO: Merge this with createGPUModel.
+// TODO: merge this with createGPUModel.
 async function parseGPUTraceWithBase(
     traceFile = '', totalTime = 0, baseGPUTime, gpuFreq = 19200000,
     isRawTimestamp = false) {
