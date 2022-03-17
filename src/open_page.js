@@ -10,6 +10,7 @@ async function waitForCondition(condition) {
     function checkCondition() {
       if (condition.logEnd == true) {
         console.log('Test end');
+        condition.logEnd = false;
         resolve();
       } else if (Date.now() > start_time + 3600 * 1000) {
         console.log('Test time out');

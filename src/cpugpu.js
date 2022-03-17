@@ -47,8 +47,7 @@ function saveJson(gpuJsonData, modelSummarDir, modelName) {
   fs.writeFileSync(fileName, JSON.stringify(mergedJson));
 }
 
-
-(async function() {
+async function runSingleBenchmark(benchmarkObject, batch = 15) {
   const modelSummarDir = __dirname + '\\' + getTimestamp('second');
   console.log(modelSummarDir);
   try {
@@ -58,36 +57,34 @@ function saveJson(gpuJsonData, modelSummarDir, modelName) {
   } catch (err) {
     console.error(err)
   }
-
-  const benchmarkObject = {
-    'modelName': 'pose-detection',
-    'architecture': 'BlazePose-lite',
-    'inputType': 'image',
-    'inputSize': '512',
-  };
-
   const modelName = benchmarkObject['modelName'];
   const architecture = benchmarkObject['architecture'];
   const inputType = benchmarkObject['inputType'];
   const inputSize = benchmarkObject['inputSize'];
 
   const tracingJsonFileName = modelSummarDir + '\\' + modelName + '.json'
-  let url = `https://127.0.0.1/tfjs/e2e/benchmarks/local-benchmark/`;
-  // url += `?task=performance&benchmark=${
-  //     modelName}&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false&tracing=true&warmup=50&run=50&localBuild=webgl,webgpu,core&WEBGPU_DEFERRED_SUBMIT_BATCH_SIZE=15`;
-  // posenet-ResNet50-image-512
-  // pose-detection-BlazePose-heavy-image-256
+  let url = `https://127.0.0.1:8080/tfjs/e2e/benchmarks/local-benchmark/`;
   url +=
-      `?task=performance&tracing=true&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&warmup=50&run=50&localBuild=webgl,webgpu,core`;
+      `?task=performance&tracing=true&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&warmup=50&run=50&localBuild=webgl,webgpu,core&WEBGPU_DEFERRED_SUBMIT_BATCH_SIZE=${
+          batch}`;
 
-  // url +=
-  //    `&benchmark=pose-detection&architecture=BlazePose-lite&inputType=image&inputSize=256&`;
-  // url +=
-  //    `&benchmark=posenet&architecture=ResNet50&inputType=image&inputSize=512&`;
-  url += `&benchmark=${modelName}&architecture=${architecture}&inputType=${
-      inputType}&inputSize=${inputSize}&`;
-  let logFile = modelSummarDir + '\\' + modelName + '_' + architecture + '_' +
-      inputType + '_' + inputSize + '.log';
+  let logFile = modelSummarDir + '\\' + modelName;
+  url += `&benchmark=${modelName}&`;
+  if (architecture) {
+    url += `&benchmark=${architecture}&`;
+    logFile += '_' + architecture;
+  }
+  if (inputType) {
+    url += `&benchmark=${inputType}&`;
+    logFile += '_' + inputType;
+  }
+  if (inputSize) {
+    url += `&benchmark=${inputSize}&`;
+    logFile += '_' + inputSize;
+  }
+  logFile += '.log';
+
+  console.log(url + ',' + logFile);
   await openPage(url, tracingJsonFileName, logFile);
   const fsasync = require('fs').promises;
   const logStr = await fsasync.readFile(logFile, 'binary');
@@ -99,4 +96,29 @@ function saveJson(gpuJsonData, modelSummarDir, modelName) {
   const fileName = modelSummarDir + '\\' + modelName + '_' +
       'info.json';
   fs.writeFileSync(fileName, JSON.stringify(benchmarkObject));
+}
+
+
+(async function() {
+  let benchmarkObjects = [
+    {
+      'modelName': 'blazeface',
+    },
+    {
+      'modelName': 'posenet',
+      'architecture': 'ResNet50',
+      'inputType': 'image',
+      'inputSize': '512',
+    },
+    {
+      'modelName': 'pose-detection',
+      'architecture': 'BlazePose-lite',
+      'inputType': 'image',
+      'inputSize': '256',
+    }
+  ];
+
+  for (let i = 0; i < benchmarkObjects.length; i++) {
+    await runSingleBenchmark(benchmarkObjects[i]);
+  }
 })();
