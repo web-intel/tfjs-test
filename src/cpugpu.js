@@ -59,16 +59,44 @@ function saveJson(gpuJsonData, modelSummarDir, modelName) {
     console.error(err)
   }
 
-  const modelName = 'blazeface';
+  const benchmarkObject = {
+    'modelName': 'pose-detection',
+    'architecture': 'BlazePose-lite',
+    'inputType': 'image',
+    'inputSize': '512',
+  };
+
+  const modelName = benchmarkObject['modelName'];
+  const architecture = benchmarkObject['architecture'];
+  const inputType = benchmarkObject['inputType'];
+  const inputSize = benchmarkObject['inputSize'];
+
   const tracingJsonFileName = modelSummarDir + '\\' + modelName + '.json'
-  let url = `https://localhost/tfjs/e2e/benchmarks/local-benchmark/`;
-  url += `?task=performance&benchmark=${
-      modelName}&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false&tracing=true&warmup=1&run=1&localBuild=webgl,webgpu,core`;
-  let logFile = modelSummarDir + '\\' + modelName + '.log';
+  let url = `https://127.0.0.1/tfjs/e2e/benchmarks/local-benchmark/`;
+  // url += `?task=performance&benchmark=${
+  //     modelName}&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false&tracing=true&warmup=50&run=50&localBuild=webgl,webgpu,core&WEBGPU_DEFERRED_SUBMIT_BATCH_SIZE=15`;
+  // posenet-ResNet50-image-512
+  // pose-detection-BlazePose-heavy-image-256
+  url +=
+      `?task=performance&tracing=true&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&warmup=50&run=50&localBuild=webgl,webgpu,core`;
+
+  // url +=
+  //    `&benchmark=pose-detection&architecture=BlazePose-lite&inputType=image&inputSize=256&`;
+  // url +=
+  //    `&benchmark=posenet&architecture=ResNet50&inputType=image&inputSize=512&`;
+  url += `&benchmark=${modelName}&architecture=${architecture}&inputType=${
+      inputType}&inputSize=${inputSize}&`;
+  let logFile = modelSummarDir + '\\' + modelName + '_' + architecture + '_' +
+      inputType + '_' + inputSize + '.log';
   await openPage(url, tracingJsonFileName, logFile);
   const fsasync = require('fs').promises;
   const logStr = await fsasync.readFile(logFile, 'binary');
   const gpuJsonData = getJsonFromString(logStr, 'gpudatabegin', 'gpudataend');
   console.log((gpuJsonData.length));
   saveJson(gpuJsonData, modelSummarDir, modelName);
+
+  // The basic model info.
+  const fileName = modelSummarDir + '\\' + modelName + '_' +
+      'info.json';
+  fs.writeFileSync(fileName, JSON.stringify(benchmarkObject));
 })();

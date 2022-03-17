@@ -55,6 +55,8 @@
     <p>
       3) Create a folder (such as 20220303161736) under webtest\src\timeline\timeline, copy above two json file. Then setup a web server at webtest\src\timeline.
     <p>
+    <div id = 'modelinfo'>
+    </div>
   </text>
   <h1 align='center' height=500>TFJS Timeline</h1>
   <script src='echarts.min.js'></script>
@@ -101,6 +103,7 @@
       // Get the data URL.
       const cpuDataPara = getParamByName('cpufile');
       const gpuDataPara = getParamByName('gpufile');
+      const infoDataPara = getParamByName('infofile');
       const datestampPara = getParamByName('date');
       const isRawTimestamp = getParamByName('rawtimestamp') != 'false';
       let gpuFreq = Number(getParamByName('gpufreq'));
@@ -108,6 +111,12 @@
       const dataSuffix = ".json";
       const cpuDataUrl = dadaRootDir + cpuDataPara + dataSuffix;
       const gpuDataUrl = dadaRootDir + gpuDataPara + dataSuffix;
+      const infoDataUrl = dadaRootDir + infoDataPara +'_info'+ dataSuffix;
+
+      if (infoDataPara != null) {
+        const infoJson = await readFileAsync(infoDataUrl);
+        document.getElementById("modelinfo").innerHTML = infoJson;
+      }
 
       // Data used for echart.
       let categories = [];

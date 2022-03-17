@@ -77,6 +77,12 @@ function createGPUModel(jsonData, data, categoriesIndex, xoffset = 0) {
 async function readFileAsync(url, method = 'GET') {
   return new Promise(function(resolve, reject) {
     let xhr = new XMLHttpRequest();
+    xhr.onloadend = function() {
+      if (xhr.status == 404) {
+        resolve(xhr.response);
+        console.error(url + ' 404');
+      }
+    };
     xhr.open(method, url);
     xhr.onload = function() {
       if (this.status >= 200 && this.status < 300) {

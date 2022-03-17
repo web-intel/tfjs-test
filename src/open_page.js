@@ -22,7 +22,6 @@ async function waitForCondition(condition) {
   });
 }
 
-
 const browserPath =
     `${process.env.LOCALAPPDATA}/Google/Chrome SxS/Application/chrome.exe`;
 const userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/User Data`;
