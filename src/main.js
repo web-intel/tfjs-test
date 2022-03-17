@@ -104,6 +104,10 @@ util.args = yargs
     type: 'string',
     describe: 'backend for performance, split by comma',
   })
+  .option('profile-times', {
+    type: 'number',
+    describe: 'profile times',
+  })
   .option('repeat', {
     type: 'number',
     describe: 'repeat times',
@@ -274,7 +278,15 @@ async function main() {
   }
   util.runTimes = runTimes;
 
-  util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&localBuild=${util.args['local-build']}`;
+  let profileTimes;
+  if ('profile-times' in util.args) {
+    profileTimes = parseInt(util.args['profile-times']);
+  } else {
+    profileTimes = 50;
+  }
+  util.profileTimes = profileTimes;
+
+  util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&profile=${profileTimes}&localBuild=${util.args['local-build']}`;
 
   if ('trace-category' in util.args) {
     util.args['new-context'] = true;
@@ -328,7 +340,7 @@ async function main() {
       } else if (target == 'demo') {
         results[target] = await runDemo();
       }
-        else if (target == 'unit') {
+      else if (target == 'unit') {
         results[target] = await runUnit();
       } else if (target == 'trace') {
         await parseTrace();

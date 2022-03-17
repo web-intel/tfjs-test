@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const util = require('./util.js');
 
-function parseTrace(traceFile='', totalTime=0) {
+function parseTrace(traceFile = '', totalTime = 0) {
   let eventNames = ['DeviceBase::APICreateComputePipeline', 'CreateComputePipelineAsyncTask::Run', 'DeviceBase::APICreateShaderModule'];
   let results = {};
   let base_ts = 0;
@@ -22,7 +22,7 @@ function parseTrace(traceFile='', totalTime=0) {
       if (!(eventName in results)) {
         results[eventName] = [];
       }
-      results[eventName].push([(event['ts'] - base_ts)/1000, event['dur']/1000]);
+      results[eventName].push([(event['ts'] - base_ts) / 1000, event['dur'] / 1000]);
     }
   }
   results['total'] = [[0, totalTime]];
