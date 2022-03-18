@@ -61,13 +61,13 @@ function getBaseTime(rawTime, cpuTracingBase) {
   const S2US = 1000000;
   if (cpuTracingBase != 0) {
     // If this is used for CPU-GPU time: cpuTracingBase may possibly happens
-    // before cpuBase. We use cpuTracingBase as real base, so the diff
-    // should be applied to gpuBase.
+    // before cpuBase. We use cpuTracingBase as real base, so the diff should be
+    // applied to gpuBase.
     const diff = cpuTracingBase - cpuBase * S2US / cpuFreq;
     return [cpuTracingBase, gpuBase * S2US / gpuFreq + diff, gpuFreq];
   } else {
     // For GPU only, cpuBase is not used.
-    return [cpuBase / cpuFreq * S2US, gpuBase * S2US / gpuFreq, gpuFreq];
+    return [cpuBase * S2US / cpuFreq, gpuBase * S2US / gpuFreq, gpuFreq];
   }
 }
 
@@ -76,25 +76,41 @@ function getBaseTime(rawTime, cpuTracingBase) {
  * @param traceFile The tracing file.
  * @returns [cpuBase, gpuBase, gpuFreq].
  */
+const eventNames = null;
 async function getBaseTimeFromTracing(traceFile = '') {
   if (traceFile == null) {
     console.warn('No tracing file!');
     return [0, 0, 0];
   }
 
-  const eventNames = [
-    'DeviceBase::APICreateComputePipeline',
-    'CreateComputePipelineAsyncTask::Run', 'DeviceBase::APICreateShaderModule'
-  ];
+  const fsasync = require('fs').promises;
+  let jsonData = JSON.parse(await fsasync.readFile(traceFile));
+  return getBaseTimeFromTracingJson(jsonData);
+}
+
+// For timeline(html): cpuTracingBase is used to get first non-0 time.
+// For node: cpuTracingBase is not used. This is used to get freq.
+// Edit this function under src\timeline\timeline_trace.js.
+function getBaseTimeFromTracingJson(jsonData) {
+  if (jsonData == null) {
+    console.warn('No tracing file!');
+    return [0, 0, 0];
+  }
+
   const baseTimeName =
       'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing';
   let baseTime = '';
   let cpuTracingBase = 0;
 
-  const fsasync = require('fs').promises;
-  let jsonData = JSON.parse(await fsasync.readFile(traceFile));
   for (let event of jsonData['traceEvents']) {
     let eventName = event['name'];
+    if (eventNames && eventNames.indexOf(eventName) >= 0) {
+      if (cpuTracingBase == 0) {
+        // This is the first none 0 ts in tracing.
+        cpuTracingBase = event['ts'];
+      }
+    }
+
     // This is the first Detailed Timing in tracing.
     if (eventName == baseTimeName) {
       if (baseTime == '') {
@@ -115,4 +131,5 @@ async function getBaseTimeFromTracing(traceFile = '') {
 module.exports = {
   parseGPUTrace: parseGPUTrace,
   getBaseTimeFromTracing: getBaseTimeFromTracing,
+  getBaseTimeFromTracingJson: getBaseTimeFromTracingJson,
 };

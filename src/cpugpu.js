@@ -33,26 +33,28 @@ function getTimestamp(format) {
   return timestamp;
 }
 
-function saveJson(gpuJsonData, modelSummarDir, modelName) {
+function saveJson(gpuJsonData, modelSummaryDir, modelName) {
   let mergedJson = [];
   for (var i = 0; i < gpuJsonData.length; i++) {
     // Tracing may possible be repeated. predictJsonData[0]['times'].length
     // is the repeat count.
 
-    const fileName = modelSummarDir + '\\' + modelName + '_' + i + '_gpu.json';
+    const fileName =
+        modelSummaryDir + '\\' + modelName + '_' + (i + 1) + '_gpu.json';
     mergedJson = mergedJson.concat(gpuJsonData[i]);
     fs.writeFileSync(fileName, JSON.stringify(gpuJsonData[i]));
   }
-  const fileName = modelSummarDir + '\\' + modelName + '_all_gpu.json';
+  const fileName = modelSummaryDir + '\\' + modelName + '_all_gpu.json';
   fs.writeFileSync(fileName, JSON.stringify(mergedJson));
 }
 
 async function runSingleBenchmark(benchmarkObject, batch = 15) {
-  const modelSummarDir = __dirname + '\\' + getTimestamp('second');
-  console.log(modelSummarDir);
+  const timestamp = getTimestamp('second');
+  const modelSummaryDir = __dirname + '\\' + timestamp;
+  console.log(modelSummaryDir);
   try {
-    if (!fs.existsSync(modelSummarDir)) {
-      fs.mkdirSync(modelSummarDir)
+    if (!fs.existsSync(modelSummaryDir)) {
+      fs.mkdirSync(modelSummaryDir)
     }
   } catch (err) {
     console.error(err)
@@ -62,13 +64,13 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
   const inputType = benchmarkObject['inputType'];
   const inputSize = benchmarkObject['inputSize'];
 
-  const tracingJsonFileName = modelSummarDir + '\\' + modelName + '.json'
-  let url = `https://127.0.0.1:8080/tfjs/e2e/benchmarks/local-benchmark/`;
+  const tracingJsonFileName = modelSummaryDir + '\\' + modelName + '.json'
+  let url = `https://0.39.47.14:8080/tfjs/e2e/benchmarks/local-benchmark/`;
   url +=
       `?task=performance&tracing=true&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&warmup=50&run=50&localBuild=webgl,webgpu,core&WEBGPU_DEFERRED_SUBMIT_BATCH_SIZE=${
           batch}`;
 
-  let logFile = modelSummarDir + '\\' + modelName;
+  let logFile = modelSummaryDir + '\\' + modelName;
   url += `&benchmark=${modelName}&`;
   if (architecture) {
     url += `&benchmark=${architecture}&`;
@@ -90,12 +92,23 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
   const logStr = await fsasync.readFile(logFile, 'binary');
   const gpuJsonData = getJsonFromString(logStr, 'gpudatabegin', 'gpudataend');
   console.log((gpuJsonData.length));
-  saveJson(gpuJsonData, modelSummarDir, modelName);
+  saveJson(gpuJsonData, modelSummaryDir, modelName);
 
   // The basic model info.
-  const fileName = modelSummarDir + '\\' + modelName + '_' +
+  const fileName = modelSummaryDir + '\\' + modelName + '_' +
       'info.json';
   fs.writeFileSync(fileName, JSON.stringify(benchmarkObject));
+
+  // Below is used to generate the link.
+  // timeline.html?&date=20220318095538&gpufreq=%2012000048&&cpufile=blazeface&gpufile=blazeface_all_gpu&&tooltip=1&xoffset=3300
+  const {getBaseTimeFromTracing} = require('./trace_model_util.js');
+  const [, , gpuFreq] = tracingJsonFileName ?
+      await getBaseTimeFromTracing(tracingJsonFileName) :
+      [0, 0, 19200000];
+  let link = `<a href="../timeline.html?&date=${timestamp}&gpufreq=${
+      gpuFreq}&cpufile=${modelName}&gpufile=${
+      modelName}_all_gpu&&tooltip=1&xoffset=0">${modelName}</a><br>`;
+  return link;
 }
 
 
@@ -118,7 +131,15 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
     }
   ];
 
+  let html = `<div>`;
   for (let i = 0; i < benchmarkObjects.length; i++) {
-    await runSingleBenchmark(benchmarkObjects[i]);
+    const link = await runSingleBenchmark(benchmarkObjects[i]);
+    html += link;
   }
+  html += `</div>`;
+  const timestamp = getTimestamp('second');
+  const modelSummaryHtmlFile =
+      __dirname + '\\' + timestamp + '_cpugpusummary.html';
+  console.log(modelSummaryHtmlFile);
+  fs.writeFileSync(modelSummaryHtmlFile, html);
 })();

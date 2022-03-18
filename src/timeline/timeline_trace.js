@@ -65,14 +65,27 @@ async function getBaseTimeFromTracing(traceFile = '') {
     console.warn('No tracing file!');
     return [0, 0, 0];
   }
+  let jsonData = JSON.parse(await readFileAsync(traceFile));
+  return getBaseTimeFromTracingJson(jsonData);
+}
 
+// For timeline(html): cpuTracingBase is used to get first non-0 time.
+// For node: cpuTracingBase is not used. This is used to get freq.
+// Edit this function under src\timeline\timeline_trace.js.
+function getBaseTimeFromTracingJson(jsonData) {
+  if (jsonData == null) {
+    console.warn('No tracing file!');
+    return [0, 0, 0];
+  }
+
+  const baseTimeName =
+      'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing';
   let baseTime = '';
   let cpuTracingBase = 0;
 
-  let jsonData = JSON.parse(await readFileAsync(traceFile));
   for (let event of jsonData['traceEvents']) {
     let eventName = event['name'];
-    if (eventNames.indexOf(eventName) >= 0) {
+    if (eventNames && eventNames.indexOf(eventName) >= 0) {
       if (cpuTracingBase == 0) {
         // This is the first none 0 ts in tracing.
         cpuTracingBase = event['ts'];
@@ -90,7 +103,7 @@ async function getBaseTimeFromTracing(traceFile = '') {
     }
   }
   if (baseTime == '') {
-    console.warn('Tracing has no Detailed Timing!');
+    console.warn('Tracing has no Detailed Timing!' + traceFile);
   }
   return [0, 0, 0];
 }
