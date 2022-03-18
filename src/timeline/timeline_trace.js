@@ -47,11 +47,11 @@ const eventNames = [
 const eventNames = ['Queue::Submit'];
 // {"args":{"data":{"frame":"EF3396E8F82869C69967F248FA9EDDC7","message":"JSSubmitQueue"}},"cat":"devtools.timeline","name":"TimeStamp","ph":"I","pid":20240,"s":"t","tid":18700,"ts":270964739579,"tts":425256},
 const eventJSTimestampNames = [
-  'timeInferenceForTracing', 'JSSubmitQueue', 'getBufferData',
-  'getBufferDataEnd'
+  'timeInferenceForTracing', 'JSSubmitQueue', 'JSGetBufferData',
+  'JSGetBufferDataEnd', 'JSGetKernelTimesEnd'
 ];
 
-const eventJSTimestampColors = ['green', 'red', 'purple', 'yellow'];
+const eventJSTimestampColors = ['green', 'red', 'purple', 'yellow', 'black'];
 
 const baseTimeName =
     'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing';

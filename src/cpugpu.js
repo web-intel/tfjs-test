@@ -48,6 +48,8 @@ function saveJson(gpuJsonData, modelSummaryDir, modelName) {
   fs.writeFileSync(fileName, JSON.stringify(mergedJson));
 }
 
+const URL = process.argv[2];
+
 async function runSingleBenchmark(benchmarkObject, batch = 15) {
   const timestamp = getTimestamp('second');
   const modelSummaryDir = __dirname + '\\' + timestamp;
@@ -65,7 +67,7 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
   const inputSize = benchmarkObject['inputSize'];
 
   const tracingJsonFileName = modelSummaryDir + '\\' + modelName + '.json'
-  let url = `https://0.39.47.14:8080/tfjs/e2e/benchmarks/local-benchmark/`;
+  let url = `https://${URL}/tfjs/e2e/benchmarks/local-benchmark/`;
   url +=
       `?task=performance&tracing=true&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&warmup=50&run=50&localBuild=webgl,webgpu,core&WEBGPU_DEFERRED_SUBMIT_BATCH_SIZE=${
           batch}`;
@@ -73,15 +75,15 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
   let logFile = modelSummaryDir + '\\' + modelName;
   url += `&benchmark=${modelName}&`;
   if (architecture) {
-    url += `&benchmark=${architecture}&`;
+    url += `&architecture=${architecture}&`;
     logFile += '_' + architecture;
   }
   if (inputType) {
-    url += `&benchmark=${inputType}&`;
+    url += `&inputType=${inputType}&`;
     logFile += '_' + inputType;
   }
   if (inputSize) {
-    url += `&benchmark=${inputSize}&`;
+    url += `&inputSize=${inputSize}&`;
     logFile += '_' + inputSize;
   }
   logFile += '.log';
@@ -106,7 +108,7 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
       await getBaseTimeFromTracing(tracingJsonFileName) :
       [0, 0, 19200000];
   let link = `<a href="../timeline.html?&date=${timestamp}&gpufreq=${
-      gpuFreq}&cpufile=${modelName}&gpufile=${
+      gpuFreq}&cpufile=${modelName}&infofile=${modelName}&gpufile=${
       modelName}_all_gpu&&tooltip=1&xoffset=0">${modelName}</a><br>`;
   return link;
 }
@@ -140,6 +142,6 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
   const timestamp = getTimestamp('second');
   const modelSummaryHtmlFile =
       __dirname + '\\' + timestamp + '_cpugpusummary.html';
-  console.log(modelSummaryHtmlFile);
+  // console.log(modelSummaryHtmlFile);
   fs.writeFileSync(modelSummaryHtmlFile, html);
 })();
