@@ -18,14 +18,19 @@
     </p>
     With webtest: GPU timeline only.
     <p>
-    How to run with webtest:
-    </p>
-    <p>
     1) node src/main.js --target performance  --performance-backend webgpu --warmup-times 10 --run-times 10 --benchmark-url https://localhost:8080/tfjs/e2e/benchmarks/local-benchmark/ --benchmark bodypix --disable-breakdown
     </p>
     <p>
     2) copy data(such as 20220303161736) from webtest\out to webtest\src\timeline\timeline. Then setup a web server at webtest\src\timeline.
     </p>
+    With webtest: CPU-GPU timeline.
+    <p>
+    1) node src/cpugpu.js
+    </p>
+    <p>
+    2) copy data(such as 20220303161736 and summary file) from webtest\out to webtest\src\timeline\timeline. Then setup a web server at webtest\src\timeline.
+    </p>
+
     Without webtest:
     <p>
     1) CPU-GPU timeline;
