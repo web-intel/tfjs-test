@@ -37,14 +37,13 @@ function getBaseTime(rawTime, cpuTracingBase) {
   }
 }
 
-/*
 const eventNames = [
   'DeviceBase::APICreateComputePipeline', 'CreateComputePipelineAsyncTask::Run',
   'DeviceBase::APICreateShaderModule', 'Queue::Submit'
 ];
-*/
+
 // {"args":{"label":"BinaryOpProgram"},"cat":"disabled-by-default-gpu.dawn","dur":11760,"name":"DeviceBase::APICreateComputePipeline","ph":"X","pid":11796,"tdur":11334,"tid":20064,"ts":270964747815,"tts":659272},
-const eventNames = ['Queue::Submit'];
+// const eventNames = ['Queue::Submit'];
 // {"args":{"data":{"frame":"EF3396E8F82869C69967F248FA9EDDC7","message":"JSSubmitQueue"}},"cat":"devtools.timeline","name":"TimeStamp","ph":"I","pid":20240,"s":"t","tid":18700,"ts":270964739579,"tts":425256},
 const eventJSTimestampNames = [
   'timeInferenceForTracing', 'JSSubmitQueue', 'JSGetBufferData',
