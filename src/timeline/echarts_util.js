@@ -80,6 +80,25 @@ function renderItem(params, api) {
   });
 }
 
+function getPixelRatio(ctx) {
+  const dpr = window.devicePixelRatio || 1;
+  const bsr = ctx.webkitBackingStorePixelRatio ||
+      ctx.mozBackingStorePixelRatio || ctx.msBackingStorePixelRatio ||
+      ctx.oBackingStorePixelRatio || ctx.backingStorePixelRatio || 1;
+
+  return dpr / bsr;
+}
+
+function createHidpiCanvasContext(canvas, w, h, ratio) {
+  canvas.width = w * ratio;
+  canvas.height = h * ratio;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const hidpiContext = canvas.getContext('2d');
+  hidpiContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+  return hidpiContext;
+}
+
 function drawArraw(context, fromX, fromY, toX, toY, name, color) {
   var headlen = 10;
   var dx = toX - fromX;
@@ -90,23 +109,23 @@ function drawArraw(context, fromX, fromY, toX, toY, name, color) {
   context.strokeStyle = color;
   context.moveTo(fromX, fromY);
   context.lineTo(toX, toY);
-  ctx.stroke();
+  context.stroke();
   context.beginPath();
   context.setLineDash([]);
   context.moveTo(toX, toY);
   context.lineTo(
       toX - headlen * Math.cos(angle - Math.PI / 6),
       toY - headlen * Math.sin(angle - Math.PI / 6));
-  ctx.stroke();
+  context.stroke();
   context.beginPath();
   context.setLineDash([]);
   context.moveTo(toX, toY);
   context.lineTo(
       toX - headlen * Math.cos(angle + Math.PI / 6),
       toY - headlen * Math.sin(angle + Math.PI / 6));
-  ctx.stroke();
+  context.stroke();
   context.beginPath();
   const textWidth = context.measureText(name).width;
-  ctx.fillText(name, fromX - textWidth / 2, fromY + 10);
-  ctx.stroke();
+  context.fillText(name, fromX - textWidth / 2, fromY + 10);
+  context.stroke();
 }
