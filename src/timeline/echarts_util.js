@@ -79,3 +79,34 @@ function renderItem(params, api) {
     style: api.style()
   });
 }
+
+function drawArraw(context, fromX, fromY, toX, toY, name, color) {
+  var headlen = 10;
+  var dx = toX - fromX;
+  var dy = toY - fromY;
+  var angle = Math.atan2(dy, dx);
+  context.beginPath();
+  context.setLineDash([5, 3]);
+  context.strokeStyle = color;
+  context.moveTo(fromX, fromY);
+  context.lineTo(toX, toY);
+  ctx.stroke();
+  context.beginPath();
+  context.setLineDash([]);
+  context.moveTo(toX, toY);
+  context.lineTo(
+      toX - headlen * Math.cos(angle - Math.PI / 6),
+      toY - headlen * Math.sin(angle - Math.PI / 6));
+  ctx.stroke();
+  context.beginPath();
+  context.setLineDash([]);
+  context.moveTo(toX, toY);
+  context.lineTo(
+      toX - headlen * Math.cos(angle + Math.PI / 6),
+      toY - headlen * Math.sin(angle + Math.PI / 6));
+  ctx.stroke();
+  context.beginPath();
+  const textWidth = context.measureText(name).width;
+  ctx.fillText(name, fromX - textWidth / 2, fromY + 10);
+  ctx.stroke();
+}

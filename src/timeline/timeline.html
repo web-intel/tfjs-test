@@ -7,45 +7,51 @@
     <p>
       1) cpufile=[json file name]. Example: date=20220223213754&cpufile=mobilenetv2.
     <p>
-      2) cpufile=[json file name]&gpufile=[json file name]. Example: date=20220223213754&cpufile=mobilenetv2&gpufile=gpu_data.
+      2) cpufile=[json file name]&gpufile=[json file name]. Example:
+      date=20220223213754&cpufile=mobilenetv2&gpufile=gpu_data.
     <p>
       3) gpufile=[json file name]. Example: date=20220223213754&gpufile=6_25-bodypix-ResNet50-image-0.25-webgpu-gpu.
     <p>
       4) tooltip=[tooltip type]. 0 show data under cursor. 1 show current xAxis value.
     <p>
-      Before run any commands below, git clone https://github.com/tensorflow/tfjs/pull/6202/ first, then setup it with npx-httpserver.
+      Before run any commands below, git clone https://github.com/tensorflow/tfjs/pull/6202/ first, then setup it with
+      npx-httpserver.
       There are four possible usecases for timeline.
     </p>
     With webtest: GPU timeline only.
     <p>
-    1) node src/main.js --target performance  --performance-backend webgpu --warmup-times 10 --run-times 10 --benchmark-url https://localhost:8080/tfjs/e2e/benchmarks/local-benchmark/ --benchmark bodypix --disable-breakdown
+      1) node src/main.js --target performance --performance-backend webgpu --warmup-times 10 --run-times 10
+      --benchmark-url https://localhost:8080/tfjs/e2e/benchmarks/local-benchmark/ --benchmark bodypix
+      --disable-breakdown
     </p>
     <p>
-    2) copy data(such as 20220303161736) from webtest\out to webtest\src\timeline\timeline. Then setup a web server at webtest\src\timeline.
+      2) copy data(such as 20220303161736) from webtest\out to webtest\src\timeline\timeline. Then setup a web server at
+      webtest\src\timeline.
     </p>
     With webtest: CPU-GPU timeline.
     <p>
-    1) node src/cpugpu.js
+      1) node src/cpugpu.js 127.0.0.1:8080
     </p>
     <p>
-    2) copy data(such as 20220303161736 and summary file) from webtest\out to webtest\src\timeline\timeline. Then setup a web server at webtest\src\timeline.
+      2) copy data(such as 20220303161736 and summary file) from webtest\out to webtest\src\timeline\timeline. Then
+      setup a web server at webtest\src\timeline.
     </p>
 
     Without webtest:
     <p>
-    1) CPU-GPU timeline;
+      1) CPU-GPU timeline;
       Input data: tracing json + copy from console.log.
     </p>
     <p>
-    2) GPU timeline only;
+      2) GPU timeline only;
       Input data: copy from console.log.
     </p>
     <p>
-    3) CPU timeline only;
+      3) CPU timeline only;
       Input data: tracing json.
     </p>
     <p>
-     How to run without webtest(before start chrome, export IS_RAW_TIMESTAMP = true first):
+      How to run without webtest(before start chrome, export IS_RAW_TIMESTAMP = true first):
     </p>
     <p>
       1) CPU tracing:
@@ -58,9 +64,13 @@
       2) GPU time, open the console, copy the time related data to a json file.
     <p>
     <p>
-      3) Create a folder (such as 20220303161736) under webtest\src\timeline\timeline, copy above two json file. Then setup a web server at webtest\src\timeline.
+      3) Create a folder (such as 20220303161736) under webtest\src\timeline\timeline, copy above two json file. Then
+      setup a web server at webtest\src\timeline.
     <p>
-    <div id = 'modelinfo'>
+    <div id='modelinfo'>
+    </div>
+    <div>
+      <canvas id="canvasLegend" width="800" height="80"></canvas>
     </div>
   </text>
   <h1 align='center' height=500>TFJS Timeline</h1>
@@ -70,6 +80,15 @@
   <script src='timeline_trace.js'></script>
   <!-- script src='../util/base.js'></script-->
   <script>
+    {
+      // Draw the legend. eventJSTimestampNames is from timeline_trace.js.
+      ctx = document.getElementById("canvasLegend").getContext("2d");
+      for (var i in eventJSTimestampNames) {
+        const fromX = 100 + i * 120;
+        drawArraw(ctx, fromX, 50, fromX, 10, eventJSTimestampNames[i], eventJSTimestampColors[i]);
+      }
+    }
+
     // From util base.js.
     function getRandomColor() {
       var letters = '0123456789ABCDEF';
@@ -116,7 +135,7 @@
       const dataSuffix = ".json";
       const cpuDataUrl = dadaRootDir + cpuDataPara + dataSuffix;
       const gpuDataUrl = dadaRootDir + gpuDataPara + dataSuffix;
-      const infoDataUrl = dadaRootDir + infoDataPara +'_info'+ dataSuffix;
+      const infoDataUrl = dadaRootDir + infoDataPara + '_info' + dataSuffix;
 
       if (infoDataPara != null) {
         const infoJson = await readFileAsync(infoDataUrl);
