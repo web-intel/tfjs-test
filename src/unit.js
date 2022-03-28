@@ -1,6 +1,6 @@
 'use strict';
 
-const { spawnSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const util = require('./util.js')
@@ -37,6 +37,9 @@ async function runUnit() {
     }
     process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
     process.env['CHROME_BIN'] = util.browserPath;
+
+    util['clientRepoDate'] = execSync(`cd ${tfjsDir} && git log -1 --format=\"%cd\"`).toString();
+    util['clientRepoCommit'] = execSync(`cd ${tfjsDir} && git rev-parse HEAD`).toString();
 
     let logFile =
       path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`)
