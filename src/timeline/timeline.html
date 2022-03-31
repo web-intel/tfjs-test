@@ -70,7 +70,7 @@
     <div id='modelinfo'>
     </div>
     <div>
-      <canvas id="canvasLegend" width="800" height="80"></canvas>
+      <canvas id="canvasLegend" width="1200" height="80"></canvas>
     </div>
   </text>
   <h1 align='center' height=500>TFJS Timeline</h1>
@@ -85,7 +85,7 @@
       const canvas = document.getElementById("canvasLegend");
       const ctx = canvas.getContext("2d");
       const pixelRatio = getPixelRatio(ctx);
-      var hidpiCanvasContext = createHidpiCanvasContext(canvas, 800, 80, pixelRatio);
+      var hidpiCanvasContext = createHidpiCanvasContext(canvas, 1200, 80, pixelRatio);
       for (var i in eventJSTimestampNames) {
         const fromX = 100 + i * 120;
         drawArraw(hidpiCanvasContext, fromX, 50, fromX, 10, eventJSTimestampNames[i], eventJSTimestampColors[i]);
@@ -181,9 +181,15 @@
         categoriesIndex = gpuCategoriesIndex;
         categories = categories.concat(gpuCategories);
       }
-      console.log(JSON.stringify(data));
-
-      let option = getOption(categories, data, marklineData, tooltipType);
+      // When there is only marklineData, need to fake a data which bigger than marklineData.
+      // Otherwise the chart will be blank.
+      const maxXaxis = Number(marklineData[marklineData.length-1]['xAxis']) + 100;
+      let option;
+      if (categories.length == 1 && categories[0] == 'total') {
+        option = getOption([], [{"name":"total0","value":[0,maxXaxis,maxXaxis,0.0],"itemStyle":{"normal":{"color":"#F74224"}}}], marklineData, tooltipType);
+      } else {
+        option = getOption(categories, data, marklineData, tooltipType);
+      }
 
       // 4. Update DOM UI.
       updateDOMUI(option);

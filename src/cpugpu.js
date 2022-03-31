@@ -65,12 +65,13 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
   const architecture = benchmarkObject['architecture'];
   const inputType = benchmarkObject['inputType'];
   const inputSize = benchmarkObject['inputSize'];
+  const backend = benchmarkObject['backend'];
 
   const tracingJsonFileName = modelSummaryDir + '\\' + modelName + '.json'
   let url = `https://${URL}/tfjs/e2e/benchmarks/local-benchmark/`;
-  url +=
-      `?task=performance&tracing=true&backend=webgpu&WEBGL_USE_SHAPES_UNIFORMS=true&warmup=50&run=50&localBuild=webgl,webgpu,core&WEBGPU_DEFERRED_SUBMIT_BATCH_SIZE=${
-          batch}`;
+  url += `?task=performance&tracing=true&backend=${
+      backend}&WEBGL_USE_SHAPES_UNIFORMS=true&warmup=50&run=50&localBuild=webgl,webgpu,core&WEBGPU_DEFERRED_SUBMIT_BATCH_SIZE=${
+      batch}`;
 
   let logFile = modelSummaryDir + '\\' + modelName;
   url += `&benchmark=${modelName}&`;
@@ -118,18 +119,21 @@ async function runSingleBenchmark(benchmarkObject, batch = 15) {
   let benchmarkObjects = [
     {
       'modelName': 'blazeface',
+      'backend': 'webgl',
     },
     {
       'modelName': 'posenet',
       'architecture': 'ResNet50',
       'inputType': 'image',
       'inputSize': '512',
+      'backend': 'webgl',
     },
     {
       'modelName': 'pose-detection',
       'architecture': 'BlazePose-lite',
       'inputType': 'image',
       'inputSize': '256',
+      'backend': 'webgl',
     }
   ];
 

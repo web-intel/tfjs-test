@@ -122,7 +122,7 @@ function getBaseTimeFromTracingJson(jsonData) {
     }
   }
   if (baseTime == '') {
-    console.warn('Tracing has no Detailed Timing!' + traceFile);
+    console.warn('Tracing has no Detailed Timing!');
   }
   return [0, 0, 0];
 }

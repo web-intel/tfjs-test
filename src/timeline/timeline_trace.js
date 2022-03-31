@@ -47,10 +47,14 @@ const eventNames = [
 // {"args":{"data":{"frame":"EF3396E8F82869C69967F248FA9EDDC7","message":"JSSubmitQueue"}},"cat":"devtools.timeline","name":"TimeStamp","ph":"I","pid":20240,"s":"t","tid":18700,"ts":270964739579,"tts":425256},
 const eventJSTimestampNames = [
   'timeInferenceForTracing', 'JSSubmitQueue', 'JSGetBufferData',
-  'JSGetBufferDataEnd', 'JSGetKernelTimesEnd'
+  'JSGetBufferDataEnd', 'JSGetKernelTimesEnd', 'JSrunWebGLProgram',
+  'JSrunWebGLProgramEnd', 'JSreadSync', 'JSreadSyncEnd', 'JSread', 'JSreadEnd'
 ];
 
-const eventJSTimestampColors = ['green', 'red', 'purple', 'yellow', 'black'];
+const eventJSTimestampColors = [
+  'green', 'red', 'purple', 'yellow', 'black', 'cyan', 'red', 'purple',
+  'yellow', 'black', 'blue'
+];
 
 const baseTimeName =
     'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing';
@@ -91,6 +95,17 @@ function getBaseTimeFromTracingJson(jsonData) {
       }
     }
 
+    // For WebGL, we don't have native tracing. Use JS tracing instead.
+    if (cpuTracingBase == 0 && event['args'] && event['args']['data'] &&
+        event['args']['data']['message']) {
+      let jsEventName = event['args']['data']['message'];
+      if (eventJSTimestampNames &&
+          eventJSTimestampNames.indexOf(jsEventName) >= 0) {
+        // This is the first none 0 ts in tracing.
+        cpuTracingBase = event['ts'];
+      }
+    }
+
     // This is the first Detailed Timing in tracing.
     if (eventName == baseTimeName) {
       if (baseTime == '') {
@@ -102,9 +117,9 @@ function getBaseTimeFromTracingJson(jsonData) {
     }
   }
   if (baseTime == '') {
-    console.warn('Tracing has no Detailed Timing!' + traceFile);
+    console.warn('Tracing has no Detailed Timing!');
   }
-  return [0, 0, 0];
+  return [cpuTracingBase, 0, 0];
 }
 
 async function parseCPUTraceWithBase(
