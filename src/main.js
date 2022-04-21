@@ -13,7 +13,7 @@ const report = require('./report.js');
 const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
 const util = require('./util.js');
-const modelUtil = require('./trace.js');
+const { modelSummary } = require('./trace.js');
 
 util.args = yargs
   .usage('node $0 [args]')
@@ -369,7 +369,7 @@ async function main() {
     }
 
     if (tracing == true) {
-      await modelUtil.modelSummary(modelSummaryDir, util.logFile, results, util.benchmarkUrlArgs, util.gpufreqTraceFile, util.args['tracing']);
+      await modelSummary(modelSummaryDir, util.logFile, results, util.benchmarkUrlArgs, util.gpufreqTraceFile, util.args['tracing']);
     }
     await report(results);
   }
