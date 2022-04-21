@@ -391,7 +391,10 @@ async function getGPUFreq(modelSummaryDir) {
   const target = 'performance';
   const benchmarkFileForGpufreq = 'benchmark_getinfo.json';
   util.log(`=Get GPU Frequency=` + util.args['benchmark']);
+  const lastArgs = util.args['benchmark'];
+  util.args['benchmark'] = null;
   await runBenchmark(target, modelSummaryDir, benchmarkFileForGpufreq);
+  util.args['benchmark'] = lastArgs;
 }
 
 main();
