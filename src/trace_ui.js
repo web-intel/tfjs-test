@@ -35,13 +35,13 @@ function createTableHeadEnd() {
   return '</table>';
 }
 
-function createModelTableHead(data) {
+function createTableHeadStartWithInfo(data) {
   var header = createTableHeadStart();
   header += `<th>${data}</th></thead>`;
   return header;
 }
 
-function createTableHead(data, modelName, linkInfo, tracingMode) {
+function createTableHeadStartWithLink(data, modelName, linkInfo, tracingMode) {
   var header = createTableHeadStart();
   header +=
       createRowWithLink(data, modelName, linkInfo, tracingMode) + '</thead>';
@@ -101,8 +101,8 @@ function createRowWithLink(data, modelName, linkInfo, tracingMode) {
 }
 
 module.exports = {
-  createTableHead: createTableHead,
-  createModelTableHead: createModelTableHead,
+  createTableHeadStartWithLink: createTableHeadStartWithLink,
+  createTableHeadStartWithInfo: createTableHeadStartWithInfo,
   createTableHeadEnd: createTableHeadEnd,
   createRow: createRow,
   createRows: createRows

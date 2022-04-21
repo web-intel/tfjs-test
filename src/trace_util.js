@@ -9,6 +9,7 @@ function getJsonFromString(str, start, end) {
     }
     return results;
   } else {
+    if (matchResults == null) throw new Error('Please make sure log is valid!');
     return new Array(
         JSON.parse(matchResults.replace(start, '').replace(end, '')));
   }
