@@ -5,10 +5,6 @@ const {createTableHead, createModelTableHead, createTableHeadEnd, createRows} =
 const fs = require('fs');
 const fsasync = require('fs').promises;
 
-async function readFileAsync(url, method = 'GET') {
-  return await fsasync.readFile(url);
-}
-
 function getJsonFromString(str, start, end) {
   const regStr = String.raw`${start}.*?${end}`;
   var matchRegex = new RegExp(regStr, 'g');
@@ -198,7 +194,6 @@ async function modelSummary(
         gpuFreq, tracingMode);
 
     for (var j = 0; j < repeat; j++) {
-      const tracingPredictTime = predictJsonData[i]['times'][j];
       const name = modelName + '-' + (j + 1);
       fs.writeFileSync(
           name + '.json', JSON.stringify(gpuJsonData[i * repeat + j]));
