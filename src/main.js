@@ -13,7 +13,7 @@ const report = require('./report.js');
 const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
 const util = require('./util.js');
-const modelUtil = require('./trace_model.js');
+const modelUtil = require('./trace.js');
 
 util.args = yargs
   .usage('node $0 [args]')

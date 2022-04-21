@@ -1,64 +1,129 @@
-const {parseGPUTrace, getBaseTimeFromTracing} =
-    require('./trace_model_util.js');
-const {createTableHead, createModelTableHead, createTableHeadEnd, createRows} =
-    require('./trace_ui.js');
-const fs = require('fs');
-const fsasync = require('fs').promises;
-
-function getJsonFromString(str, start, end) {
-  const regStr = String.raw`${start}.*?${end}`;
-  var matchRegex = new RegExp(regStr, 'g');
-  const matchResults = str.match(matchRegex);
-  if (Array.isArray(matchResults)) {
-    var results = [];
-    for (const item of matchResults) {
-      results.push(JSON.parse(item.replace(start, '').replace(end, '')));
-    }
-    return results;
+function getAdjustTime(rawTime, isRawTimestamp, gpuFreq) {
+  let adjustTime = 0;
+  if (isRawTimestamp) {
+    // raw timestamp is ticks.
+    adjustTime = rawTime * 1000 / gpuFreq;
   } else {
-    return new Array(
-        JSON.parse(matchResults.replace(start, '').replace(end, '')));
+    // converted GPU timestamp is ns. Converted to ms.
+    adjustTime = rawTime / 1000000;
   }
+  return adjustTime;
 }
 
-function getModelNames(modelNamesJson) {
-  if (modelNamesJson == null) {
-    console.error('No Model names!');
-    return [];
+// Data. For Profile data, lastFirst is false. For tracing data, lastFirst i
+// strue.
+async function parseGPUTrace(
+    jsonData, lastFirst = true, isRawTimestamp = true, gpuFreq) {
+  if (isRawTimestamp && gpuFreq == 0) {
+    throw 'isRawTimeStamp is true but gpuFreq is 0';
   }
-  const modelNames = [];
-  for (const item in modelNamesJson['performance']) {
-    modelNames.push(modelNamesJson['performance'][item][0]);
+  const traces = [];
+  let sum = 0;
+
+  let tracingGPULastFirst = 0;
+  if (lastFirst) {
+    const tracingGPUStart = jsonData[0]['query'][0];
+    const tracingGPUEnd = jsonData[jsonData.length - 1]['query'][1];
+
+    tracingGPULastFirst = getAdjustTime(
+        (tracingGPUEnd - tracingGPUStart), isRawTimestamp, gpuFreq);
   }
-  return modelNames;
-}
 
-// Make name simple.
-function getName(item) {
-  return item.replace(/[\[\]]/g, '').replace(/\//g, '_').replace(/[,\s]/g, '-');
-}
+  for (let i = 0; i < jsonData.length; i++) {
+    let queryData = jsonData[i]['query'];
 
-function getModelNamesFromLog(logStr) {
-  const matchRegex = /\[\d{1,2}\/\d{1,2}\].*webgpu/g;
-  const matchResults = logStr.match(matchRegex);
-
-  if (Array.isArray(matchResults)) {
-    var results = [];
-    for (const item of matchResults) {
-      const name = getName(item);
-      results.push(name);
+    if (queryData.length == 2) {
+      queryData =
+          getAdjustTime((queryData[1] - queryData[0]), isRawTimestamp, gpuFreq);
+    } else if (queryData.length == 1) {
+      // For profile data, alreay in ms.
+      queryData = queryData[0];
+    } else {
+      console.error(
+          'Query data length ' + queryData.length + ' is not supported!');
     }
-    return results;
+    sum += Number(queryData);
+    traces.push({name: jsonData[i]['name'], query: queryData});
+  }
+  sum = Number(sum).toFixed(3);
+  return [traces, sum, tracingGPULastFirst];
+}
+
+// TODO: merge this with timeline\timeline_trace.js
+function getBaseTime(rawTime, cpuTracingBase) {
+  const splitRawTime = rawTime.split(',');
+  const cpuBase = splitRawTime[2].split(':')[1];
+  const cpuFreq = splitRawTime[4].split(':')[1];
+  const gpuBase = splitRawTime[3].split(':')[1];
+  const gpuFreq = splitRawTime[5].split(':')[1];
+  // Second(s) to microsecond(us).
+  const S2US = 1000000;
+  if (cpuTracingBase != 0) {
+    // If this is used for CPU-GPU time: cpuTracingBase may possibly happens
+    // before cpuBase. We use cpuTracingBase as real base, so the diff should be
+    // applied to gpuBase.
+    const diff = cpuTracingBase - cpuBase * S2US / cpuFreq;
+    return [cpuTracingBase, gpuBase * S2US / gpuFreq + diff, gpuFreq];
   } else {
-    return getName(matchResults);
+    // For GPU only, cpuBase is not used.
+    return [cpuBase * S2US / cpuFreq, gpuBase * S2US / gpuFreq, gpuFreq];
   }
 }
 
-function getAverageInfoFromLog(logStr) {
-  // TODO: This regex takes too long.
-  const matchRegex = /.*\[object Object\]/g;
-  const matchResults = logStr.match(matchRegex);
-  return matchResults;
+// TODO: merge this with timeline\timeline_trace.js
+/**
+ * @param traceFile The tracing file.
+ * @returns [cpuBase, gpuBase, gpuFreq].
+ */
+const eventNames = null;
+async function getBaseTimeFromTracing(traceFile = '') {
+  if (traceFile == null) {
+    console.warn('No tracing file!');
+    return [0, 0, 0];
+  }
+
+  const fsasync = require('fs').promises;
+  let jsonData = JSON.parse(await fsasync.readFile(traceFile));
+  return getBaseTimeFromTracingJson(jsonData);
+}
+
+// For timeline(html): cpuTracingBase is used to get first non-0 time.
+// For node: cpuTracingBase is not used. This is used to get freq.
+// Edit this function under src\timeline\timeline_trace.js.
+function getBaseTimeFromTracingJson(jsonData) {
+  if (jsonData == null) {
+    console.warn('No tracing file!');
+    return [0, 0, 0];
+  }
+
+  const baseTimeName =
+      'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing';
+  let baseTime = '';
+  let cpuTracingBase = 0;
+
+  for (let event of jsonData['traceEvents']) {
+    let eventName = event['name'];
+    if (eventNames && eventNames.indexOf(eventName) >= 0) {
+      if (cpuTracingBase == 0) {
+        // This is the first none 0 ts in tracing.
+        cpuTracingBase = event['ts'];
+      }
+    }
+
+    // This is the first Detailed Timing in tracing.
+    if (eventName == baseTimeName) {
+      if (baseTime == '') {
+        baseTime = event.args['Timing'];
+      }
+    }
+    if (baseTime != '') {
+      return getBaseTime(baseTime, 0);
+    }
+  }
+  if (baseTime == '') {
+    console.warn('Tracing has no Detailed Timing!');
+  }
+  return [0, 0, 0];
 }
 
 async function createModelFromData(
@@ -124,92 +189,10 @@ async function createModelFromData(
   return mergedArray;
 }
 
-function updateUI(tableName, mergedData, modelName, linkInfo, tracingMode) {
-  // Update UI.
-  console.log(tableName);
-  let modelTable = createModelTableHead(tableName);
-
-  modelTable += createTableHeadEnd();
-
-  let table = '';
-  let headdata = Object.keys(mergedData[0]);
-  table += createTableHead(headdata, modelName, linkInfo, tracingMode);
-  table += createRows(mergedData);
-  table += createTableHeadEnd();
-  return modelTable + table;
-}
-
-async function singleModelSummary(
-    tabelName, tracingPredictTime, tracingGpuData, modelName, linkInfo, gpuFreq,
-    tracingMode, profilePredictJsonData = null, profileJsonData = null) {
-  const mergedData = await createModelFromData(
-      tracingPredictTime, tracingGpuData, gpuFreq, true, profilePredictJsonData,
-      profileJsonData);
-  return updateUI(tabelName, mergedData, modelName, linkInfo, tracingMode);
-}
-
-async function modelSummary(
-    modelSummarDir, logfileName, results, benchmarkUrlArgs, gpuFreqTracingFile,
-    tracingMode) {
-  if (logfileName == null) {
-    console.error('No log file!');
-  }
-  console.log('logfileName = ' + logfileName);
-  const logStr = await fsasync.readFile(logfileName, 'binary');
-  const modelNames =
-      results == null ? getModelNamesFromLog(logStr) : getModelNames(results);
-
-  const averageInfos = getAverageInfoFromLog(logStr);
-  const predictJsonData =
-      getJsonFromString(logStr, 'predictbegin', 'predictend');
-  const gpuJsonData = getJsonFromString(logStr, 'gpudatabegin', 'gpudataend');
-
-  const [, , gpuFreq] = gpuFreqTracingFile ?
-      await getBaseTimeFromTracing(gpuFreqTracingFile) :
-      [0, 0, 19200000];
-  console.log('GPU Frequency: ' + gpuFreq);
-
-  let html = `<div>${benchmarkUrlArgs}</div>`;
-  const splitLogfileName = logfileName.split('\\');
-  const date = splitLogfileName[splitLogfileName.length - 1].split('.')[0];
-  const linkInfo = {
-    date: date,
-    gpufreq: gpuFreq,
-    benchmarkUrlArgs: benchmarkUrlArgs
-  };
-
-  // predictJsonData.length is the model number.
-  const modelCount = predictJsonData.length;
-  for (var i = 0; i < modelCount; i++) {
-    // Tracing may possible be repeated. predictJsonData[0]['times'].length
-    // is the repeat count.
-    const repeat = predictJsonData[0]['times'].length;
-    const modelName = modelSummarDir + '\\' + modelNames[i];
-    const tracingPredictTimes = predictJsonData[i]['times'];
-    const gpuJsonDataForModel = gpuJsonData.slice(i * repeat, (i + 1) * repeat);
-    html += await singleModelSummary(
-        modelNames[i].split('-')[0] + '-' +
-            averageInfos[i].replace('[object Object]', ''),
-        tracingPredictTimes, gpuJsonDataForModel, modelNames[i], linkInfo,
-        gpuFreq, tracingMode);
-
-    for (var j = 0; j < repeat; j++) {
-      const name = modelName + '-' + (j + 1);
-      fs.writeFileSync(
-          name + '.json', JSON.stringify(gpuJsonData[i * repeat + j]));
-    }
-
-    fs.writeFileSync(
-        modelName + '-predict.json', JSON.stringify(predictJsonData[i]));
-  }
-
-  const isRawTimestamp = true;
-  const modelSummaryFile = modelSummarDir + '\\' + date + '-raw' +
-      isRawTimestamp + '-modelsummary.html';
-  console.log(modelSummaryFile);
-  fs.writeFileSync(modelSummaryFile, html);
-}
 
 module.exports = {
-  modelSummary: modelSummary
+  parseGPUTrace: parseGPUTrace,
+  getBaseTimeFromTracing: getBaseTimeFromTracing,
+  getBaseTimeFromTracingJson: getBaseTimeFromTracingJson,
+  createModelFromData: createModelFromData,
 };

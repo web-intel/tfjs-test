@@ -15,7 +15,7 @@
     "editor.formatOnSave": true
   },
   "[javascript]": {
-    "editor.formatOnSave": true
+    "editor.formatOnSave": false
   },
   "[cpp]": {
     "editor.formatOnSave": true
