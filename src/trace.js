@@ -1,10 +1,10 @@
 const {createModelFromData, getBaseTimeFromTracing} =
     require('./trace_model.js');
 const {
-  createTableHeadStartWithLink,
-  createTableHeadStartWithInfo,
-  createTableHeadEnd,
-  createRows
+  createTableStartWithLink,
+  createTableStartWithInfo,
+  createTableEnd,
+  createTableRows
 } = require('./trace_ui.js');
 const {
   getJsonFromString,
@@ -17,16 +17,15 @@ const fsasync = require('fs').promises;
 
 function updateUI(tableName, mergedData, modelName, linkInfo, tracingMode) {
   // Update UI.
-  let modelTable = createTableHeadStartWithInfo(tableName);
+  let modelTable = createTableStartWithInfo(tableName);
 
-  modelTable += createTableHeadEnd();
+  modelTable += createTableEnd();
 
   let table = '';
   let headdata = Object.keys(mergedData[0]);
-  table +=
-      createTableHeadStartWithLink(headdata, modelName, linkInfo, tracingMode);
-  table += createRows(mergedData);
-  table += createTableHeadEnd();
+  table += createTableStartWithLink(headdata, modelName, linkInfo, tracingMode);
+  table += createTableRows(mergedData);
+  table += createTableEnd();
   return modelTable + table;
 }
 

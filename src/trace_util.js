@@ -22,7 +22,7 @@ function getModelNames(modelNamesJson) {
   }
   const modelNames = [];
   for (const item in modelNamesJson['performance']) {
-    modelNames.push(modelNamesJson['performance'][item][0]);
+    modelNames.push(modelNamesJson['performance'][item][0].replace(/ /g, '_'));
   }
   return modelNames;
 }

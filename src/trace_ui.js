@@ -1,5 +1,5 @@
 // View.
-function createTableHeadStart() {
+function createTableStart() {
   return `<style>
   table {
     font-family: Arial, Helvetica, sans-serif;
@@ -31,32 +31,32 @@ function createTableHeadStart() {
   </style><table><thead>`;
 }
 
-function createTableHeadEnd() {
+function createTableEnd() {
   return '</table>';
 }
 
-function createTableHeadStartWithInfo(data) {
-  var header = createTableHeadStart();
+function createTableStartWithInfo(data) {
+  var header = createTableStart();
   header += `<th>${data}</th></thead>`;
   return header;
 }
 
-function createTableHeadStartWithLink(data, modelName, linkInfo, tracingMode) {
-  var header = createTableHeadStart();
-  header +=
-      createRowWithLink(data, modelName, linkInfo, tracingMode) + '</thead>';
+function createTableStartWithLink(data, modelName, linkInfo, tracingMode) {
+  var header = createTableStart();
+  header += createTableRowWithLink(data, modelName, linkInfo, tracingMode) +
+      '</thead>';
   return header;
 }
 
-function createRows(data) {
+function createTableRows(data) {
   var rows = '';
   for (let element of data) {
-    rows += createRow(element);
+    rows += createTableRow(element);
   }
   return rows;
 }
 
-function createRow(data) {
+function createTableRow(data) {
   let tr = '<tr>';
   for (key in data) {
     tr += `<td>${data[key]}</td>`;
@@ -74,7 +74,7 @@ function getParaFromLinkInfo(linkInfo) {
 }
 
 // linkinfo:  {date: 2022, gpufreq: 192000}
-function createRowWithLink(data, modelName, linkInfo, tracingMode) {
+function createTableRowWithLink(data, modelName, linkInfo, tracingMode) {
   let tr = '<tr>';
   const lintStr = getParaFromLinkInfo(linkInfo);
   const rawTimestamp = '&rawtimestamp=true';
@@ -101,9 +101,8 @@ function createRowWithLink(data, modelName, linkInfo, tracingMode) {
 }
 
 module.exports = {
-  createTableHeadStartWithLink: createTableHeadStartWithLink,
-  createTableHeadStartWithInfo: createTableHeadStartWithInfo,
-  createTableHeadEnd: createTableHeadEnd,
-  createRow: createRow,
-  createRows: createRows
+  createTableStartWithLink: createTableStartWithLink,
+  createTableStartWithInfo: createTableStartWithInfo,
+  createTableEnd: createTableEnd,
+  createTableRows: createTableRows
 };
