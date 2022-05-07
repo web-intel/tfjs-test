@@ -11,6 +11,7 @@ const {
   getModelNames,
   getModelNamesFromLog,
   getAverageInfoFromLog,
+  splitTracingByModel,
 } = require('./trace_util.js');
 const fs = require('fs');
 const fsasync = require('fs').promises;
@@ -83,6 +84,8 @@ async function modelSummary(
         tracingPredictTimes, gpuJsonDataForModel, modelNames[i], linkInfo,
         gpuFreq, tracingMode);
 
+    await splitTracingByModel(
+        `${modelNames[i]}-webgpu-trace.json`, [modelNames[i]], modelSummarDir);
     for (var j = 0; j < repeat; j++) {
       const name = modelName + '-' + (j + 1);
       fs.writeFileSync(

@@ -84,7 +84,7 @@ function createTableRowWithLink(data, modelName, linkInfo, tracingMode) {
         tr += `<td><a href="./../../timeline.html?${lintStr}&${
             rawTimestamp}&gpufile=${modelName}-${key}">${data[key]}-GPU</a>
           <a href="./../../timeline.html?${lintStr}&${rawTimestamp}&gpufile=${
-            modelName}-${key}&cpufile=${modelName}-webgpu-trace">${
+            modelName}-${key}&cpufile=${modelName}-${key}-tracing">${
             data[key]}-CPUGPU</a>
           </td>`;
       } else {

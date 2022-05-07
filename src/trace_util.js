@@ -55,9 +55,94 @@ function getAverageInfoFromLog(logStr) {
   return matchResults;
 }
 
+async function readFileAsync(fileName) {
+  const fsasync = require('fs').promises;
+  return await fsasync.readFile(fileName, 'binary');
+}
+
+
+function pushEvents(results, runCount, event) {
+  if (!(runCount in results)) {
+    results[runCount] = [];
+  }
+  // Event is us. Result is ms.
+  results[runCount].push(event);
+}
+
+async function splitTracingByModel(traceFile, modelNames, modelSummarDir) {
+  const eventNames = [
+    'DeviceBase::APICreateComputePipeline',
+    'CreateComputePipelineAsyncTask::Run', 'DeviceBase::APICreateShaderModule',
+    'Queue::Submit'
+  ];
+
+  const eventJSTimestampNames = [
+    'predict', 'timeInferenceForTracing', 'JSSubmitQueue', 'JSGetBufferData',
+    'JSGetBufferDataEnd', 'JSGetKernelTimesEnd', 'JSrunWebGLProgram',
+    'JSrunWebGLProgramEnd', 'JSreadSync', 'JSreadSyncEnd', 'JSread', 'JSreadEnd'
+  ];
+
+  const dawnTimestampName =
+      'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing';
+
+  let results = [];
+
+  let jsonData =
+      JSON.parse(await readFileAsync(`${modelSummarDir}/${traceFile}`));
+  const traceEndTag = 'metadata';
+  const traceEnd = jsonData[traceEndTag];
+  let runCount = -1;
+  let inModel = false;
+  for (let event of jsonData['traceEvents']) {
+    let eventName = event['name'];
+
+    let jsMessageName;
+    if (event['args'] && event['args']['data'] &&
+        event['args']['data']['message']) {
+      jsMessageName = event['args']['data']['message'];
+    }
+
+    // For console.timeStamp. {data: [{name: 'xxxx', xAxis: 9}]},
+    const modelBeginMessage = 'predict';
+    const modelEndMessage = 'JSGetKernelTimesEnd';
+    const eventJSTimestampNameIndex =
+        eventJSTimestampNames.indexOf(jsMessageName);
+    if (eventJSTimestampNameIndex >= 0 && eventName == 'TimeStamp') {
+      if (jsMessageName == modelBeginMessage) {
+        runCount++;
+        inModel = true;
+        if (inModel) pushEvents(results, runCount, event);
+      } else if (jsMessageName == modelEndMessage) {
+        if (inModel) pushEvents(results, runCount, event);
+        inModel = false;
+      } else {
+        if (inModel) pushEvents(results, runCount, event);
+      }
+    } else if (eventName == dawnTimestampName) {
+      if (inModel) pushEvents(results, runCount, event);
+    } else if (eventNames.indexOf(eventName) >= 0) {
+      if (inModel) pushEvents(results, runCount, event);
+    }
+  }
+  const runPerModel = results.length / modelNames.length;
+  for (let j = 0; j < modelNames.length; j++) {
+    for (let i = 0; i < runPerModel; i++) {
+      let result = {
+        'traceEvents': results[j * runPerModel + i],
+        'metadata': traceEnd
+      };
+      var fs = require('fs');
+      fs.writeFileSync(
+          `${modelSummarDir}/${modelNames[j]}-${i + 1}-tracing.json`,
+          JSON.stringify(result));
+    }
+  }
+}
+
 module.exports = {
   getJsonFromString: getJsonFromString,
   getModelNames: getModelNames,
   getModelNamesFromLog: getModelNamesFromLog,
   getAverageInfoFromLog: getAverageInfoFromLog,
+  splitTracingByModel: splitTracingByModel,
 };
