@@ -30,12 +30,9 @@ function intersect(a, b) {
 
 async function startContext(traceFile = '') {
   let traceArgs = '';
-  if (util.args['tracing'] === 'all' || util.gpufreqTraceFile === '') {
+  if (util.getTraceFlag()) {
     traceArgs = ` --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion
       --trace-startup-format=json --enable-tracing=${util.args['trace-category']} --trace-startup-file=${traceFile}`;
-  } else  if (util.args['tracing'] === 'gpu') {
-    traceArgs = ` --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion
-      --trace-startup-file=${traceFile}`;
   }
 
   if (!util.dryrun) {

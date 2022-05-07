@@ -144,9 +144,9 @@ util.args = yargs
     type: 'string',
     describe: 'trace file',
   })
-  .option('tracing', {
+  .option('trace', {
     type: 'string',
-    describe: 'Enable tracing: all, gpu',
+    describe: 'Enable tracing',
   })
   .option('unit-backend', {
     type: 'string',
@@ -322,13 +322,13 @@ async function main() {
     await config();
   }
 
-  const tracing = 'tracing' in util.args || 'trace-category' in util.args;
-  if (tracing == true) {
-    console.log("Tracing is ON: "+ util.args['tracing']);
-    if (util.args['tracing'] === 'all' && util.args['trace-category'] == null) {
+  const trace = 'trace' in util.args || 'trace-category' in util.args;
+  if (trace == true) {
+    console.log("Tracing is ON: "+ util.args['trace']);
+    if (util.args['trace-category'] == null) {
       throw new Error("Tracing all mode, but trace-category is not defined");
     }
-    util.benchmarkUrlArgs +=`&tracing=${tracing}`;
+    util.benchmarkUrlArgs +=`&tracing=${trace}`;
   }
 
   let results = {};
@@ -341,7 +341,7 @@ async function main() {
       fs.truncateSync(util.logFile, 0);
     }
 
-    const modelSummaryDir = tracing ? createSummaryFolder(util.logFile) : '';
+    const modelSummaryDir = trace ? createSummaryFolder(util.logFile) : '';
 
     if (util.args['repeat'] > 1) {
       util.log(`== Test round ${i + 1}/${util.args['repeat']} ==`);
@@ -365,8 +365,8 @@ async function main() {
       util.duration += `${target}: ${(new Date() - startTime) / 1000} `;
     }
 
-    if (tracing == true) {
-      await modelSummary(modelSummaryDir, util.logFile, results, util.benchmarkUrlArgs, util.gpufreqTraceFile, util.args['tracing']);
+    if (trace == true) {
+      await modelSummary(modelSummaryDir, util.logFile, results, util.benchmarkUrlArgs, util.gpufreqTraceFile, 'all');
     }
     await report(results);
   }
