@@ -329,9 +329,6 @@ async function main() {
       throw new Error("Tracing all mode, but trace-category is not defined");
     }
     util.benchmarkUrlArgs +=`&tracing=${tracing}`;
-    util.timestamp = getTimestamp(util.args['timestamp']);
-    util.logFile = path.join(util.outDir, `${util.timestamp}-gpufreq.log`);
-    await getGPUFreq(util.outDir);
   }
 
   let results = {};
@@ -385,16 +382,6 @@ function createSummaryFolder(logfileName) {
     console.error(err)
   }
   return modelSummaryDir;
-}
-
-async function getGPUFreq(modelSummaryDir) {
-  const target = 'performance';
-  const benchmarkFileForGpufreq = 'benchmark_getinfo.json';
-  util.log(`=Get GPU Frequency=` + util.args['benchmark']);
-  const lastArgs = util.args['benchmark'];
-  util.args['benchmark'] = null;
-  await runBenchmark(target, modelSummaryDir, benchmarkFileForGpufreq);
-  util.args['benchmark'] = lastArgs;
 }
 
 main();
