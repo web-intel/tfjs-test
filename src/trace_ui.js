@@ -76,19 +76,16 @@ function getParaFromLinkInfo(linkInfo) {
 // linkinfo:  {date: 2022, gpufreq: 192000}
 function createTableRowWithLink(data, modelName, linkInfo, tracingMode) {
   let tr = '<tr>';
-  const lintStr = getParaFromLinkInfo(linkInfo);
+  const linkStr = getParaFromLinkInfo(linkInfo);
   const rawTimestamp = '&rawtimestamp=true';
   for (key in data) {
     if (data[key] != 'name') {
       if (tracingMode == 'all') {
-        tr += `<td><a href="./../../timeline.html?${lintStr}&${
-            rawTimestamp}&gpufile=${modelName}-${key}">${data[key]}-GPU</a>
-          <a href="./../../timeline.html?${lintStr}&${rawTimestamp}&gpufile=${
-            modelName}-${key}&cpufile=${modelName}-${key}-tracing">${
-            data[key]}-CPUGPU</a>
+        tr += `<td><a href="./../../timeline.html?${linkStr}&${
+            rawTimestamp}&trace=${modelName}-${key}">${data[key]}</a>
           </td>`;
       } else {
-        tr += `<td><a href="./../../timeline.html?${lintStr}&${
+        tr += `<td><a href="./../../timeline.html?${linkStr}&${
             rawTimestamp}&gpufile=${modelName}-${key}">${data[key]}-GPU</a>
           </td>`;
       }

@@ -158,7 +158,7 @@ async function runBenchmark(target, modelSummaryDir, benchmarkJsonFile = 'benchm
     util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
 
     if ('new-context' in util.args) {
-      if ('trace-category' in util.args) {
+      if (util.getTraceFlag()) {
         traceFile = `${modelSummaryDir}/${benchmark.join('-').replace(/ /g, '_')}-trace.json`;
         if (util.gpufreqTraceFile === '') {
           util.gpufreqTraceFile = traceFile;

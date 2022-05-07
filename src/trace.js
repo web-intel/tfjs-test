@@ -84,12 +84,22 @@ async function modelSummary(
         tracingPredictTimes, gpuJsonDataForModel, modelNames[i], linkInfo,
         gpuFreq, tracingMode);
 
-    await splitTracingByModel(
-        `${modelNames[i]}-webgpu-trace.json`, [modelNames[i]], modelSummarDir);
+    const [tracingForModel, traceEnd] = await splitTracingByModel(
+        `${modelNames[i]}-webgpu-trace.json`, modelSummarDir);
+    if (tracingForModel.length != repeat) {
+      throw new Error(`${modelNames[i]} length of tracing for model(${
+          tracingForModel.length}) doesn\'t equals GPU length(${repeat})`);
+    }
     for (var j = 0; j < repeat; j++) {
       const name = modelName + '-' + (j + 1);
-      fs.writeFileSync(
-          name + '.json', JSON.stringify(gpuJsonData[i * repeat + j]));
+      const dataForGPU = gpuJsonData[i * repeat + j];
+
+      const dataForTracing = {
+        'traceEvents': tracingForModel[j],
+        'metadata': traceEnd
+      };
+      const dataForModel = {'trace': dataForTracing, 'gpu': dataForGPU};
+      fs.writeFileSync(`${name}.json`, JSON.stringify(dataForModel));
     }
 
     fs.writeFileSync(

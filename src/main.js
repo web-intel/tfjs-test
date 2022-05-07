@@ -293,7 +293,7 @@ async function main() {
 
   util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&profile=${profileTimes}&localBuild=${util.args['local-build']}`;
 
-  if ('trace-category' in util.args) {
+  if (util.getTraceFlag()) {
     util.args['new-context'] = true;
     util.benchmarkUrlArgs +=`&tracing=true`;
   }
@@ -324,9 +324,8 @@ async function main() {
 
   const trace = 'trace' in util.args || 'trace-category' in util.args;
   if (trace == true) {
-    console.log("Tracing is ON: "+ util.args['trace']);
     if (util.args['trace-category'] == null) {
-      throw new Error("Tracing all mode, but trace-category is not defined");
+      util.args['trace-category'] = 'disabled-by-default-gpu.dawn';
     }
     util.benchmarkUrlArgs +=`&tracing=${trace}`;
   }

@@ -69,7 +69,7 @@ function pushEvents(results, runCount, event) {
   results[runCount].push(event);
 }
 
-async function splitTracingByModel(traceFile, modelNames, modelSummarDir) {
+async function splitTracingByModel(traceFile, modelSummarDir) {
   const eventNames = [
     'DeviceBase::APICreateComputePipeline',
     'CreateComputePipelineAsyncTask::Run', 'DeviceBase::APICreateShaderModule',
@@ -124,19 +124,7 @@ async function splitTracingByModel(traceFile, modelNames, modelSummarDir) {
       if (inModel) pushEvents(results, runCount, event);
     }
   }
-  const runPerModel = results.length / modelNames.length;
-  for (let j = 0; j < modelNames.length; j++) {
-    for (let i = 0; i < runPerModel; i++) {
-      let result = {
-        'traceEvents': results[j * runPerModel + i],
-        'metadata': traceEnd
-      };
-      var fs = require('fs');
-      fs.writeFileSync(
-          `${modelSummarDir}/${modelNames[j]}-${i + 1}-tracing.json`,
-          JSON.stringify(result));
-    }
-  }
+  return [results, traceEnd];
 }
 
 module.exports = {
