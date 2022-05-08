@@ -54,22 +54,35 @@ async function runUnit() {
       shellOption = '-c';
     }
 
+    let ret, shellCmd;
     if (backend === 'webgpu') {
       if (!(util.args['unit-skip-build'])) {
         process.chdir(path.join(tfjsDir, `link-package-core`));
-        spawnSync(shell, [shellOption, `yarn build > ${logFile}`], {
+        shellCmd = `yarn build > ${logFile}`;
+        util.log(`[cmd] ${shellCmd}`);
+        ret = spawnSync(shell, [shellOption, shellCmd], {
           env: process.env,
           stdio: [process.stdin, process.stdout, process.stderr],
           timeout: timeout
         });
+        if (ret.status) {
+          util.log(ret);
+          continue;
+        }
+
         process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
-        spawnSync(
-          shell,
-          [shellOption, `yarn && yarn build && yarn bazel build src:tests > ${logFile}`], {
+        shellCmd = `yarn && yarn --cwd .. bazel build && yarn --cwd .. bazel build tfjs-backend-${backend}/src:tests > ${logFile}`;
+        util.log(`[cmd] ${shellCmd}`);
+        ret = spawnSync(shell, [shellOption, shellCmd], {
           env: process.env,
           stdio: [process.stdin, process.stdout, process.stderr],
           timeout: timeout
         });
+        if (ret.status) {
+          util.log(ret);
+          continue;
+        }
+
         fs.unlink(
           path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
           () => { });
