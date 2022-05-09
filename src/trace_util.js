@@ -69,7 +69,7 @@ function pushEvents(results, runCount, event) {
   results[runCount].push(event);
 }
 
-async function splitTracingByModel(traceFile, modelSummarDir) {
+async function splitTraceByModel(traceFile, modelSummarDir) {
   const eventNames = [
     'DeviceBase::APICreateComputePipeline',
     'CreateComputePipelineAsyncTask::Run', 'DeviceBase::APICreateShaderModule',
@@ -102,7 +102,6 @@ async function splitTracingByModel(traceFile, modelSummarDir) {
       jsMessageName = event['args']['data']['message'];
     }
 
-    // For console.timeStamp. {data: [{name: 'xxxx', xAxis: 9}]},
     const modelBeginMessage = 'predict';
     const modelEndMessage = 'JSGetKernelTimesEnd';
     const eventJSTimestampNameIndex =
@@ -132,5 +131,5 @@ module.exports = {
   getModelNames: getModelNames,
   getModelNamesFromLog: getModelNamesFromLog,
   getAverageInfoFromLog: getAverageInfoFromLog,
-  splitTracingByModel: splitTracingByModel,
+  splitTraceByModel: splitTraceByModel,
 };

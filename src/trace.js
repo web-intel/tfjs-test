@@ -11,7 +11,7 @@ const {
   getModelNames,
   getModelNamesFromLog,
   getAverageInfoFromLog,
-  splitTracingByModel,
+  splitTraceByModel,
 } = require('./trace_util.js');
 const fs = require('fs');
 const fsasync = require('fs').promises;
@@ -84,7 +84,7 @@ async function modelSummary(
         tracingPredictTimes, gpuJsonDataForModel, modelNames[i], linkInfo,
         gpuFreq, tracingMode);
 
-    const [tracingForModel, traceEnd] = await splitTracingByModel(
+    const [tracingForModel, traceEnd] = await splitTraceByModel(
         `${modelNames[i]}-webgpu-trace.json`, modelSummarDir);
     if (tracingForModel.length != repeat) {
       throw new Error(`${modelNames[i]} length of tracing for model(${

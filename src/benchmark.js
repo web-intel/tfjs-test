@@ -28,20 +28,14 @@ function intersect(a, b) {
   return a.filter(v => b.includes(v));
 }
 
-async function startContext(traceFile = '') {
-  let traceArgs = '';
-  if (util.getTraceFlag()) {
-    traceArgs = ` --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion
-      --trace-startup-format=json --enable-tracing=${util.args['trace-category']} --trace-startup-file=${traceFile}`;
-  }
-
+async function startContext() {
   if (!util.dryrun) {
     let context = await chromium.launchPersistentContext(util.userDataDir, {
       headless: false,
       executablePath: util['browserPath'],
       viewport: null,
       ignoreHTTPSErrors: true,
-      args: util['browserArgs'].split(' ').concat(traceArgs.split(' ')),
+      args: util['browserArgs'].split(' '),
     });
     let page = await context.newPage();
     page.on('console', async msg => {
@@ -70,6 +64,7 @@ async function runBenchmark(target, modelSummaryDir, benchmarkJsonFile = 'benchm
   let benchmarks = [];
   let benchmarkJson = path.join(path.resolve(__dirname), benchmarkJsonFile);
   let targetConfigs = JSON.parse(fs.readFileSync(benchmarkJson));
+  const lastBrowserArgs = util['browserArgs'];
 
   for (let config of targetConfigs) {
     if ('benchmark' in util.args && util.args['benchmark']) {
@@ -163,8 +158,11 @@ async function runBenchmark(target, modelSummaryDir, benchmarkJsonFile = 'benchm
         if (util.gpufreqTraceFile === '') {
           util.gpufreqTraceFile = traceFile;
         }
+        const traceArgs = ` --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion
+          --trace-startup-format=json --enable-tracing=${util.args['trace-category']} --trace-startup-file=${traceFile}`;
+        util['browserArgs'] = lastBrowserArgs + traceArgs;
       }
-      [context, page] = await startContext(traceFile);
+      [context, page] = await startContext();
     }
 
     // prepare result placeholder
