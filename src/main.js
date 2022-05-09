@@ -327,6 +327,7 @@ async function main() {
     if (util.args['trace-category'] == null) {
       util.args['trace-category'] = 'disabled-by-default-gpu.dawn';
     }
+    util.args['disable-breakdown'] = true;
     util.benchmarkUrlArgs +=`&tracing=${trace}`;
   }
 
