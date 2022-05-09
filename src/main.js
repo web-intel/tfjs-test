@@ -293,11 +293,6 @@ async function main() {
 
   util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&profile=${profileTimes}&localBuild=${util.args['local-build']}`;
 
-  if (util.getTraceFlag()) {
-    util.args['new-context'] = true;
-    util.benchmarkUrlArgs +=`&tracing=true`;
-  }
-
   if ('benchmark-url-args' in util.args) {
     util.benchmarkUrlArgs += `&${util.args['benchmark-url-args']}`;
   }
@@ -322,8 +317,9 @@ async function main() {
     await config();
   }
 
-  const trace = 'trace' in util.args || 'trace-category' in util.args;
+  const trace = util.getTraceFlag();
   if (trace == true) {
+    util.args['new-context'] = true;
     if (util.args['trace-category'] == null) {
       util.args['trace-category'] = 'disabled-by-default-gpu.dawn';
     }
