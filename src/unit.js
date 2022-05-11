@@ -57,8 +57,8 @@ async function runUnit() {
     let ret, shellCmd;
     if (backend === 'webgpu') {
       if (!(util.args['unit-skip-build'])) {
-        process.chdir(path.join(tfjsDir, `link-package-core`));
-        shellCmd = `yarn build > ${logFile}`;
+        process.chdir(path.join(tfjsDir, `link-package`));
+        shellCmd = `yarn build-deps-for tfjs-core tfjs-backend-webgl > ${logFile}`;
         util.log(`[cmd] ${shellCmd}`);
         ret = spawnSync(shell, [shellOption, shellCmd], {
           env: process.env,
@@ -71,7 +71,7 @@ async function runUnit() {
         }
 
         process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
-        shellCmd = `yarn && yarn --cwd .. bazel build && yarn --cwd .. bazel build tfjs-backend-${backend}/src:tests > ${logFile}`;
+        shellCmd = `yarn && yarn --cwd .. bazel build tfjs-backend-${backend}/src:tests > ${logFile}`;
         util.log(`[cmd] ${shellCmd}`);
         ret = spawnSync(shell, [shellOption, shellCmd], {
           env: process.env,
@@ -82,16 +82,6 @@ async function runUnit() {
           util.log(ret);
           continue;
         }
-
-        fs.unlink(
-          path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
-          () => { });
-        fs.copyFile(
-          path.join(
-            tfjsDir, 'bazel-out', 'x64_windows-fastbuild', 'bin',
-            'tfjs-backend-webgpu', 'src', 'tests.ts'),
-          path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
-          () => { });
       }
 
       let filter = '';
