@@ -10,10 +10,8 @@ function getAdjustTime(rawTime, isRawTimestamp, gpuFreq) {
   return adjustTime;
 }
 
-// Data. For Profile data, lastFirst is false. For tracing data, lastFirst i
-// strue.
-async function parseGPUTrace(
-    jsonData, lastFirst = true, isRawTimestamp = true, gpuFreq) {
+// For profile data, lastFirst is false. For tracing data, lastFirst is true.
+async function parseGPUTrace(jsonData, lastFirst, isRawTimestamp, gpuFreq) {
   if (isRawTimestamp && gpuFreq == 0) {
     throw 'isRawTimeStamp is true but gpuFreq is 0';
   }
@@ -127,14 +125,13 @@ function getBaseTimeFromTracingJson(jsonData) {
 }
 
 async function createModelFromData(
-    tracingPredictTime, tracingGpuData, gpuFreq, isRawTimestamp = true,
-    profilePredictJsonData, profileJsonData) {
+    tracingPredictTime, tracingGpuData, gpuFreq, isRawTimestamp = true) {
   if (tracingGpuData == null) {
     throw 'Tracing JSON data is NULL!';
   }
   // Model data: Tracing predict.
   const rootDir = 'timeline\\';
-  // Ops data.
+  // Op data.
   const repeat = tracingGpuData.length;
   const repeatTracingDataArray = [];
   const tracingGPULastFirstArray = [];
@@ -162,8 +159,6 @@ async function createModelFromData(
       line[`Query${j + 1}`] = Number(repeatTracingDataArray[j][i]['query'])
                                   .toFixed(LENGTH_OF_DIGITALS);
     }
-    // TODO: Add Profile support here.
-    // line[`Query${repeat}`] = profileJsonData[j];
     mergedArray.push(line);
   }
   {

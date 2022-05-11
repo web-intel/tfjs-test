@@ -61,7 +61,10 @@ async function readFileAsync(fileName) {
 }
 
 
-function pushEvents(results, runCount, event) {
+function pushEvents(results, runCount, event, inModel) {
+  if (!inModel) {
+    return;
+  }
   if (!(runCount in results)) {
     results[runCount] = [];
   }
@@ -110,17 +113,17 @@ async function splitTraceByModel(traceFile, modelSummarDir) {
       if (jsMessageName == modelBeginMessage) {
         runCount++;
         inModel = true;
-        if (inModel) pushEvents(results, runCount, event);
+        pushEvents(results, runCount, event, inModel);
       } else if (jsMessageName == modelEndMessage) {
-        if (inModel) pushEvents(results, runCount, event);
+        pushEvents(results, runCount, event, inModel);
         inModel = false;
       } else {
-        if (inModel) pushEvents(results, runCount, event);
+        pushEvents(results, runCount, event, inModel);
       }
     } else if (eventName == dawnTimestampName) {
-      if (inModel) pushEvents(results, runCount, event);
+      pushEvents(results, runCount, event, inModel);
     } else if (eventNames.indexOf(eventName) >= 0) {
-      if (inModel) pushEvents(results, runCount, event);
+      pushEvents(results, runCount, event, inModel);
     }
   }
   return [results, traceEnd];
