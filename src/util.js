@@ -58,6 +58,10 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getTraceFlag() {
+ return 'trace' in this.args || 'trace-category' in this.args;
+}
+
 module.exports = {
   'browserArgs': '--enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis --enable-features=WebAssemblyThreads,SharedArrayBuffer,WebAssemblySimd,MediaFoundationD3D11VideoCapture --start-maximized',
   'hostname': os.hostname(),
@@ -70,9 +74,11 @@ module.exports = {
   'benchmarkUrlArgs': 'WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false',
   'demoUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos',
   'timeout': 180 * 1000,
+  'gpufreqTraceFile': '',
   capitalize: capitalize,
   getDuration: getDuration,
   log: log,
   sleep: sleep,
   uncapitalize: uncapitalize,
+  getTraceFlag: getTraceFlag,
 };
