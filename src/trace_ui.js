@@ -41,10 +41,10 @@ function createTableStartWithInfo(data) {
   return header;
 }
 
-function createTableStartWithLink(data, modelName, linkInfo, tracingMode) {
+function createTableStartWithLink(data, modelName, linkInfo, traceMode) {
   var header = createTableStart();
-  header += createTableRowWithLink(data, modelName, linkInfo, tracingMode) +
-      '</thead>';
+  header +=
+      createTableRowWithLink(data, modelName, linkInfo, traceMode) + '</thead>';
   return header;
 }
 
@@ -74,15 +74,15 @@ function getParaFromLinkInfo(linkInfo) {
 }
 
 // linkinfo:  {date: 2022, gpufreq: 192000}
-function createTableRowWithLink(data, modelName, linkInfo, tracingMode) {
+function createTableRowWithLink(data, modelName, linkInfo, traceMode) {
   let tr = '<tr>';
   const linkStr = getParaFromLinkInfo(linkInfo);
   const rawTimestamp = '&rawtimestamp=true';
   for (key in data) {
     if (data[key] != 'name') {
-      if (tracingMode == 'all') {
+      if (traceMode == 'all') {
         tr += `<td><a href="./../../timeline.html?${linkStr}&${
-            rawTimestamp}&trace=${modelName}-${key}">${data[key]}</a>
+            rawTimestamp}&tracefile=${modelName}-${key}">${data[key]}</a>
           </td>`;
       } else {
         tr += `<td><a href="./../../timeline.html?${linkStr}&${

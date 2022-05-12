@@ -80,8 +80,8 @@ async function splitTraceByModel(traceFile, modelSummarDir) {
   ];
 
   const eventJSTimestampNames = [
-    'predict', 'timeInferenceForTracing', 'JSSubmitQueue', 'JSGetBufferData',
-    'JSGetBufferDataEnd', 'JSGetKernelTimesEnd', 'JSrunWebGLProgram',
+    'predict', 'timeInferenceForTracing', 'JSsubmitQueue', 'JSgetBufferData',
+    'JSgetBufferDataEnd', 'JSgetKernelTimesEnd', 'JSrunWebGLProgram',
     'JSrunWebGLProgramEnd', 'JSreadSync', 'JSreadSyncEnd', 'JSread', 'JSreadEnd'
   ];
 
@@ -106,7 +106,7 @@ async function splitTraceByModel(traceFile, modelSummarDir) {
     }
 
     const modelBeginMessage = 'predict';
-    const modelEndMessage = 'JSGetKernelTimesEnd';
+    const modelEndMessage = 'JSgetKernelTimesEnd';
     const eventJSTimestampNameIndex =
         eventJSTimestampNames.indexOf(jsMessageName);
     if (eventJSTimestampNameIndex >= 0 && eventName == 'TimeStamp') {

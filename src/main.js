@@ -146,7 +146,7 @@ util.args = yargs
   })
   .option('trace', {
     type: 'string',
-    describe: 'Enable tracing',
+    describe: 'Enable trace',
   })
   .option('unit-backend', {
     type: 'string',
@@ -324,7 +324,7 @@ async function main() {
       util.args['trace-category'] = 'disabled-by-default-gpu.dawn';
     }
     util.args['disable-breakdown'] = true;
-    util.benchmarkUrlArgs +=`&tracing=${trace}`;
+    util.benchmarkUrlArgs +=`&trace=${trace}`;
   }
 
   let results = {};

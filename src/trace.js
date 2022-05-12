@@ -1,5 +1,4 @@
-const {createModelFromData, getBaseTimeFromTracing} =
-    require('./trace_model.js');
+const {createModelFromData, getBaseTimeFromTrace} = require('./trace_model.js');
 const {
   createTableStartWithLink,
   createTableStartWithInfo,
@@ -16,7 +15,7 @@ const {
 const fs = require('fs');
 const fsasync = require('fs').promises;
 
-function updateUI(tableName, mergedData, modelName, linkInfo, tracingMode) {
+function updateUI(tableName, mergedData, modelName, linkInfo, traceMode) {
   // Update UI.
   let modelTable = createTableStartWithInfo(tableName);
 
@@ -24,24 +23,24 @@ function updateUI(tableName, mergedData, modelName, linkInfo, tracingMode) {
 
   let table = '';
   let headdata = Object.keys(mergedData[0]);
-  table += createTableStartWithLink(headdata, modelName, linkInfo, tracingMode);
+  table += createTableStartWithLink(headdata, modelName, linkInfo, traceMode);
   table += createTableRows(mergedData);
   table += createTableEnd();
   return modelTable + table;
 }
 
 async function singleModelSummary(
-    tabelName, tracingPredictTime, tracingGpuData, modelName, linkInfo, gpuFreq,
-    tracingMode, profilePredictJsonData = null, profileJsonData = null) {
+    tabelName, tracePredictTime, traceGpuData, modelName, linkInfo, gpuFreq,
+    traceMode, profilePredictJsonData = null, profileJsonData = null) {
   const mergedData = await createModelFromData(
-      tracingPredictTime, tracingGpuData, gpuFreq, true, profilePredictJsonData,
+      tracePredictTime, traceGpuData, gpuFreq, true, profilePredictJsonData,
       profileJsonData);
-  return updateUI(tabelName, mergedData, modelName, linkInfo, tracingMode);
+  return updateUI(tabelName, mergedData, modelName, linkInfo, traceMode);
 }
 
 async function modelSummary(
-    modelSummarDir, logfileName, results, benchmarkUrlArgs, gpuFreqTracingFile,
-    tracingMode) {
+    modelSummarDir, logfileName, results, benchmarkUrlArgs, gpuFreqTraceFile,
+    traceMode) {
   if (logfileName == null) {
     console.error('No log file!');
   }
@@ -55,8 +54,8 @@ async function modelSummary(
       getJsonFromString(logStr, 'predictbegin', 'predictend');
   const gpuJsonData = getJsonFromString(logStr, 'gpudatabegin', 'gpudataend');
 
-  const [, , gpuFreq] = gpuFreqTracingFile ?
-      await getBaseTimeFromTracing(gpuFreqTracingFile) :
+  const [, , gpuFreq] = gpuFreqTraceFile ?
+      await getBaseTimeFromTrace(gpuFreqTraceFile) :
       [0, 0, 19200000];
   console.log('GPU Frequency: ' + gpuFreq);
 
@@ -69,36 +68,36 @@ async function modelSummary(
     benchmarkUrlArgs: benchmarkUrlArgs
   };
 
-  // predictJsonData.length is the model number.
+  // predictJsonData.length is number of model.
   const modelCount = predictJsonData.length;
   for (var i = 0; i < modelCount; i++) {
-    // Tracing may possible be repeated. predictJsonData[0]['times'].length
+    // Trace may possible be repeated. predictJsonData[0]['times'].length
     // is the repeat count.
     const repeat = predictJsonData[0]['times'].length;
     const modelName = modelSummarDir + '\\' + modelNames[i];
-    const tracingPredictTimes = predictJsonData[i]['times'];
+    const tracePredictTimes = predictJsonData[i]['times'];
     const gpuJsonDataForModel = gpuJsonData.slice(i * repeat, (i + 1) * repeat);
     html += await singleModelSummary(
         modelNames[i].split('-')[0] + '-' +
             averageInfos[i].replace('[object Object]', ''),
-        tracingPredictTimes, gpuJsonDataForModel, modelNames[i], linkInfo,
-        gpuFreq, tracingMode);
+        tracePredictTimes, gpuJsonDataForModel, modelNames[i], linkInfo,
+        gpuFreq, traceMode);
 
-    const [tracingForModel, traceEnd] = await splitTraceByModel(
+    const [traceForModel, traceEnd] = await splitTraceByModel(
         `${modelNames[i]}-webgpu-trace.json`, modelSummarDir);
-    if (tracingForModel.length != repeat) {
-      throw new Error(`${modelNames[i]} length of tracing for model(${
-          tracingForModel.length}) doesn\'t equals GPU length(${repeat})`);
+    if (traceForModel.length != repeat) {
+      throw new Error(`${modelNames[i]} length of trace for model(${
+          traceForModel.length}) doesn\'t equals GPU length(${repeat})`);
     }
     for (var j = 0; j < repeat; j++) {
       const name = modelName + '-' + (j + 1);
       const dataForGPU = gpuJsonData[i * repeat + j];
 
-      const dataForTracing = {
-        'traceEvents': tracingForModel[j],
+      const dataForTrace = {
+        'traceEvents': traceForModel[j],
         'metadata': traceEnd
       };
-      const dataForModel = {'trace': dataForTracing, 'gpu': dataForGPU};
+      const dataForModel = {'trace': dataForTrace, 'gpu': dataForGPU};
       fs.writeFileSync(`${name}.json`, JSON.stringify(dataForModel));
     }
 
