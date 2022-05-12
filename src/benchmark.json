@@ -4,6 +4,10 @@
     "backend": ["wasm", "webgl", "webgpu"]
   },
   {
+    "benchmark": "AutoML Object",
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
     "benchmark": "blazeface",
     "backend": ["wasm", "webgl", "webgpu"]
   },
