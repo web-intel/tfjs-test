@@ -88,19 +88,9 @@ async function getExtraConfig() {
   // GPU driver version
   await page.goto('chrome://gpu');
   let gpuInfo = await page.evaluate(() => {
-    let table = document.querySelector('#basic-info').querySelector('#info-view-table');
-    let deviceId = '';
-    let driverVersion = '';
-    for (let i = 0; i < table.rows.length; i++) {
-      if (table.rows[i].cells[0].innerText === 'GPU0') {
-        let match = table.rows[i].cells[1].innerText.match('DEVICE=0x([A-Za-z0-9]{4})');
-        deviceId = match[1];
-      } else if (table.rows[i].cells[0].innerText === 'Driver version') {
-        driverVersion = table.rows[i].cells[1].innerText;
-        return [deviceId, driverVersion];
-      }
-    }
-    return 'NA';
+    let value = document.querySelector('info-view').shadowRoot.querySelector('#basic-info').querySelector('info-view-table').shadowRoot.querySelector('#info-view-table').children[4].shadowRoot.querySelector('#value').innerText;
+    let match = value.match('DEVICE=0x([A-Za-z0-9]{4}).*DRIVER_VERSION=(.*) ');
+    return [match[1], match[2]];
   });
 
   util['gpuDeviceId'] = gpuInfo[0];
