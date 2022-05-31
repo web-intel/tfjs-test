@@ -41,9 +41,7 @@ async function runUnit() {
     util['clientRepoDate'] = execSync(`cd ${tfjsDir} && git log -1 --format=\"%cd\"`).toString();
     util['clientRepoCommit'] = execSync(`cd ${tfjsDir} && git rev-parse HEAD`).toString();
 
-    let logFile =
-      path.join(util.outDir, `${util.timestamp}-unit-${backend}.txt`)
-        .replace(/\\/g, '/');
+    let logFile = path.join(util.timestampDir, `${util.timestamp}-unit-${backend}.log`).replace(/\\/g, '/');
 
     let shell, shellOption;
     if (['machineName'].includes(util.hostname)) {

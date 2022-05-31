@@ -136,17 +136,13 @@ util.args = yargs
     describe: 'timestamp format, day or second',
     default: 'second',
   })
-  .option('trace-category', {
-    type: 'string',
-    describe: 'Chrome trace categories, split by comma',
-  })
-  .option('trace-file', {
-    type: 'string',
-    describe: 'trace file',
-  })
   .option('trace', {
+    type: 'boolean',
+    describe: 'trace',
+  })
+  .option('trace-timestamp', {
     type: 'string',
-    describe: 'Enable trace',
+    describe: 'trace timestamp',
   })
   .option('unit-backend', {
     type: 'string',
@@ -179,7 +175,8 @@ util.args = yargs
     ['node $0 --browser-args="--enable-dawn-features=disable_workgroup_init --no-sandbox --enable-zero-copy"'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
     ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
-    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --trace-category disabled-by-default-gpu.dawn'],
+    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 3 --timestamp day --trace'],
+    ['node $0 --target trace --trace-timestamp 20220601'],
     ['node $0 --target unit --unit-filter=add --unit-skip-build'],
   ])
   .help()
@@ -286,6 +283,8 @@ async function main() {
   let profileTimes;
   if ('profile-times' in util.args) {
     profileTimes = parseInt(util.args['profile-times']);
+  } else if ('trace' in util.args) {
+    profileTimes = 0;
   } else {
     profileTimes = 50;
   }
@@ -317,27 +316,19 @@ async function main() {
     await config();
   }
 
-  const trace = util.getTraceFlag();
-  if (trace == true) {
-    util.args['new-context'] = true;
-    if (util.args['trace-category'] == null) {
-      util.args['trace-category'] = 'disabled-by-default-gpu.dawn';
-    }
-    util.args['disable-breakdown'] = true;
-    util.benchmarkUrlArgs +=`&trace=${trace}`;
-  }
-
   let results = {};
   util.duration = '';
   let startTime;
   for (let i = 0; i < util.args['repeat']; i++) {
-    util.timestamp = getTimestamp(util.args['timestamp']);
-    util.logFile = path.join(util.outDir, `${util.timestamp}.log`);
-    if (fs.existsSync(util.logFile)) {
-      fs.truncateSync(util.logFile, 0);
+    if (!('trace-timestamp' in util.args)) {
+      util.timestamp = getTimestamp(util.args['timestamp']);
+      util.timestampDir = path.join(util.outDir, util.timestamp);
+      util.ensureDir(util.timestampDir);
+      util.logFile = path.join(util.timestampDir, `${util.timestamp}.log`);
+      if (fs.existsSync(util.logFile)) {
+        fs.truncateSync(util.logFile, 0);
+      }
     }
-
-    const modelSummaryDir = trace ? createSummaryFolder(util.logFile) : '';
 
     if (util.args['repeat'] > 1) {
       util.log(`== Test round ${i + 1}/${util.args['repeat']} ==`);
@@ -348,36 +339,21 @@ async function main() {
       util.log(`=${target}=`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
         if (!(target == 'performance' && util.warmupTimes == 0 && util.runTimes == 0)) {
-          results[target] = await runBenchmark(target, modelSummaryDir);
+          results[target] = await runBenchmark(target);
         }
       } else if (target == 'demo') {
         results[target] = await runDemo();
-      }
-      else if (target == 'unit') {
+      } else if (target == 'unit') {
         results[target] = await runUnit();
       } else if (target == 'trace') {
         await parseTrace();
       }
       util.duration += `${target}: ${(new Date() - startTime) / 1000} `;
     }
-
-    if (trace == true) {
-      await modelSummary(modelSummaryDir, util.logFile, results, util.benchmarkUrlArgs, util.gpufreqTraceFile, 'all');
+    if (!('trace-timestamp' in util.args)) {
+      await report(results);
     }
-    await report(results);
   }
-}
-
-function createSummaryFolder(logfileName) {
-  const modelSummaryDir = logfileName.split('.')[0];
-  try {
-    if (!fs.existsSync(modelSummaryDir)) {
-      fs.mkdirSync(modelSummaryDir)
-    }
-  } catch (err) {
-    console.error(err)
-  }
-  return modelSummaryDir;
 }
 
 main();

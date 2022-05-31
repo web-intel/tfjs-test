@@ -1,117 +1,98 @@
-const {createModelFromData, getBaseTimeFromTrace} = require('./trace_model.js');
-const {
-  createTableStartWithLink,
-  createTableStartWithInfo,
-  createTableEnd,
-  createTableRows
-} = require('./trace_ui.js');
-const {
-  getJsonFromString,
-  getModelNames,
-  getModelNamesFromLog,
-  getAverageInfoFromLog,
-  splitTraceByModel,
-} = require('./trace_util.js');
 const fs = require('fs');
-const fsasync = require('fs').promises;
+const util = require('./util');
 
-function updateUI(tableName, mergedData, modelName, linkInfo, traceMode) {
-  // Update UI.
-  let modelTable = createTableStartWithInfo(tableName);
-
-  modelTable += createTableEnd();
-
-  let table = '';
-  let headdata = Object.keys(mergedData[0]);
-  table += createTableStartWithLink(headdata, modelName, linkInfo, traceMode);
-  table += createTableRows(mergedData);
-  table += createTableEnd();
-  return modelTable + table;
-}
-
-async function singleModelSummary(
-    tabelName, tracePredictTime, traceGpuData, modelName, linkInfo, gpuFreq,
-    traceMode, profilePredictJsonData = null, profileJsonData = null) {
-  const mergedData = await createModelFromData(
-      tracePredictTime, traceGpuData, gpuFreq, true, profilePredictJsonData,
-      profileJsonData);
-  return updateUI(tabelName, mergedData, modelName, linkInfo, traceMode);
-}
-
-async function modelSummary(
-    modelSummarDir, logfileName, results, benchmarkUrlArgs, gpuFreqTraceFile,
-    traceMode) {
-  if (logfileName == null) {
-    console.error('No log file!');
+function parseTrace() {
+  let traceTimestamp;
+  if ('trace-timestamp' in util.args) {
+    traceTimestamp = util.args['trace-timestamp'];
+  } else {
+    traceTimestamp = util.timestamp;
   }
-  console.log('logfileName = ' + logfileName);
-  const logStr = await fsasync.readFile(logfileName, 'binary');
-  const modelNames =
-      results == null ? getModelNamesFromLog(logStr) : getModelNames(results);
+  let traceDir = `${util.outDir}/${traceTimestamp}`;
+  process.chdir(traceDir);
 
-  const averageInfos = getAverageInfoFromLog(logStr);
-  const predictJsonData =
-      getJsonFromString(logStr, 'predictbegin', 'predictend');
-  const gpuJsonData = getJsonFromString(logStr, 'gpudatabegin', 'gpudataend');
+  let traceDate = traceTimestamp.substring(0, 8);
+  let results = JSON.parse(fs.readFileSync(`${traceDir}/${traceDate}.json`));
+  let cpuBase, cpuFreq, gpuBase, gpuFreq, timeShift;
+  const chromeEventNames = [
+    'DeviceBase::APICreateComputePipeline',
+    'CreateComputePipelineAsyncTask::Run',
+    'DeviceBase::APICreateShaderModule',
+    'Queue::Submit',
+  ];
 
-  const [, , gpuFreq] = gpuFreqTraceFile ?
-      await getBaseTimeFromTrace(gpuFreqTraceFile) :
-      [0, 0, 19200000];
-  console.log('GPU Frequency: ' + gpuFreq);
+  for (let result of results) {
+    let benchmarkName = result[0];
 
-  let html = `<div>${benchmarkUrlArgs}</div>`;
-  const splitLogfileName = logfileName.split('\\');
-  const date = splitLogfileName[splitLogfileName.length - 1].split('.')[0];
-  const linkInfo = {
-    date: date,
-    gpufreq: gpuFreq,
-    benchmarkUrlArgs: benchmarkUrlArgs
-  };
+    for (let backend of util.backends) {
+      let traceFile = `${benchmarkName}-${backend}-trace.json`;
+      let timelineJson = [];
+      timeShift = 0;
+      if (!fs.existsSync(traceFile)) {
+        continue;
+      }
 
-  // predictJsonData.length is number of model.
-  const modelCount = predictJsonData.length;
-  for (var i = 0; i < modelCount; i++) {
-    // Trace may possible be repeated. predictJsonData[0]['times'].length
-    // is the repeat count.
-    const repeat = predictJsonData[0]['times'].length;
-    const modelName = modelSummarDir + '\\' + modelNames[i];
-    const tracePredictTimes = predictJsonData[i]['times'];
-    const gpuJsonDataForModel = gpuJsonData.slice(i * repeat, (i + 1) * repeat);
-    html += await singleModelSummary(
-        modelNames[i].split('-')[0] + '-' +
-            averageInfos[i].replace('[object Object]', ''),
-        tracePredictTimes, gpuJsonDataForModel, modelNames[i], linkInfo,
-        gpuFreq, traceMode);
+      let traceJson = JSON.parse(fs.readFileSync(traceFile));
 
-    const [traceForModel, traceEnd] = await splitTraceByModel(
-        `${modelNames[i]}-webgpu-trace.json`, modelSummarDir);
-    if (traceForModel.length != repeat) {
-      throw new Error(`${modelNames[i]} length of trace for model(${
-          traceForModel.length}) doesn\'t equals GPU length(${repeat})`);
+      for (let event of traceJson['traceEvents']) {
+        let eventName = event['name'];
+        if (eventName != 'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing') {
+          continue;
+        }
+        let splitRawTime = event['args']['Timing'].split(',');
+        cpuBase = splitRawTime[2].split(':')[1];
+        gpuBase = splitRawTime[3].split(':')[1];
+        cpuFreq = splitRawTime[4].split(':')[1];
+        gpuFreq = splitRawTime[5].split(':')[1];
+        break;
+      }
+
+      for (let event of traceJson['traceEvents']) {
+        let eventName = event['name'];
+
+        if (eventName == 'TimeStamp') {
+          let message = event['args']['data']['message'];
+          if (message == 'TFJS::predictStart') {
+            timelineJson.push({ 'CPU-TFJS': [], 'CPU-CHROME': [], 'GPU': [] });
+          }
+
+          if (message.startsWith('TFJS::GPU::')) {
+            for (let item of JSON.parse(message.replace('TFJS::GPU::', ''))) {
+              let query = item['query'];
+              timelineJson[timelineJson.length - 1]['GPU'].push([item['name'], getMs('GPU', query[0]), getMs('GPU', query[1])]);
+            }
+          } else if (message.startsWith('TFJS::')) {
+            if (timeShift == 0) {
+              timeShift = -getMs('CPU', event['ts']);
+            }
+            timelineJson[timelineJson.length - 1]['CPU-TFJS'].push([message, getMs('CPU', event['ts'])]);
+          }
+        } else if (chromeEventNames.indexOf(eventName) >= 0) {
+          let prefix = '';
+          if (event['args']['label']) {
+            prefix = `${event['args']['label']}::`
+          }
+          let startTime = getMs('CPU', event['ts']);
+          let endTime = parseFloat((startTime + event['dur'] / 1000).toFixed(2));
+          timelineJson[timelineJson.length - 1]['CPU-CHROME'].push([`${prefix}${eventName}`, startTime, endTime]);
+        }
+      }
+
+      timelineJsonFile = traceFile.replace('-trace', '');
+      if (fs.existsSync(timelineJsonFile)) {
+        fs.truncateSync(timelineJsonFile, 0);
+      }
+      fs.writeFileSync(timelineJsonFile, JSON.stringify(timelineJson));
     }
-    for (var j = 0; j < repeat; j++) {
-      const name = modelName + '-' + (j + 1);
-      const dataForGPU = gpuJsonData[i * repeat + j];
-
-      const dataForTrace = {
-        'traceEvents': traceForModel[j],
-        'metadata': traceEnd
-      };
-      const dataForModel = {'trace': dataForTrace, 'gpu': dataForGPU};
-      fs.writeFileSync(`${name}.json`, JSON.stringify(dataForModel));
-    }
-
-    fs.writeFileSync(
-        modelName + '-predict.json', JSON.stringify(predictJsonData[i]));
   }
 
-  const isRawTimestamp = true;
-  const modelSummaryFile = modelSummarDir + '\\' + date + '-raw' +
-      isRawTimestamp + '-modelsummary.html';
-  console.log(modelSummaryFile);
-  fs.writeFileSync(modelSummaryFile, html);
+  function getMs(type, tick) {
+    if (type == 'CPU') {
+      return parseFloat(((tick - cpuBase * 1000000 / cpuFreq) / 1000 + timeShift).toFixed(2));
+    } else {
+      return parseFloat(((tick - gpuBase) * 1000 / gpuFreq + timeShift).toFixed(2));
+    }
+  }
 }
 
-module.exports = {
-  modelSummary: modelSummary
-};
+module.exports = parseTrace;

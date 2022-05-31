@@ -28,14 +28,19 @@ function intersect(a, b) {
   return a.filter(v => b.includes(v));
 }
 
-async function startContext() {
+async function startContext(traceFile = '') {
+  let traceArgs = '';
+  if ('trace' in util.args) {
+    traceArgs = `--enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion --trace-startup-format=json --enable-tracing=disabled-by-default-gpu.dawn --trace-startup-file=${traceFile}`;
+  }
+
   if (!util.dryrun) {
     let context = await chromium.launchPersistentContext(util.userDataDir, {
       headless: false,
       executablePath: util['browserPath'],
       viewport: null,
       ignoreHTTPSErrors: true,
-      args: util['browserArgs'].split(' '),
+      args: util['browserArgs'].split(' ').concat(traceArgs.split(' ')),
     });
     let page = await context.newPage();
     page.on('console', async msg => {
@@ -59,15 +64,20 @@ async function closeContext(context) {
   }
 }
 
-async function runBenchmark(target, modelSummaryDir, benchmarkJsonFile = 'benchmark.json') {
+async function runBenchmark(target) {
   // get benchmarks
   let benchmarks = [];
-  let benchmarkJson = path.join(path.resolve(__dirname), benchmarkJsonFile);
+  let benchmarkJson = path.join(path.resolve(__dirname), 'benchmark.json');
   let targetConfigs = JSON.parse(fs.readFileSync(benchmarkJson));
-  const lastBrowserArgs = util['browserArgs'];
+
+  if ('trace' in util.args) {
+    util.args['disable-breakdown'] = true;
+    util.args['new-context'] = true;
+    util.benchmarkUrlArgs += '&trace=true';
+  }
 
   for (let config of targetConfigs) {
-    if ('benchmark' in util.args && util.args['benchmark']) {
+    if ('benchmark' in util.args) {
       config['benchmark'] = intersect(config['benchmark'], util.args['benchmark'].split(','));
     }
     if (!config['benchmark']) {
@@ -147,22 +157,13 @@ async function runBenchmark(target, modelSummaryDir, benchmarkJsonFile = 'benchm
     let benchmarkName = benchmark.slice(0, -1).join('-');
     let backend = benchmark[benchmark.length - 1];
     let backendIndex = util.backends.indexOf(backend);
-    let traceFile = '';
     let totalTime = -1;
 
     util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
 
     if ('new-context' in util.args) {
-      if (util.getTraceFlag()) {
-        traceFile = `${modelSummaryDir}/${benchmark.join('-').replace(/ /g, '_')}-trace.json`;
-        if (util.gpufreqTraceFile === '') {
-          util.gpufreqTraceFile = traceFile;
-        }
-        const traceArgs = ` --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion
-          --trace-startup-format=json --enable-tracing=${util.args['trace-category']} --trace-startup-file=${traceFile}`;
-        util['browserArgs'] = lastBrowserArgs + traceArgs;
-      }
-      [context, page] = await startContext();
+      let traceFile = `${util.timestampDir}/${benchmark.join('-').replace(/ /g, '_')}-trace.json`;
+      [context, page] = await startContext(traceFile);
     }
 
     // prepare result placeholder
@@ -287,6 +288,24 @@ async function runBenchmark(target, modelSummaryDir, benchmarkJsonFile = 'benchm
 
   if (!('new-context' in util.args)) {
     await closeContext(context);
+  }
+
+  if (target == 'performance') {
+    let fileName = `${util.timestamp.substring(0, 8)}.json`;
+    let file = path.join(util.timestampDir, fileName);
+    fs.writeFileSync(file, JSON.stringify(results));
+    if ('upload' in util.args) {
+      let result = spawnSync('scp', [file, `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${util['gpuDeviceId']}/${fileName}`]);
+      if (result.status !== 0) {
+        util.log('[ERROR] Failed to upload report');
+      } else {
+        util.log('[INFO] Report was successfully uploaded');
+      }
+    }
+  }
+
+  if ('trace' in util.args) {
+    await parseTrace();
   }
 
   return Promise.resolve(results);

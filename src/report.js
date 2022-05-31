@@ -219,11 +219,11 @@ async function report(results) {
   }
 
   for (let category of ['browserArgs', 'browserPath', 'chromeRevision',
-      'chromeVersion', 'cpuName', 'duration', 'hostname', 'gpuDeviceId',
-      'gpuDriverVersion', 'gpuName', 'platform', 'powerPlan', 'pthreadPoolSize',
-      'screenResolution', 'serverRepoDate', 'serverRepoCommit', 'serverBuildDate',
-      'clientRepoDate', 'clientRepoCommit', 'benchmarkUrl', 'benchmarkUrlArgs',
-      'wasmMultithread', 'wasmSIMD']) {
+    'chromeVersion', 'cpuName', 'duration', 'hostname', 'gpuDeviceId',
+    'gpuDriverVersion', 'gpuName', 'platform', 'powerPlan', 'pthreadPoolSize',
+    'screenResolution', 'serverRepoDate', 'serverRepoCommit', 'serverBuildDate',
+    'clientRepoDate', 'clientRepoCommit', 'benchmarkUrl', 'benchmarkUrlArgs',
+    'wasmMultithread', 'wasmSIMD']) {
     configTable += `<tr><td>${category}</td><td>${util[category]}</td></tr>`;
   }
   configTable += '</table><br>'
@@ -287,22 +287,7 @@ async function report(results) {
     html += breakdownTable;
   }
 
-  fs.writeFileSync(path.join(util.outDir, `${util.timestamp}.html`), html);
-  if ('performance' in results) {
-    results['performance'].pop();
-    let fileName = `${util.timestamp.substring(0, 8)}.json`;
-    let file = path.join(util.outDir, fileName);
-    fs.writeFileSync(file, JSON.stringify(results['performance']));
-    if ('upload' in util.args) {
-      let result = spawnSync('scp', [file, `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${util['gpuDeviceId']}/${fileName}`]);
-      if (result.status !== 0) {
-        util.log('[ERROR] Failed to upload report');
-      } else {
-        util.log('[INFO] Report was successfully uploaded');
-      }
-    }
-  }
-
+  fs.writeFileSync(path.join(util.timestampDir, `${util.timestamp}.html`), html);
   if ('email' in util.args) {
     let subject = '[TFJS Test] ' + util['hostname'] + ' ' + util.timestamp;
     await sendMail(util.args['email'], subject, html);

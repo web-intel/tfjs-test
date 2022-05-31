@@ -51,15 +51,13 @@ function getDuration(start, end) {
 
 function log(info) {
   console.log(info);
-  fs.appendFileSync(this.logFile, String(info) + '\n');
+  if (fs.existsSync(this.logFile)) {
+    fs.appendFileSync(this.logFile, String(info) + '\n');
+  }
 }
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function getTraceFlag() {
- return 'trace' in this.args || 'trace-category' in this.args;
 }
 
 module.exports = {
@@ -74,11 +72,10 @@ module.exports = {
   'benchmarkUrlArgs': 'WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false',
   'demoUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos',
   'timeout': 180 * 1000,
-  'gpufreqTraceFile': '',
   capitalize: capitalize,
+  ensureDir: ensureDir,
   getDuration: getDuration,
   log: log,
   sleep: sleep,
   uncapitalize: uncapitalize,
-  getTraceFlag: getTraceFlag,
 };
