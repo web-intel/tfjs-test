@@ -13,7 +13,6 @@ const report = require('./report.js');
 const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
 const util = require('./util.js');
-const { modelSummary } = require('./trace.js');
 
 util.args = yargs
   .usage('node $0 [args]')
@@ -262,6 +261,12 @@ async function main() {
   }
   if ('use-dxc' in util.args) {
     util.browserArgs += ' --enable-dawn-features=use_dxc';
+  }
+  if ('trace' in util.args) {
+    util.args['disable-breakdown'] = true;
+    util.args['new-context'] = true;
+    util.benchmarkUrlArgs += '&trace=true';
+    util.browserArgs += ' --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion --trace-startup-format=json --enable-tracing=disabled-by-default-gpu.dawn'
   }
 
   let warmupTimes;

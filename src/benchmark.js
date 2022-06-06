@@ -28,10 +28,10 @@ function intersect(a, b) {
   return a.filter(v => b.includes(v));
 }
 
-async function startContext(traceFile = '') {
-  let traceArgs = '';
+async function startContext(traceFile = undefined) {
+  let extraBrowserArgs = '';
   if ('trace' in util.args) {
-    traceArgs = `--enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion --trace-startup-format=json --enable-tracing=disabled-by-default-gpu.dawn --trace-startup-file=${traceFile}`;
+    extraBrowserArgs = `--trace-startup-file=${traceFile}`;
   }
 
   if (!util.dryrun) {
@@ -40,7 +40,7 @@ async function startContext(traceFile = '') {
       executablePath: util['browserPath'],
       viewport: null,
       ignoreHTTPSErrors: true,
-      args: util['browserArgs'].split(' ').concat(traceArgs.split(' ')),
+      args: util['browserArgs'].split(' ').concat(extraBrowserArgs.split(' ')),
     });
     let page = await context.newPage();
     page.on('console', async msg => {
@@ -69,12 +69,6 @@ async function runBenchmark(target) {
   let benchmarks = [];
   let benchmarkJson = path.join(path.resolve(__dirname), 'benchmark.json');
   let targetConfigs = JSON.parse(fs.readFileSync(benchmarkJson));
-
-  if ('trace' in util.args) {
-    util.args['disable-breakdown'] = true;
-    util.args['new-context'] = true;
-    util.benchmarkUrlArgs += '&trace=true';
-  }
 
   for (let config of targetConfigs) {
     if ('benchmark' in util.args) {
@@ -157,12 +151,14 @@ async function runBenchmark(target) {
     let benchmarkName = benchmark.slice(0, -1).join('-');
     let backend = benchmark[benchmark.length - 1];
     let backendIndex = util.backends.indexOf(backend);
-    let totalTime = -1;
 
     util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
 
     if ('new-context' in util.args) {
-      let traceFile = `${util.timestampDir}/${benchmark.join('-').replace(/ /g, '_')}-trace.json`;
+      let traceFile = undefined;
+      if ('trace' in util.args) {
+        traceFile = `${util.timestampDir}/${benchmark.join('-').replace(/ /g, '_')}-trace.json`;
+      }
       [context, page] = await startContext(traceFile);
     }
 
@@ -234,7 +230,6 @@ async function runBenchmark(target) {
             value = parseFloat(value.replace(' ms', ''));
           }
           results[results.length - 1][backendIndex * metricsLength + metricIndex + 1] = value;
-          totalTime = value;
           metricIndex += 1;
         }
         typeIndex += 1;

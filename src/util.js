@@ -61,7 +61,7 @@ function sleep(ms) {
 }
 
 module.exports = {
-  'browserArgs': '--enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis --enable-features=WebAssemblyThreads,SharedArrayBuffer,WebAssemblySimd,MediaFoundationD3D11VideoCapture --start-maximized',
+  'browserArgs': '--enable-features=WebAssemblyThreads,SharedArrayBuffer,WebAssemblySimd,MediaFoundationD3D11VideoCapture --start-maximized --enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis',
   'hostname': os.hostname(),
   'parameters': parameters,
   'platform': platform,
