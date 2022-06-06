@@ -16,6 +16,9 @@ async function runUnit() {
     backends = ['webgpu', 'webgl'];
   }
 
+  util['clientRepoDate'] = execSync(`cd ${tfjsDir} && git log -1 --format=\"%cd\"`).toString();
+  util['clientRepoCommit'] = execSync(`cd ${tfjsDir} && git rev-parse HEAD`).toString();
+
   for (let i = 0; i < backends.length; i++) {
     let backend = backends[i];
     let backendIndex = util.backends.indexOf(backend);
@@ -37,9 +40,6 @@ async function runUnit() {
     }
     process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
     process.env['CHROME_BIN'] = util.browserPath;
-
-    util['clientRepoDate'] = execSync(`cd ${tfjsDir} && git log -1 --format=\"%cd\"`).toString();
-    util['clientRepoCommit'] = execSync(`cd ${tfjsDir} && git rev-parse HEAD`).toString();
 
     let logFile = path.join(util.timestampDir, `${util.timestamp}-unit-${backend}.log`).replace(/\\/g, '/');
 

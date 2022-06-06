@@ -333,6 +333,18 @@ async function main() {
       if (fs.existsSync(util.logFile)) {
         fs.truncateSync(util.logFile, 0);
       }
+
+      // trial
+      let trialJson = path.join(path.resolve(__dirname), 'trial.json');
+      let trials = JSON.parse(fs.readFileSync(trialJson));
+      let dateInt = parseInt(util.timestamp.substring(0, 8));
+
+      for (let trial of trials['browserArgs']) {
+        if (dateInt >= trial[1] && dateInt <= trial[2]) {
+          console.log(`Trial "${trial[0]}" was added into browserArgs`);
+          util.browserArgs += ` ${trial[0]}`;
+        }
+      }
     }
 
     if (util.args['repeat'] > 1) {
