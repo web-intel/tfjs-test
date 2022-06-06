@@ -80,6 +80,15 @@ async function runUnit() {
           util.log(ret);
           continue;
         }
+
+        fs.unlink(
+          path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
+          () => { });
+        fs.copyFile(
+          path.join(
+            tfjsDir, 'dist', 'bin', 'tfjs-backend-webgpu', 'src', 'tests.ts'),
+          path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
+          () => { });
       }
 
       let filter = '';
