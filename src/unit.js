@@ -16,6 +16,12 @@ async function runUnit() {
     backends = ['webgpu', 'webgl'];
   }
 
+  let tfjsDir = '';
+  if ('tfjs-dir' in util.args) {
+    tfjsDir = util.args['tfjs-dir'];
+  } else {
+    tfjsDir = 'd:/workspace/project/tfjs';
+  }
   util['clientRepoDate'] = execSync(`cd ${tfjsDir} && git log -1 --format=\"%cd\"`).toString();
   util['clientRepoCommit'] = execSync(`cd ${tfjsDir} && git rev-parse HEAD`).toString();
 
@@ -32,12 +38,6 @@ async function runUnit() {
       timeout = 600 * 1000;
     }
 
-    let tfjsDir = '';
-    if ('tfjs-dir' in util.args) {
-      tfjsDir = util.args['tfjs-dir'];
-    } else {
-      tfjsDir = 'd:/workspace/project/tfjs';
-    }
     process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
     process.env['CHROME_BIN'] = util.browserPath;
 
