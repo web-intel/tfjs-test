@@ -51,9 +51,7 @@ function getDuration(start, end) {
 
 function log(info) {
   console.log(info);
-  if (fs.existsSync(this.logFile)) {
-    fs.appendFileSync(this.logFile, String(info) + '\n');
-  }
+  fs.appendFileSync(this.logFile, String(info) + '\n');
 }
 
 function sleep(ms) {
