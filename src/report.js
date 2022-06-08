@@ -3,7 +3,7 @@
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 const path = require('path');
-const { spawnSync, execSync } = require('child_process');
+const { execSync } = require('child_process');
 const util = require('./util.js');
 
 async function sendMail(to, subject, html) {
