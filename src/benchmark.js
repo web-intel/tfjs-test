@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process')
 const { chromium } = require('playwright');
 const readline = require('readline');
 
