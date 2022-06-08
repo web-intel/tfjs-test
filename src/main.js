@@ -332,6 +332,8 @@ async function main() {
       util.logFile = path.join(util.timestampDir, `${util.timestamp}.log`);
       if (fs.existsSync(util.logFile)) {
         fs.truncateSync(util.logFile, 0);
+      } else {
+        fs.closeSync(fs.openSync(util.logFile, 'w'));
       }
 
       // trial
