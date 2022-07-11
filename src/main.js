@@ -172,9 +172,9 @@ util.args = yargs
     ['node $0 --target performance --benchmark-url http://127.0.0.1/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark'],
     ['node $0 --target performance --benchmark pose-detection --architecture BlazePose-heavy --input-size 256 --input-type tensor --performance-backend webgpu'],
     ['node $0 --browser-args="--enable-dawn-features=disable_workgroup_init --no-sandbox --enable-zero-copy"'],
-    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
-    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
-    ['node $0 --target performance --benchmark mobilenet_v2 --performance-backend webgpu --warmup-times 0 --run-times 3 --timestamp day --trace'],
+    ['node $0 --target performance --benchmark mobilenet_v3 --performance-backend webgpu --warmup-times 0 --run-times 1 --server-info --new-context'],
+    ['node $0 --target performance --benchmark mobilenet_v3 --performance-backend webgpu --warmup-times 0 --run-times 1 --timestamp day'],
+    ['node $0 --target performance --benchmark mobilenet_v3 --performance-backend webgpu --warmup-times 0 --run-times 3 --timestamp day --trace'],
     ['node $0 --target trace --trace-timestamp 20220601'],
     ['node $0 --target unit --unit-filter=add --unit-skip-build'],
   ])

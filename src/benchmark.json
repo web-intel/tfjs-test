@@ -39,6 +39,10 @@
     "backend": ["wasm", "webgl", "webgpu"]
   },
   {
+    "benchmark": "mobilenet_v3",
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
   "benchmark": "posenet",
     "architecture": ["MobileNetV1", "ResNet50"],
     "inputSize": [256, 512],
