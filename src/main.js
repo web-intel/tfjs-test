@@ -257,7 +257,7 @@ async function main() {
   console.log(`Use user-data-dir at ${userDataDir}`);
 
   if (util.platform === 'linux') {
-    util.browserArgs += ' --enable-features=Vulkan,UseSkiaRenderer'
+    util.browserArgs += ' --enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan'
   }
   if ('browser-args' in util.args) {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
