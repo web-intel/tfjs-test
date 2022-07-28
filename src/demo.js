@@ -31,7 +31,7 @@ async function closeContext(context) {
 
 async function runDemo() {
   let context;
-  let defaultValue = 'NA';
+  let defaultValue = ['NA', 'NA'];
   let page;
   let results = [];
   let timeout = 20 * 1000;
@@ -114,7 +114,7 @@ async function runDemo() {
             }
             fps = newFps;
           }
-          results[results.length - 1][backendIndex + 1] = fps;
+          results[results.length - 1][backendIndex + 1] = [fps, url];
         }
 
         util.log(results[results.length - 1]);

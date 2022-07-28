@@ -203,7 +203,7 @@ async function report(results) {
       resultsTable += `<tr><td>${result[0]}</td>`;
       for (let backendIndex = 0; backendIndex < backendsLength; backendIndex++) {
         let style = neutralStyle;
-        resultsTable += `<td ${style}>${result[backendIndex + 1]}</td>`;
+        resultsTable += `<td ${style}>${result[backendIndex + 1][0]} (<a href=${result[backendIndex + 1][1]}>link</a>)</td>`;
       }
     }
     resultsTable += '</tr></table><br>';
