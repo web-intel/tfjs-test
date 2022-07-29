@@ -177,6 +177,7 @@ util.args = yargs
     ['node $0 --target performance --benchmark mobilenet_v3 --performance-backend webgpu --warmup-times 0 --run-times 3 --timestamp day --trace'],
     ['node $0 --target trace --trace-timestamp 20220601'],
     ['node $0 --target unit --unit-filter=add --unit-skip-build'],
+    ['node $0 --target demo --demo-backend webgpu --demo movenet --demo-type camera'],
   ])
   .help()
   .wrap(180)
@@ -370,6 +371,7 @@ async function main() {
       }
       util.duration += `${target}: ${(new Date() - startTime) / 1000} `;
     }
+
     if (!('trace-timestamp' in util.args)) {
       await report(results);
     }

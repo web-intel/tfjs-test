@@ -31,7 +31,7 @@ async function closeContext(context) {
 
 async function runDemo() {
   let context;
-  let defaultValue = ['NA', 'NA'];
+  let defaultValue = 'NA';
   let page;
   let results = [];
   let timeout = 20 * 1000;
@@ -75,7 +75,12 @@ async function runDemo() {
       let fps = 0;
       let demo = runDemos[runDemoIndex];
       util.log(`[${runDemoIndex + 1}/${runDemosLength}] ${demo}`);
-      results.push([`${runType}-${demo}`].concat(Array(backendsLength).fill(defaultValue)));
+
+      results.push([`${runType}-${demo}`]);
+      // Array.fill doesn't work as ref is passed instead of a new instance
+      for (let i = 0; i < backendsLength; i++) {
+        results[results.length - 1].push([defaultValue, defaultValue]);
+      }
 
       for (let runBackendIndex = 0; runBackendIndex < runBackends.length; runBackendIndex++) {
         let runBackend = runBackends[runBackendIndex];
@@ -86,35 +91,35 @@ async function runDemo() {
 
         if (!util.dryrun) {
           let url = `${util.demoUrl}/${runTypeInUrl}_video/dist?backend=tfjs-${runBackend}&model=${demo}`;
-          await page.goto(url);
-
-          // This has to be called so that camera can work properly
-          page.bringToFront();
-
-          let selector = '#fps';
+          results[results.length - 1][backendIndex + 1][1] = url;
           try {
-            await page.waitForSelector(selector, { timeout: timeout });
-          } catch (err) {
-            console.log(`Could not get FPS of demo ${demo}`);
-            continue;
-          }
+            await page.goto(url, {timeout: 1});
 
-          let start = new Date();
-          let consecutiveGoodCount = 0;
-          while (new Date() - start < timeout) {
-            await util.sleep(1000);
-            let newFps = await page.$eval(selector, el => el.innerText);
-            if (Math.abs(newFps - fps) < fps * 10 / 100) {
-              consecutiveGoodCount++;
-              if (consecutiveGoodCount == 3) {
-                break;
+            // This has to be called so that camera can work properly
+            page.bringToFront();
+
+            let selector = '#fps';
+            await page.waitForSelector(selector, { timeout: 1 });
+
+            let start = new Date();
+            let consecutiveGoodCount = 0;
+            while (new Date() - start < timeout) {
+              await util.sleep(1000);
+              let newFps = await page.$eval(selector, el => el.innerText);
+              if (Math.abs(newFps - fps) < fps * 10 / 100) {
+                consecutiveGoodCount++;
+                if (consecutiveGoodCount == 3) {
+                  break;
+                }
+              } else {
+                consecutiveGoodCount = 0;
               }
-            } else {
-              consecutiveGoodCount = 0;
+              fps = newFps;
             }
-            fps = newFps;
+
+            results[results.length - 1][backendIndex + 1][0] = fps;
+          } catch (err) {
           }
-          results[results.length - 1][backendIndex + 1] = [fps, url];
         }
 
         util.log(results[results.length - 1]);
