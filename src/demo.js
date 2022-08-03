@@ -93,7 +93,7 @@ async function runDemo() {
           let url = `${util.demoUrl}/${runTypeInUrl}_video/dist?backend=tfjs-${runBackend}&model=${demo}`;
           results[results.length - 1][backendIndex + 1][1] = url;
           try {
-            await page.goto(url, {timeout: 1});
+            await page.goto(url);
 
             // This has to be called so that camera can work properly
             page.bringToFront();
