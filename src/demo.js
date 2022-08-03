@@ -92,6 +92,7 @@ async function runDemo() {
         if (!util.dryrun) {
           let url = `${util.demoUrl}/${runTypeInUrl}_video/dist?backend=tfjs-${runBackend}&model=${demo}`;
           results[results.length - 1][backendIndex + 1][1] = url;
+
           try {
             await page.goto(url);
 
@@ -99,8 +100,7 @@ async function runDemo() {
             page.bringToFront();
 
             let selector = '#fps';
-            await page.waitForSelector(selector, { timeout: 1 });
-
+            await page.waitForSelector(selector);
             let start = new Date();
             let consecutiveGoodCount = 0;
             while (new Date() - start < timeout) {
