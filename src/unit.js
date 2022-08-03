@@ -46,7 +46,7 @@ async function runUnit() {
     process.env['CHROME_BIN'] = util.browserPath;
     let logFile = path.join(util.timestampDir, `${util.timestamp}-unit-${backend}.log`).replace(/\\/g, '/');
 
-    if (util.platform === 'linux') {
+    if (util.platform === 'linux' || util.platform === 'darwin') {
       try {
         execSync(`${cmd} > ${logFile}`, {
           env: process.env,
