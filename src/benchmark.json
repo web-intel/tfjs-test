@@ -1,5 +1,75 @@
 [
   {
+    "benchmark": "MobileNetV3",
+    "architecture": ["small_075", "small_100", "large_075", "large_100"],
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "MobileNetV2",
+    "architecture": ["050", "075", "100"],
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "HandPoseDetector",
+    "architecture": ["lite", "full"],
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "HandPoseLandmark",
+    "architecture": ["lite", "full"],
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "MoveNet-SinglePose",
+    "inputSize": [192, 256],
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "MoveNet-MultiPose",
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "BlazePoseDetector",
+    "backend": ["webgl", "webgpu"]
+  },
+  {
+    "benchmark": "BlazePoseLandmark",
+    "architecture": ["lite", "full", "heavy", "large_100"],
+    "backend": ["webgl", "webgpu"]
+  },
+  {
+    "benchmark": "Coco-SSD",
+    "architecture": ["MobileNetV2", "MobileNetV3"],
+    "backend": ["webgl", "webgpu"]
+  },
+  {
+    "benchmark": "DeepLabV3",
+    "architecture": ["pascal", "ade20k"],
+    "backend": ["webgl", "webgpu"]
+  },
+  {
+    "benchmark": "FaceDetection",
+    "inputSize": [128, 192],
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "FaceLandmarkDetection",
+    "architecture": ["attention_mesh", "face_mesh"],
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "ArPortraitDepth",
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "SelfieSegmentation-General",
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "SelfieSegmentation-Landscape",
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
     "benchmark": "AutoML Image",
     "backend": ["wasm", "webgl", "webgpu"]
   },
@@ -8,64 +78,11 @@
     "backend": ["wasm", "webgl", "webgpu"]
   },
   {
-    "benchmark": "blazeface",
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-    "benchmark": "bodypix",
-    "architecture": ["MobileNetV1", "ResNet50"],
-    "inputSize": [0.25, 0.5, 0.75],
-    "inputType": ["image"],
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-    "benchmark": "face_detector",
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-    "benchmark": "hand_detector",
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-    "benchmark": "hand_skeleton",
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-    "benchmark": "mesh_128",
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-    "benchmark": "mobilenet_v2",
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-    "benchmark": "mobilenet_v3",
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-  "benchmark": "posenet",
-    "architecture": ["MobileNetV1", "ResNet50"],
-    "inputSize": [256, 512],
-    "inputType": ["image"],
-    "backend": ["wasm", "webgl", "webgpu"]
-  },
-  {
-    "benchmark": "pose-detection",
-    "architecture": ["BlazePose-lite", "BlazePose-full", "BlazePose-heavy", "MoveNet-lightning", "MoveNet-thunder"],
-    "inputSize": [256],
-    "inputType": ["image"],
+    "benchmark": "USE - batchsize 30",
     "backend": ["webgl", "webgpu"]
-  },
-  {
-    "benchmark": "speech-commands",
-    "backend": ["wasm", "webgl", "webgpu"]
   },
   {
     "benchmark": "USE - batchsize 1",
-    "backend": ["webgl", "webgpu"]
-  },
-  {
-    "benchmark": "USE - batchsize 30",
     "backend": ["webgl", "webgpu"]
   }
 ]

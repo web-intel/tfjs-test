@@ -2,20 +2,24 @@
 
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process')
-const { chromium } = require('playwright');
+const {spawnSync} = require('child_process')
+const {chromium} = require('playwright');
 const readline = require('readline');
 
 const parseTrace = require('./trace.js');
 const util = require('./util.js')
 
 function cartesianProduct(arr) {
-  return arr.reduce(function (a, b) {
-    return a.map(function (x) {
-      return b.map(function (y) {
-        return x.concat([y]);
-      })
-    }).reduce(function (a, b) { return a.concat(b) }, [])
+  return arr.reduce(function(a, b) {
+    return a
+        .map(function(x) {
+          return b.map(function(y) {
+            return x.concat([y]);
+          })
+        })
+        .reduce(function(a, b) {
+          return a.concat(b)
+        }, [])
   }, [[]])
 }
 
@@ -49,8 +53,8 @@ async function startContext(traceFile = undefined) {
         util.log(`[console] ${i}: ${await msg.args()[i].jsonValue()}`);
     });
     page.on('pageerror', (err) => {
-      util.log(`[pageerror] ${err}`);
       util.hasError = true;
+      util.log(`[pageerror] ${err}`);
     });
 
     return [context, page];
@@ -73,7 +77,8 @@ async function runBenchmark(target) {
 
   for (let config of targetConfigs) {
     if ('benchmark' in util.args) {
-      config['benchmark'] = intersect(config['benchmark'], util.args['benchmark'].split(','));
+      config['benchmark'] =
+          intersect(config['benchmark'], util.args['benchmark'].split(','));
     }
     if (!config['benchmark']) {
       continue;
@@ -94,21 +99,24 @@ async function runBenchmark(target) {
     }
 
     if ('architecture' in config && 'architecture' in util.args) {
-      config['architecture'] = intersect(config['architecture'], util.args['architecture'].split(','));
+      config['architecture'] = intersect(
+          config['architecture'], util.args['architecture'].split(','));
       if (!config['architecture']) {
         continue;
       }
     }
 
     if ('inputSize' in config && 'input-size' in util.args) {
-      config['inputSize'] = intersect(config['inputSize'], util.args['input-size'].split(',').map(Number));
+      config['inputSize'] = intersect(
+          config['inputSize'], util.args['input-size'].split(',').map(Number));
       if (!config['inputSize']) {
         continue;
       }
     }
 
     if ('inputType' in config && 'input-type' in util.args) {
-      config['inputType'] = intersect(config['inputType'], util.args['input-type'].split(','));
+      config['inputType'] =
+          intersect(config['inputType'], util.args['input-type'].split(','));
       if (!config['inputType']) {
         continue;
       }
@@ -116,7 +124,9 @@ async function runBenchmark(target) {
 
     let seqArray = [];
     for (let p of util.parameters) {
-      seqArray.push(p in config ? (Array.isArray(config[p]) ? config[p] : [config[p]]) : ['']);
+      seqArray.push(
+          p in config ? (Array.isArray(config[p]) ? config[p] : [config[p]]) :
+                        ['']);
     }
     benchmarks = benchmarks.concat(cartesianProduct(seqArray));
   }
@@ -124,7 +134,10 @@ async function runBenchmark(target) {
   // run benchmarks
   let benchmarksLength = benchmarks.length;
   let previousBenchmarkName = '';
-  let results = []; // format: testName, warmup_webgpu, average_webgpu, best_webgpu, warmup_webgl, average_webgl, best_webgl, warmup_wasm, average_wasm, best_wasm, {op: {webgpu, webgl, wasm}}
+  let results =
+      [];  // format: testName, warmup_webgpu, average_webgpu, best_webgpu,
+           // warmup_webgl, average_webgl, best_webgl, warmup_wasm,
+           // average_wasm, best_wasm, {op: {webgpu, webgl, wasm}}
   let defaultValue = 'NA';
   let backendsLength = util.backends.length;
   let metrics = util.targetMetrics[target];
@@ -158,14 +171,16 @@ async function runBenchmark(target) {
     if ('new-context' in util.args) {
       let traceFile = undefined;
       if ('trace' in util.args) {
-        traceFile = `${util.timestampDir}/${benchmark.join('-').replace(/ /g, '_')}-trace.json`;
+        traceFile = `${util.timestampDir}/${
+            benchmark.join('-').replace(/ /g, '_')}-trace.json`;
       }
       [context, page] = await startContext(traceFile);
     }
 
     // prepare result placeholder
     if (benchmarkName != previousBenchmarkName) {
-      let placeholder = [benchmarkName].concat(Array(backendsLength * metricsLength).fill(defaultValue));
+      let placeholder = [benchmarkName].concat(
+          Array(backendsLength * metricsLength).fill(defaultValue));
       if (target == 'performance') {
         placeholder = placeholder.concat({});
       }
@@ -204,15 +219,16 @@ async function runBenchmark(target) {
       url += `&${util.benchmarkUrlArgs}`;
 
       await page.goto(url);
-      if ('quit-pageerror' in util.args) {
-        await Promise.any([
-          page.waitForSelector('#parameters > tbody > tr:nth-child(1)', { timeout: 0 }),
-          page.waitForEvent('pageerror', { timeout: 0 })
-        ]);
-        if (util.hasError) {
-          util.hasError = false;
-          continue;
-        }
+
+      // 5th line is about Subsequent average
+      await Promise.any([
+        page.waitForSelector(
+            '#timings > tbody > tr:nth-child(5)', {timeout: util.timeout}),
+        page.waitForEvent('pageerror', {timeout: util.timeout})
+      ]);
+      if (util.hasError) {
+        util.hasError = false;
+        continue;
       }
 
       let metricIndex = 0;
@@ -220,17 +236,20 @@ async function runBenchmark(target) {
       while (metricIndex < metricsLength) {
         let selector = `#timings > tbody > tr:nth-child(${typeIndex})`;
         try {
-          await page.waitForSelector(selector, { timeout: util.timeout });
+          await page.waitForSelector(selector, {timeout: util.timeout});
         } catch (err) {
           break;
         }
-        const type = await page.$eval(selector + ' > td:nth-child(1)', el => el.textContent);
+        const type = await page.$eval(
+            selector + ' > td:nth-child(1)', el => el.textContent);
         if (type.includes(metrics[metricIndex])) {
-          let value = await page.$eval(selector + ' > td:nth-child(2)', el => el.textContent);
+          let value = await page.$eval(
+              selector + ' > td:nth-child(2)', el => el.textContent);
           if (target == 'performance') {
             value = parseFloat(value.replace(' ms', ''));
           }
-          results[results.length - 1][backendIndex * metricsLength + metricIndex + 1] = value;
+          results[results.length - 1][backendIndex * metricsLength + metricIndex + 1] =
+              value;
           metricIndex += 1;
         }
         typeIndex += 1;
@@ -239,16 +258,24 @@ async function runBenchmark(target) {
       // get breakdown data
       if (target == 'performance' && !('disable-breakdown' in util.args)) {
         try {
-          await page.waitForSelector('#kernels > tbody > tr:nth-child(1)', { timeout: util.timeout });
+          await page.waitForSelector(
+              '#kernels > tbody > tr:nth-child(1)', {timeout: util.timeout});
           let row = 1;
           while (true) {
-            let op = await page.$eval('#kernels > tbody > tr:nth-child(' + row + ') > td:nth-child(1) > span', el => el.title);
+            let op = await page.$eval(
+                '#kernels > tbody > tr:nth-child(' + row +
+                    ') > td:nth-child(1) > span',
+                el => el.title);
             if (op.substr(-4, 4) == '__op') {
               row += 1;
               continue;
             }
-            let time = await page.$eval('#kernels > tbody > tr:nth-child(' + row + ') > td:nth-child(2)', el => el.textContent);
-            let op_time = results[results.length - 1][backendsLength * metricsLength + 1];
+            let time = await page.$eval(
+                '#kernels > tbody > tr:nth-child(' + row +
+                    ') > td:nth-child(2)',
+                el => el.textContent);
+            let op_time =
+                results[results.length - 1][backendsLength * metricsLength + 1];
             if (!(op in op_time)) {
               op_time[op] = Array(backendsLength).fill(defaultValue);
             }
@@ -261,7 +288,8 @@ async function runBenchmark(target) {
 
       if (needWasmStatus && target == 'performance' && backend == 'wasm') {
         let status = await page.$eval('#env', el => el.textContent);
-        let match = status.match('WASM_HAS_MULTITHREAD_SUPPORT: (.*)  WASM_HAS_SIMD_SUPPORT: (.*)  WEBGL_CPU_FORWARD');
+        let match = status.match(
+            'WASM_HAS_MULTITHREAD_SUPPORT: (.*)  WASM_HAS_SIMD_SUPPORT: (.*)  WEBGL_CPU_FORWARD');
         util.wasmMultithread = match[1];
         util.wasmSIMD = match[2];
         needWasmStatus = false;
@@ -271,7 +299,8 @@ async function runBenchmark(target) {
     util.log(result);
 
     if ('pause-test' in util.args) {
-      const readlineInterface = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const readlineInterface = readline.createInterface(
+          {input: process.stdin, output: process.stdout});
       await new Promise(resolve => {
         readlineInterface.question('Press Enter to continue...\n', resolve);
       });
@@ -291,7 +320,11 @@ async function runBenchmark(target) {
     let file = path.join(util.timestampDir, fileName);
     fs.writeFileSync(file, JSON.stringify(results));
     if ('upload' in util.args) {
-      let result = spawnSync('scp', [file, `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${util['gpuDeviceId']}/${fileName}`]);
+      let result = spawnSync('scp', [
+        file,
+        `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${
+            util['gpuDeviceId']}/${fileName}`
+      ]);
       if (result.status !== 0) {
         util.log('[ERROR] Failed to upload report');
       } else {
