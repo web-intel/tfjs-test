@@ -34,12 +34,12 @@
   },
   {
     "benchmark": "BlazePoseLandmark",
-    "architecture": ["lite", "full", "heavy", "large_100"],
+    "architecture": ["lite", "full", "heavy"],
     "backend": ["webgl", "webgpu"]
   },
   {
     "benchmark": "Coco-SSD",
-    "architecture": ["MobileNetV2", "MobileNetV3"],
+    "architecture": ["MobileNetV2", "MobileNetV1"],
     "backend": ["webgl", "webgpu"]
   },
   {
