@@ -220,10 +220,18 @@ async function runBenchmark(target) {
 
       await page.goto(url);
 
-      // 5th line is about Subsequent average
+      let childIndex;
+      if (target == 'performance') {
+        // 5th line is Subsequent average
+        childIndex = 5;
+      } else if (target == 'conformance') {
+        // 4th line is conformance result
+        childIndex = 4;
+      }
       await Promise.any([
         page.waitForSelector(
-            '#timings > tbody > tr:nth-child(5)', {timeout: util.timeout}),
+            `#timings > tbody > tr:nth-child(${childIndex})`,
+            {timeout: util.timeout}),
         page.waitForEvent('pageerror', {timeout: util.timeout})
       ]);
       if (util.hasError) {
