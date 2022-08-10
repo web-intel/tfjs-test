@@ -36,7 +36,8 @@ function parseTrace() {
 
       for (let event of traceJson['traceEvents']) {
         let eventName = event['name'];
-        if (eventName != 'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing') {
+        if (eventName !=
+            'd3d12::CommandRecordingContext::ExecuteCommandList Detailed Timing') {
           continue;
         }
         let splitRawTime = event['args']['Timing'].split(',');
@@ -53,19 +54,22 @@ function parseTrace() {
         if (eventName == 'TimeStamp') {
           let message = event['args']['data']['message'];
           if (message == 'TFJS::predictStart') {
-            timelineJson.push({ 'CPU-TFJS': [], 'CPU-CHROME': [], 'GPU': [] });
+            timelineJson.push({'CPU-TFJS': [], 'CPU-CHROME': [], 'GPU': []});
           }
 
           if (message.startsWith('TFJS::GPU::')) {
             for (let item of JSON.parse(message.replace('TFJS::GPU::', ''))) {
               let query = item['query'];
-              timelineJson[timelineJson.length - 1]['GPU'].push([item['name'], getMs('GPU', query[0]), getMs('GPU', query[1])]);
+              timelineJson[timelineJson.length - 1]['GPU'].push([
+                item['name'], getMs('GPU', query[0]), getMs('GPU', query[1])
+              ]);
             }
           } else if (message.startsWith('TFJS::')) {
             if (timeShift == 0) {
               timeShift = -getMs('CPU', event['ts']);
             }
-            timelineJson[timelineJson.length - 1]['CPU-TFJS'].push([message, getMs('CPU', event['ts'])]);
+            timelineJson[timelineJson.length - 1]['CPU-TFJS'].push(
+                [message, getMs('CPU', event['ts'])]);
           }
         } else if (chromeEventNames.indexOf(eventName) >= 0) {
           let prefix = '';
@@ -73,8 +77,10 @@ function parseTrace() {
             prefix = `${event['args']['label']}::`
           }
           let startTime = getMs('CPU', event['ts']);
-          let endTime = parseFloat((startTime + event['dur'] / 1000).toFixed(2));
-          timelineJson[timelineJson.length - 1]['CPU-CHROME'].push([`${prefix}${eventName}`, startTime, endTime]);
+          let endTime =
+              parseFloat((startTime + event['dur'] / 1000).toFixed(2));
+          timelineJson[timelineJson.length - 1]['CPU-CHROME'].push(
+              [`${prefix}${eventName}`, startTime, endTime]);
         }
       }
 
@@ -88,9 +94,11 @@ function parseTrace() {
 
   function getMs(type, tick) {
     if (type == 'CPU') {
-      return parseFloat(((tick - cpuBase * 1000000 / cpuFreq) / 1000 + timeShift).toFixed(2));
+      return parseFloat(
+          ((tick - cpuBase * 1000000 / cpuFreq) / 1000 + timeShift).toFixed(2));
     } else {
-      return parseFloat(((tick - gpuBase) * 1000 / gpuFreq + timeShift).toFixed(2));
+      return parseFloat(
+          ((tick - gpuBase) * 1000 / gpuFreq + timeShift).toFixed(2));
     }
   }
 }

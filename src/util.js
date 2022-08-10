@@ -59,16 +59,20 @@ function sleep(ms) {
 }
 
 module.exports = {
-  'browserArgs': '--enable-features=WebAssemblyThreads,SharedArrayBuffer,WebAssemblySimd,MediaFoundationD3D11VideoCapture --start-maximized --enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis',
+  'browserArgs':
+      '--enable-features=WebAssemblyThreads,SharedArrayBuffer,WebAssemblySimd,MediaFoundationD3D11VideoCapture --start-maximized --enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis',
   'hostname': os.hostname(),
   'parameters': parameters,
   'platform': platform,
   'backends': backends,
   'targetMetrics': targetMetrics,
   'outDir': outDir,
-  'benchmarkUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark',
-  'benchmarkUrlArgs': 'WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false',
-  'demoUrl': 'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos',
+  'benchmarkUrl':
+      'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark',
+  'benchmarkUrlArgs':
+      'WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false',
+  'demoUrl':
+      'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos',
   'timeout': 180 * 1000,
   capitalize: capitalize,
   ensureDir: ensureDir,

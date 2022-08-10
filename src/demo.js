@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { chromium } = require('playwright');
+const {chromium} = require('playwright');
 const readline = require('readline');
 
 const util = require('./util.js')
@@ -82,7 +82,8 @@ async function runDemo() {
         results[results.length - 1].push([defaultValue, defaultValue]);
       }
 
-      for (let runBackendIndex = 0; runBackendIndex < runBackends.length; runBackendIndex++) {
+      for (let runBackendIndex = 0; runBackendIndex < runBackends.length;
+           runBackendIndex++) {
         let runBackend = runBackends[runBackendIndex];
         let backendIndex = util.backends.indexOf(runBackend);
         if ('new-context' in util.args) {
@@ -90,7 +91,8 @@ async function runDemo() {
         }
 
         if (!util.dryrun) {
-          let url = `${util.demoUrl}/${runTypeInUrl}_video/dist?backend=tfjs-${runBackend}&model=${demo}`;
+          let url = `${util.demoUrl}/${runTypeInUrl}_video/dist?backend=tfjs-${
+              runBackend}&model=${demo}`;
           results[results.length - 1][backendIndex + 1][1] = url;
 
           try {

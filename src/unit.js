@@ -1,6 +1,6 @@
 'use strict';
 
-const { execSync, spawnSync } = require('child_process');
+const {execSync, spawnSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const util = require('./util.js')
@@ -26,8 +26,10 @@ async function runUnit() {
       tfjsDir = 'd:/workspace/project/tfjs';
     }
   }
-  util['clientRepoDate'] = execSync(`cd ${tfjsDir} && git log -1 --format=\"%cd\"`).toString();
-  util['clientRepoCommit'] = execSync(`cd ${tfjsDir} && git rev-parse HEAD`).toString();
+  util['clientRepoDate'] =
+      execSync(`cd ${tfjsDir} && git log -1 --format=\"%cd\"`).toString();
+  util['clientRepoCommit'] =
+      execSync(`cd ${tfjsDir} && git rev-parse HEAD`).toString();
 
   for (let i = 0; i < backends.length; i++) {
     let backend = backends[i];
@@ -44,7 +46,9 @@ async function runUnit() {
 
     process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
     process.env['CHROME_BIN'] = util.browserPath;
-    let logFile = path.join(util.timestampDir, `${util.timestamp}-unit-${backend}.log`).replace(/\\/g, '/');
+    let logFile =
+        path.join(util.timestampDir, `${util.timestamp}-unit-${backend}.log`)
+            .replace(/\\/g, '/');
 
     if (util.platform === 'linux' || util.platform === 'darwin') {
       try {
@@ -53,7 +57,8 @@ async function runUnit() {
           stdio: [process.stdin, process.stdout, process.stderr],
           timeout: timeout
         });
-      } catch (error) {}
+      } catch (error) {
+      }
     } else if (util.platform === 'win32') {
       let shell = 'C:/Program Files/Git/git-bash.exe';
       let shellOption = '-c';
@@ -74,7 +79,8 @@ async function runUnit() {
           }
 
           process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
-          shellCmd = `yarn && yarn --cwd .. bazel build tfjs-backend-${backend}/src:tests > ${logFile}`;
+          shellCmd = `yarn && yarn --cwd .. bazel build tfjs-backend-${
+              backend}/src:tests > ${logFile}`;
           util.log(`[cmd] ${shellCmd}`);
           ret = spawnSync(shell, [shellOption, shellCmd], {
             env: process.env,
@@ -87,13 +93,14 @@ async function runUnit() {
           }
 
           fs.unlink(
-            path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
-            () => { });
+              path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
+              () => {});
           fs.copyFile(
-            path.join(
-              tfjsDir, 'dist', 'bin', 'tfjs-backend-webgpu', 'src', 'tests.ts'),
-            path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
-            () => { });
+              path.join(
+                  tfjsDir, 'dist', 'bin', 'tfjs-backend-webgpu', 'src',
+                  'tests.ts'),
+              path.join(tfjsDir, 'tfjs-backend-webgpu', 'src', 'tests.ts'),
+              () => {});
         }
 
         let filter = '';
@@ -101,12 +108,16 @@ async function runUnit() {
           filter = ` --grep ${util.args['unit-filter']}`;
         }
         spawnSync(
-          shell,
-          [shellOption, `yarn karma start --browsers=chrome_webgpu${filter} > ${logFile}`], {
-          env: process.env,
-          stdio: [process.stdin, process.stdout, process.stderr],
-          timeout: timeout
-        });
+            shell,
+            [
+              shellOption,
+              `yarn karma start --browsers=chrome_webgpu${filter} > ${logFile}`
+            ],
+            {
+              env: process.env,
+              stdio: [process.stdin, process.stdout, process.stderr],
+              timeout: timeout
+            });
       } else {
         spawnSync(shell, [shellOption, `${cmd} > ${logFile}`], {
           env: process.env,

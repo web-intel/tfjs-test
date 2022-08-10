@@ -3,7 +3,7 @@
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 const path = require('path');
-const { execSync } = require('child_process');
+const {execSync} = require('child_process');
 const util = require('./util.js');
 
 async function sendMail(to, subject, html) {
@@ -36,11 +36,13 @@ function getSortedHash(inputHash) {
   var resultHash = {};
 
   var keys = Object.keys(inputHash);
-  keys.sort(function (a, b) {
-    return inputHash[a][0] - inputHash[b][0];
-  }).reverse().forEach(function (k) {
-    resultHash[k] = inputHash[k];
-  });
+  keys.sort(function(a, b) {
+        return inputHash[a][0] - inputHash[b][0];
+      })
+      .reverse()
+      .forEach(function(k) {
+        resultHash[k] = inputHash[k];
+      });
   return resultHash;
 }
 
@@ -73,11 +75,13 @@ async function report(results) {
     }
     for (let metricIndex = 0; metricIndex < metrics.length; metricIndex++) {
       let metric = metrics[metricIndex];
-      let resultsTable = `<table><tr><th>${target} (${metric})</th><th>webgpu total${unit}</th>`;
+      let resultsTable = `<table><tr><th>${target} (${
+          metric})</th><th>webgpu total${unit}</th>`;
       if (target == 'performance' && metric == 'Subsequent average') {
         resultsTable += `<th>webgpu ops${unit}</th>`
       }
-      for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
+      for (let backendIndex = 1; backendIndex < backendsLength;
+           backendIndex++) {
         let backend = util.backends[backendIndex];
         resultsTable += `<th>${backend} total${unit}</th>`;
         if (target == 'performance' && metric == 'Subsequent average') {
@@ -91,7 +95,8 @@ async function report(results) {
         }
       }
       resultsTable += '</tr>';
-      for (let resultIndex = 0; resultIndex < targetResults.length; resultIndex++) {
+      for (let resultIndex = 0; resultIndex < targetResults.length;
+           resultIndex++) {
         let result = targetResults[resultIndex];
         let opsResult = result[result.length - 1];
         let webgpuTotalValue = result[metricIndex + 1];
@@ -104,7 +109,8 @@ async function report(results) {
             style = goodStyle;
           }
         }
-        resultsTable += `<tr><td>${result[0]}</td><td ${style}>${webgpuTotalValue}</td>`;
+        resultsTable +=
+            `<tr><td>${result[0]}</td><td ${style}>${webgpuTotalValue}</td>`;
 
         let webgpuOpsValue = 0;
         for (let op in opsResult) {
@@ -116,8 +122,10 @@ async function report(results) {
           resultsTable += `<td>${webgpuOpsValue}</td>`
         }
 
-        for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
-          let backendTotalValue = result[backendIndex * metricsLength + metricIndex + 1];
+        for (let backendIndex = 1; backendIndex < backendsLength;
+             backendIndex++) {
+          let backendTotalValue =
+              result[backendIndex * metricsLength + metricIndex + 1];
           let backendOpsValue = 0.0;
           for (let op in opsResult) {
             backendOpsValue += opsResult[op][backendIndex];
@@ -139,7 +147,9 @@ async function report(results) {
             let totalPercent = 'NA';
             let totalStyle = neutralStyle;
             if (backendTotalValue !== 'NA' && webgpuTotalValue !== 'NA') {
-              totalPercent = parseFloat(backendTotalValue / webgpuTotalValue * 100).toFixed(2);
+              totalPercent =
+                  parseFloat(backendTotalValue / webgpuTotalValue * 100)
+                      .toFixed(2);
               totalStyle = totalPercent > 100 ? goodStyle : badStyle;
             }
             resultsTable += `<td ${totalStyle}>${totalPercent}</td>`;
@@ -148,7 +158,8 @@ async function report(results) {
               let opsPercent = 'NA';
               let opsStyle = neutralStyle;
               if (backendOpsValue !== 'NA' && webgpuOpsValue !== 'NA') {
-                opsPercent = parseFloat(backendOpsValue / webgpuOpsValue * 100).toFixed(2);
+                opsPercent = parseFloat(backendOpsValue / webgpuOpsValue * 100)
+                                 .toFixed(2);
                 opsStyle = opsPercent > 100 ? goodStyle : badStyle;
               }
               resultsTable += `<td ${opsStyle}>${opsPercent}</td>`;
@@ -198,12 +209,15 @@ async function report(results) {
     }
     resultsTable += '</tr>';
 
-    for (let resultIndex = 0; resultIndex < targetResults.length; resultIndex++) {
+    for (let resultIndex = 0; resultIndex < targetResults.length;
+         resultIndex++) {
       let result = targetResults[resultIndex];
       resultsTable += `<tr><td>${result[0]}</td>`;
-      for (let backendIndex = 0; backendIndex < backendsLength; backendIndex++) {
+      for (let backendIndex = 0; backendIndex < backendsLength;
+           backendIndex++) {
         let style = neutralStyle;
-        resultsTable += `<td ${style}><a href=${result[backendIndex + 1][1]}>${result[backendIndex + 1][0]}</a></td>`;
+        resultsTable += `<td ${style}><a href=${result[backendIndex + 1][1]}>${
+            result[backendIndex + 1][0]}</a></td>`;
       }
     }
     resultsTable += '</tr></table><br>';
@@ -213,17 +227,28 @@ async function report(results) {
   // config table
   let configTable = '<table><tr><th>Category</th><th>Info</th></tr>';
   if ('upload' in util.args || 'server-info' in util.args) {
-    util['serverRepoDate'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=\"%cd\""').toString();
-    util['serverRepoCommit'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git rev-parse HEAD"').toString();
-    util['serverBuildDate'] = execSync('ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && stat dist/bin/tfjs-backend-webgpu/dist/tf-backend-webgpu.js |grep Modify"').toString();
+    util['serverRepoDate'] =
+        execSync(
+            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=\"%cd\""')
+            .toString();
+    util['serverRepoCommit'] =
+        execSync(
+            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git rev-parse HEAD"')
+            .toString();
+    util['serverBuildDate'] =
+        execSync(
+            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && stat dist/bin/tfjs-backend-webgpu/dist/tf-backend-webgpu.js |grep Modify"')
+            .toString();
   }
 
-  for (let category of [
-    'benchmarkUrl', 'benchmarkUrlArgs', 'browserArgs', 'browserPath', 'chromeRevision',
-    'chromeVersion', 'clientRepoCommit', 'clientRepoDate', 'cpuName', 'duration', 'gpuDeviceId',
-    'gpuDriverVersion', 'gpuName', 'hostname', 'platform', 'powerPlan', 'pthreadPoolSize',
-    'screenResolution', 'serverBuildDate', 'serverRepoCommit', 'serverRepoDate',
-    'wasmMultithread', 'wasmSIMD']) {
+  for (let category
+           of ['benchmarkUrl', 'benchmarkUrlArgs', 'browserArgs', 'browserPath',
+               'chromeRevision', 'chromeVersion', 'clientRepoCommit',
+               'clientRepoDate', 'cpuName', 'duration', 'gpuDeviceId',
+               'gpuDriverVersion', 'gpuName', 'hostname', 'platform',
+               'powerPlan', 'pthreadPoolSize', 'screenResolution',
+               'serverBuildDate', 'serverRepoCommit', 'serverRepoDate',
+               'wasmMultithread', 'wasmSIMD']) {
     configTable += `<tr><td>${category}</td><td>${util[category]}</td></tr>`;
   }
   configTable += '</table><br>'
@@ -237,7 +262,8 @@ async function report(results) {
     let metricsLength = util.targetMetrics[target].length;
     let unit = ' (ms)';
     let style = neutralStyle;
-    let breakdownTable = `<table><tr><th>benchmark</th><th>op</th><th>webgpu${unit}</th>`;
+    let breakdownTable =
+        `<table><tr><th>benchmark</th><th>op</th><th>webgpu${unit}</th>`;
     for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
       let backend = util.backends[backendIndex];
       breakdownTable += `<th>${backend}${unit}</th>`;
@@ -245,7 +271,8 @@ async function report(results) {
     }
     breakdownTable += '</tr>';
 
-    for (let resultIndex = 0; resultIndex < targetResults.length; resultIndex++) {
+    for (let resultIndex = 0; resultIndex < targetResults.length;
+         resultIndex++) {
       let result = targetResults[resultIndex];
       let op_time = result[backendsLength * metricsLength + 1];
       let TOP = 5;
@@ -264,14 +291,17 @@ async function report(results) {
           benchmarkNameDisplayed = true;
         }
 
-        breakdownTable += `<tr><td>${benchmarkName}</td><td>${op}</td><td ${style}>${webgpuTotalValue}</td>`;
-        for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
+        breakdownTable += `<tr><td>${benchmarkName}</td><td>${op}</td><td ${
+            style}>${webgpuTotalValue}</td>`;
+        for (let backendIndex = 1; backendIndex < backendsLength;
+             backendIndex++) {
           let backendTotalValue = time[backendIndex];
           breakdownTable += `<td>${backendTotalValue}</td>`;
           let percent = 'NA';
           let style = neutralStyle;
           if (backendTotalValue !== 'NA' && webgpuTotalValue !== 'NA') {
-            percent = parseFloat(backendTotalValue / webgpuTotalValue * 100).toFixed(2);
+            percent = parseFloat(backendTotalValue / webgpuTotalValue * 100)
+                          .toFixed(2);
             style = percent > 100 ? goodStyle : badStyle;
           }
           breakdownTable += `<td ${style}>${percent}</td>`;
@@ -287,7 +317,8 @@ async function report(results) {
     html += breakdownTable;
   }
 
-  fs.writeFileSync(path.join(util.timestampDir, `${util.timestamp}.html`), html);
+  fs.writeFileSync(
+      path.join(util.timestampDir, `${util.timestamp}.html`), html);
   if ('email' in util.args) {
     let subject = '[TFJS Test] ' + util['hostname'] + ' ' + util.timestamp;
     await sendMail(util.args['email'], subject, html);
