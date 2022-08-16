@@ -84,5 +84,31 @@
   {
     "benchmark": "USE - batchsize 1",
     "backend": ["webgl", "webgpu"]
+  },
+  {
+    "benchmark": "TextToxicity",
+    "backend": ["webgl", "webgpu"]
+  },
+  {
+    "benchmark": "MobileBert",
+    "backend": ["webgl", "webgpu"]
+  },
+  {
+    "benchmark": "posenet",
+    "inputSize": [256, 512],
+    "architecture": ["MobileNetV1", "ResNet50"],
+    "inputType": ["image"],
+    "backend": ["webgl", "webgpu"]
+  },
+  {
+    "benchmark": "bodypix",
+    "inputSize": [0.25, 0.5, 0.75],
+    "architecture": ["ResNet50"],
+    "inputType": ["image"],
+    "backend": ["wasm", "webgl", "webgpu"]
+  },
+  {
+    "benchmark": "speech-commands",
+    "backend": ["wasm", "webgl", "webgpu"]
   }
 ]
