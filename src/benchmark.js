@@ -72,7 +72,8 @@ async function closeContext(context) {
 async function runBenchmark(target) {
   // get benchmarks
   let benchmarks = [];
-  let benchmarkJson = path.join(path.resolve(__dirname), 'benchmark.json');
+  let benchmarkJson =
+      path.join(path.resolve(__dirname), util.args['benchmark-json']);
   let targetConfigs = JSON.parse(fs.readFileSync(benchmarkJson));
 
   for (let config of targetConfigs) {
@@ -210,7 +211,8 @@ async function runBenchmark(target) {
       }
     } else {
       // get url
-      let url = `${util.benchmarkUrl}?task=${task}`;
+      let url =
+          `${util.benchmarkUrl}/e2e/benchmarks/local-benchmark?task=${task}`;
       for (let index = 0; index < util.parameters.length; index++) {
         if (benchmarks[i][index]) {
           url += `&${util.parameters[index]}=${benchmarks[i][index]}`;

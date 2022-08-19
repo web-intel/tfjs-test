@@ -68,7 +68,7 @@ module.exports = {
   'targetMetrics': targetMetrics,
   'outDir': outDir,
   'benchmarkUrl':
-      'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark',
+      'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs',
   'benchmarkUrlArgs':
       'WEBGL_USE_SHAPES_UNIFORMS=true&CHECK_COMPUTATION_FOR_ERRORS=false',
   'demoUrl':

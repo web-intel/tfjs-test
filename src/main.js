@@ -25,6 +25,11 @@ util.args =
           type: 'string',
           describe: 'benchmark to run, split by comma',
         })
+        .option('benchmark-json', {
+          type: 'string',
+          describe: 'benchmark json',
+          default: 'benchmark.json',
+        })
         .option('benchmark-url', {
           type: 'string',
           describe: 'benchmark url to test against',
@@ -166,9 +171,9 @@ util.args =
           describe: 'warmup times',
         })
         .example([
-          ['node $0 --email <email>', '# send report to <email>'],
+          ['node $0 --email <email> // Send report to <email>'],
           [
-            'node $0 --target performance --benchmark-url http://127.0.0.1/workspace/project/tfjswebgpu/tfjs/e2e/benchmarks/local-benchmark'
+            'node $0 --target performance --benchmark-url http://127.0.0.1/workspace/project/tfjswebgpu/tfjs'
           ],
           [
             'node $0 --target performance --benchmark pose-detection --architecture BlazePose-heavy --input-size 256 --input-type tensor --performance-backend webgpu'
@@ -189,6 +194,9 @@ util.args =
           ['node $0 --target unit --unit-filter=add --unit-skip-build'],
           [
             'node $0 --target demo --demo-backend webgpu --demo movenet --demo-type camera'
+          ],
+          [
+            'node $0 --target performance --benchmark-json 20220512-benchmark.json --benchmark-url https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-oldbenchmark // Run old benchmarks'
           ],
         ])
         .help()
