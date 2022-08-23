@@ -66,7 +66,7 @@ async function runUnit() {
       if (backend === 'webgpu') {
         if (!(util.args['unit-skip-build'])) {
           process.chdir(path.join(tfjsDir, `link-package`));
-          shellCmd = `yarn build-deps-for tfjs-backend-webgpu > ${logFile}`;
+          shellCmd = `yarn build-deps-for tfjs-backend-webgpu tfjs-core > ${logFile}`;
           util.log(`[cmd] ${shellCmd}`);
           ret = spawnSync(shell, [shellOption, shellCmd], {
             env: process.env,
