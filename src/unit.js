@@ -66,7 +66,8 @@ async function runUnit() {
       if (backend === 'webgpu') {
         if (!(util.args['unit-skip-build'])) {
           process.chdir(path.join(tfjsDir, `link-package`));
-          shellCmd = `yarn build-deps-for tfjs-backend-webgpu tfjs-core > ${logFile}`;
+          //TODO: Remove core and cpu after https://github.com/tensorflow/tfjs/pull/6763 check in
+          shellCmd = `yarn build-deps-for tfjs-backend-webgpu tfjs-core tfjs-backend-cpu > ${logFile}`;
           util.log(`[cmd] ${shellCmd}`);
           ret = spawnSync(shell, [shellOption, shellCmd], {
             env: process.env,
