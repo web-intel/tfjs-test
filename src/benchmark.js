@@ -332,7 +332,7 @@ async function runBenchmark(target) {
     if ('upload' in util.args) {
       let result = spawnSync('scp', [
         file,
-        `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${
+        `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${util.platform}/${
             util['gpuDeviceId']}/${fileName}`
       ]);
       if (result.status !== 0) {
