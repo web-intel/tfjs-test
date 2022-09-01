@@ -111,11 +111,22 @@ async function getExtraConfig() {
           value.match('DEVICE=0x([A-Za-z0-9]{4}).*DRIVER_VERSION=(.*) ');
       return [match[1], match[2]];
     } catch (err) {
-      return ['NA', 'NA'];
+      return ['ffff', 'NA'];
     }
   });
 
   util['gpuDeviceId'] = gpuInfo[0];
+  // Could not get device id
+  if (gpuInfo[0] === 'ffff') {
+    if (hostname === 'shwde7779') {
+      util['gpuDeviceId'] = '9a49';
+    } else if (hostname === 'bjwdeotc009') {
+      util['gpuDeviceId'] = '3e98';
+    } else if (hostname === 'wp-42') {
+      util['gpuDeviceId'] = '9a49';
+    }
+  }
+
   util['gpuDriverVersion'] = gpuInfo[1];
 
   // screen resolution
