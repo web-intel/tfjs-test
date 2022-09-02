@@ -257,6 +257,15 @@ async function runBenchmark(target) {
       }
       errorMsg = '';
 
+      // pause if needed
+      if ('pause-test' in util.args) {
+        const readlineInterface = readline.createInterface(
+            {input: process.stdin, output: process.stdout});
+        await new Promise(resolve => {
+          readlineInterface.question('Press Enter to continue...\n', resolve);
+        });
+      }
+
       // quit with error
       if (util.hasError) {
         if (target === 'conformance') {
@@ -334,14 +343,6 @@ async function runBenchmark(target) {
     }
 
     util.log(result);
-
-    if ('pause-test' in util.args) {
-      const readlineInterface = readline.createInterface(
-          {input: process.stdin, output: process.stdout});
-      await new Promise(resolve => {
-        readlineInterface.question('Press Enter to continue...\n', resolve);
-      });
-    }
 
     if ('new-context' in util.args) {
       await closeContext(context);
