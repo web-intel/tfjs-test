@@ -123,6 +123,10 @@ util.args =
           type: 'boolean',
           describe: 'get server info and display it in report',
         })
+        .option('skip-config', {
+          type: 'boolean',
+          describe: 'skip config',
+        })
         .option('target', {
           type: 'string',
           describe:
@@ -198,6 +202,9 @@ util.args =
           [
             'node $0 --target performance --benchmark-json 20220512-benchmark.json --benchmark-url https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-oldbenchmark // Run old benchmarks'
           ],
+          [
+            'node $0 --target conformance --conformance-backend webgpu --benchmark MobileNetV3 --architecture small_075 --timestamp day --skip-config // single test'
+          ],
         ])
         .help()
         .wrap(180)
@@ -211,7 +218,7 @@ function getTimestamp(format) {
   const date = new Date();
   let timestamp = date.getFullYear() + padZero(date.getMonth() + 1) +
       padZero(date.getDate());
-  if (format == 'second') {
+  if (format === 'second') {
     timestamp += padZero(date.getHours()) + padZero(date.getMinutes()) +
         padZero(date.getSeconds());
   }
@@ -225,7 +232,7 @@ async function main() {
 
   let browserPath;
   let userDataDir;
-  if (util.args['browser'] == 'chrome_canary') {
+  if (util.args['browser'] === 'chrome_canary') {
     if (util.platform === 'darwin') {
       browserPath =
           '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary';
@@ -242,7 +249,7 @@ async function main() {
           process.env.LOCALAPPDATA}/Google/Chrome SxS/Application/chrome.exe`;
       userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome SxS/User Data`;
     }
-  } else if (util.args['browser'] == 'chrome_dev') {
+  } else if (util.args['browser'] === 'chrome_dev') {
     if (util.platform === 'darwin') {
       browserPath =
           '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Dev';
@@ -258,7 +265,7 @@ async function main() {
           process.env.PROGRAMFILES}/Google/Chrome Dev/Application/chrome.exe`;
       userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome Dev/User Data`;
     }
-  } else if (util.args['browser'] == 'chrome_beta') {
+  } else if (util.args['browser'] === 'chrome_beta') {
     if (util.platform === 'darwin') {
       browserPath =
           '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Beta';
@@ -274,7 +281,7 @@ async function main() {
           process.env.PROGRAMFILES}/Google/Chrome Beta/Application/chrome.exe`;
       userDataDir = `${process.env.LOCALAPPDATA}/Google/Chrome Beta/User Data`;
     }
-  } else if (util.args['browser'] == 'chrome_stable') {
+  } else if (util.args['browser'] === 'chrome_stable') {
     if (util.platform === 'darwin') {
       browserPath =
           '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Stable';
@@ -367,8 +374,9 @@ async function main() {
     fs.mkdirSync(util.outDir, {recursive: true});
   }
 
-  if (targets.indexOf('conformance') >= 0 ||
-      targets.indexOf('performance') >= 0 || targets.indexOf('unit') >= 0) {
+  if ((targets.indexOf('conformance') >= 0 ||
+       targets.indexOf('performance') >= 0 || targets.indexOf('unit') >= 0) &&
+      !util.args['skip-config']) {
     await config();
   }
 
@@ -406,15 +414,15 @@ async function main() {
       startTime = new Date();
       util.log(`=${target}=`);
       if (['conformance', 'performance'].indexOf(target) >= 0) {
-        if (!(target == 'performance' && util.warmupTimes == 0 &&
-              util.runTimes == 0)) {
+        if (!(target === 'performance' && util.warmupTimes === 0 &&
+              util.runTimes === 0)) {
           results[target] = await runBenchmark(target);
         }
-      } else if (target == 'demo') {
+      } else if (target === 'demo') {
         results[target] = await runDemo();
-      } else if (target == 'unit') {
+      } else if (target === 'unit') {
         results[target] = await runUnit();
-      } else if (target == 'trace') {
+      } else if (target === 'trace') {
         await parseTrace();
       }
       util.duration += `${target}: ${(new Date() - startTime) / 1000} `;

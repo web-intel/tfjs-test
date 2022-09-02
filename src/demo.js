@@ -65,7 +65,7 @@ async function runDemo() {
   for (let runTypeIndex = 0; runTypeIndex < runTypes.length; runTypeIndex++) {
     let runType = runTypes[runTypeIndex];
     let runTypeInUrl;
-    if (runType == 'camera') {
+    if (runType === 'camera') {
       runTypeInUrl = 'live';
     } else {
       runTypeInUrl = 'upload';
@@ -110,7 +110,7 @@ async function runDemo() {
               let newFps = await page.$eval(selector, el => el.innerText);
               if (Math.abs(newFps - fps) < fps * 10 / 100) {
                 consecutiveGoodCount++;
-                if (consecutiveGoodCount == 3) {
+                if (consecutiveGoodCount === 3) {
                   break;
                 }
               } else {

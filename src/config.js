@@ -30,7 +30,7 @@ async function getConfig() {
 
   // power plan
   let powerPlan = 'Unknown Power Plan';
-  if (util['platform'] == 'win32') {
+  if (util['platform'] === 'win32') {
     powerPlan = await new Promise((resolve, reject) => {
       // `cmd /c chcp 65001>nul &&`: this command sets cmd's console output to
       // utf-8) at start of my exec command

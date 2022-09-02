@@ -9,6 +9,8 @@ const readline = require('readline');
 const parseTrace = require('./trace.js');
 const util = require('./util.js')
 
+let errorMsg = '';
+
 function cartesianProduct(arr) {
   return arr.reduce(function(a, b) {
     return a
@@ -49,12 +51,18 @@ async function startContext(traceFile = undefined) {
     });
     let page = await context.newPage();
     page.on('console', async msg => {
-      for (let i = 0; i < msg.args().length; ++i)
-        util.log(`[console] ${i}: ${await msg.args()[i].jsonValue()}`);
+      for (let i = 0; i < msg.args().length; ++i) {
+        const consoleError =
+            `[console] ${i}: ${await msg.args()[i].jsonValue()}`;
+        util.log(consoleError);
+        errorMsg += `${consoleError}<br>`;
+      }
     });
-    page.on('pageerror', (err) => {
+    page.on('pageerror', (error) => {
       util.hasError = true;
-      util.log(`[pageerror] ${err}`);
+      const pageError = `[pageerror] ${error}`;
+      util.log(pageError);
+      errorMsg += `${pageError}<br>`;
     });
 
     return [context, page];
@@ -85,13 +93,13 @@ async function runBenchmark(target) {
       continue;
     }
 
-    if (target == 'conformance') {
+    if (target === 'conformance') {
       if ('conformance-backend' in util.args) {
         config['backend'] = util.args['conformance-backend'].split(',');
       } else {
         config['backend'] = ['webgpu', 'webgl'];
       }
-    } else if (target == 'performance') {
+    } else if (target === 'performance') {
       if ('performance-backend' in util.args) {
         config['backend'] = util.args['performance-backend'].split(',');
       } else if (!('backend' in config)) {
@@ -142,10 +150,15 @@ async function runBenchmark(target) {
   let defaultValue = 'NA';
   let backendsLength = util.backends.length;
   let metrics = util.targetMetrics[target];
-  if (target == 'performance' && util.runTimes == 0) {
+  if (target === 'performance' && util.runTimes === 0) {
     metrics.length = 1;
   }
   let metricsLength = metrics.length;
+  // for errorMsg
+  let resultMetricsLength = metricsLength;
+  if (target === 'conformance') {
+    resultMetricsLength += 1;
+  }
   let context;
   let page;
 
@@ -154,9 +167,9 @@ async function runBenchmark(target) {
   }
 
   let task = '';
-  if (target == 'conformance') {
+  if (target === 'conformance') {
     task = 'correctness';
-  } else if (target == 'performance') {
+  } else if (target === 'performance') {
     task = 'performance';
   }
 
@@ -181,8 +194,8 @@ async function runBenchmark(target) {
     // prepare result placeholder
     if (benchmarkName != previousBenchmarkName) {
       let placeholder = [benchmarkName].concat(
-          Array(backendsLength * metricsLength).fill(defaultValue));
-      if (target == 'performance') {
+          Array(backendsLength * resultMetricsLength).fill(defaultValue));
+      if (target === 'performance') {
         placeholder = placeholder.concat({});
       }
       results.push(placeholder);
@@ -193,12 +206,12 @@ async function runBenchmark(target) {
     if (util.dryrun) {
       let metricIndex = 0;
       while (metricIndex < metricsLength) {
-        if (target == 'conformance') {
-          result[backendIndex * metricsLength + metricIndex + 1] = 'true';
-        } else if (target == 'performance') {
-          let tmpIndex = backendIndex * metricsLength + metricIndex;
+        if (target === 'conformance') {
+          result[backendIndex * resultMetricsLength + metricIndex + 1] = 'true';
+        } else if (target === 'performance') {
+          let tmpIndex = backendIndex * resultMetricsLength + metricIndex;
           result[tmpIndex + 1] = tmpIndex + 1;
-          let op_time = result[backendsLength * metricsLength + 1];
+          let op_time = result[backendsLength * resultMetricsLength + 1];
           for (let i = 0; i < 3; i++) {
             let op = `op${i}`;
             if (!(op in op_time)) {
@@ -223,10 +236,10 @@ async function runBenchmark(target) {
       await page.goto(url);
 
       let childIndex;
-      if (target == 'performance') {
+      if (target === 'performance') {
         // 5th line is Subsequent average
         childIndex = 5;
-      } else if (target == 'conformance') {
+      } else if (target === 'conformance') {
         // 4th line is conformance result
         childIndex = 4;
       }
@@ -236,18 +249,32 @@ async function runBenchmark(target) {
             {timeout: util.timeout}),
         page.waitForEvent('pageerror', {timeout: util.timeout})
       ]);
+
+      // handle errorMsg
+      if (target === 'conformance') {
+        results[results.length - 1][(backendIndex + 1) * resultMetricsLength] =
+            errorMsg;
+      }
+      errorMsg = '';
+
+      // quit with error
       if (util.hasError) {
+        if (target === 'conformance') {
+          results[results.length - 1][backendIndex * resultMetricsLength + 1] =
+              'false';
+        }
         util.hasError = false;
         continue;
       }
 
+      // handle result
       let metricIndex = 0;
       let typeIndex = 1;
       while (metricIndex < metricsLength) {
         let selector = `#timings > tbody > tr:nth-child(${typeIndex})`;
         try {
           await page.waitForSelector(selector, {timeout: util.timeout});
-        } catch (err) {
+        } catch (error) {
           break;
         }
         const type = await page.$eval(
@@ -255,10 +282,10 @@ async function runBenchmark(target) {
         if (type.includes(metrics[metricIndex])) {
           let value = await page.$eval(
               selector + ' > td:nth-child(2)', el => el.textContent);
-          if (target == 'performance') {
+          if (target === 'performance') {
             value = parseFloat(value.replace(' ms', ''));
           }
-          results[results.length - 1][backendIndex * metricsLength + metricIndex + 1] =
+          results[results.length - 1][backendIndex * resultMetricsLength + metricIndex + 1] =
               value;
           metricIndex += 1;
         }
@@ -266,7 +293,7 @@ async function runBenchmark(target) {
       }
 
       // get breakdown data
-      if (target == 'performance' && !('disable-breakdown' in util.args)) {
+      if (target === 'performance' && !('disable-breakdown' in util.args)) {
         try {
           await page.waitForSelector(
               '#kernels > tbody > tr:nth-child(1)', {timeout: util.timeout});
@@ -276,7 +303,7 @@ async function runBenchmark(target) {
                 '#kernels > tbody > tr:nth-child(' + row +
                     ') > td:nth-child(1) > span',
                 el => el.title);
-            if (op.substr(-4, 4) == '__op') {
+            if (op.substr(-4, 4) === '__op') {
               row += 1;
               continue;
             }
@@ -285,18 +312,18 @@ async function runBenchmark(target) {
                     ') > td:nth-child(2)',
                 el => el.textContent);
             let op_time =
-                results[results.length - 1][backendsLength * metricsLength + 1];
+                results[results.length - 1][backendsLength * resultMetricsLength + 1];
             if (!(op in op_time)) {
               op_time[op] = Array(backendsLength).fill(defaultValue);
             }
             op_time[op][backendIndex] = parseFloat(time);
             row += 1;
           }
-        } catch (err) {
+        } catch (error) {
         }
       }
 
-      if (needWasmStatus && target == 'performance' && backend == 'wasm') {
+      if (needWasmStatus && target === 'performance' && backend === 'wasm') {
         let status = await page.$eval('#env', el => el.textContent);
         let match = status.match(
             'WASM_HAS_MULTITHREAD_SUPPORT: (.*)  WASM_HAS_SIMD_SUPPORT: (.*)  WEBGL_CPU_FORWARD');
@@ -325,15 +352,15 @@ async function runBenchmark(target) {
     await closeContext(context);
   }
 
-  if (target == 'performance') {
+  if (target === 'performance') {
     let fileName = `${util.timestamp.substring(0, 8)}.json`;
     let file = path.join(util.timestampDir, fileName);
     fs.writeFileSync(file, JSON.stringify(results));
     if ('upload' in util.args) {
       let result = spawnSync('scp', [
         file,
-        `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${util.platform}/${
-            util['gpuDeviceId']}`
+        `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${
+            util.platform}/${util['gpuDeviceId']}`
       ]);
       if (result.status !== 0) {
         util.log('[ERROR] Failed to upload report');

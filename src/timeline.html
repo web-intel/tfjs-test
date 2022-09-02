@@ -50,7 +50,7 @@
       for (let i = 0; i < length; i++) {
         let td = row.insertCell(i + 1);
         td.innerHTML = i;
-        td.style = i == index ? highlightStyle : commonStyle;
+        td.style = i === index ? highlightStyle : commonStyle;
       }
 
       // total
@@ -61,7 +61,7 @@
         let td = row.insertCell(i + 1);
         let cpuTfjsLength = jsonData[i]['CPU-TFJS'].length;
         td.innerHTML = (jsonData[i]['CPU-TFJS'][cpuTfjsLength - 1][1] - jsonData[i]['CPU-TFJS'][0][1]).toFixed(2);
-        td.style = i == index ? highlightStyle : commonStyle;
+        td.style = i === index ? highlightStyle : commonStyle;
       }
 
       // ops
@@ -76,7 +76,7 @@
           sum += jsonData[i]['GPU'][j][2] - jsonData[i]['GPU'][j][1];
         }
         td.innerHTML = sum.toFixed(2);
-        td.style = i == index ? highlightStyle : commonStyle;
+        td.style = i === index ? highlightStyle : commonStyle;
       }
     }
 
@@ -96,7 +96,7 @@
           let title;
 
           let itemDataSet = { id: globalItemIndex, group: groupIndex, start: startTime };
-          if (groupData[itemIndex].length == 2) {
+          if (groupData[itemIndex].length === 2) {
             itemDataSet['type'] = 'point';
             title = `${startTimeStr}: ${groupData[itemIndex][0]}`;
           } else {
@@ -105,7 +105,7 @@
             title = `${startTimeStr} - ${endTimeStr}: ${groupData[itemIndex][0]}`;
           }
 
-          if (group == 'GPU') {
+          if (group === 'GPU') {
             content = `${itemIndex}`;
             title = `[${itemIndex}] ${title}`;
           }
@@ -163,7 +163,7 @@
       xhr.overrideMimeType('application/json');
       xhr.open('GET', file, true);
       xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status == '200') {
+        if (xhr.readyState === 4 && xhr.status === '200') {
           callback(xhr.responseText);
         }
       };
