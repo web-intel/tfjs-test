@@ -117,6 +117,7 @@ async function getExtraConfig() {
 
   util['gpuDeviceId'] = gpuInfo[0];
   // Could not get device id
+  const hostname = util['hostname'];
   if (gpuInfo[0] === 'ffff') {
     if (hostname === 'shwde7779') {
       util['gpuDeviceId'] = '9a49';
