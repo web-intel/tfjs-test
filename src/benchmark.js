@@ -10,6 +10,7 @@ const parseTrace = require('./trace.js');
 const util = require('./util.js')
 
 let errorMsg = '';
+const errorMsgMaxLength = 200;
 
 function cartesianProduct(arr) {
   return arr.reduce(function(a, b) {
@@ -55,14 +56,14 @@ async function startContext(traceFile = undefined) {
         const consoleError =
             `[console] ${i}: ${await msg.args()[i].jsonValue()}`;
         util.log(consoleError);
-        errorMsg += `${consoleError}<br>`;
+        errorMsg += `${consoleError.substring(0, errorMsgMaxLength)}<br>`;
       }
     });
     page.on('pageerror', (error) => {
       util.hasError = true;
       const pageError = `[pageerror] ${error}`;
       util.log(pageError);
-      errorMsg += `${pageError}<br>`;
+      errorMsg += `${pageError.substring(0, errorMsgMaxLength)}<br>`;
     });
 
     return [context, page];
