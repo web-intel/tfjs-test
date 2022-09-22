@@ -55,7 +55,7 @@ async function report(results) {
   let html = '<style> \
 		* {font-family: Calibri (Body);} \
 	  table {border-collapse: collapse;} \
-	  table, td, th {border: 1px solid black;} \
+	  table, td, th {border: 1px solid black; vertical-align: top;} \
 	  th {background-color: #0071c5; color: #ffffff; font-weight: normal;} \
     </style>';
 
