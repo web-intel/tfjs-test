@@ -36,6 +36,26 @@ function intersect(a, b) {
   return a.filter(v => b.includes(v));
 }
 
+function getDownloadDir() {
+  return './out/download/';
+}
+
+async function downloadFile(page) {
+  const download = await page.waitForEvent('download');
+  const downloadFolder = getDownloadDir();
+  //  wait for download to complete.
+  const path = await download.path();
+  const filePath = downloadFolder + download.suggestedFilename();
+  console.log('Copy dump file from ' + path + ' to ' + filePath);
+  if (path != null && filePath != null) {
+    fs.copyFile(path, filePath, (err) => {
+      if (err) throw err;
+      console.log(`File was copied to ${downloadFolder}`);
+    });
+  }
+  await util.sleep(100);
+}
+
 async function startContext(traceFile = undefined) {
   let extraBrowserArgs = '';
   if ('trace' in util.args) {
@@ -48,13 +68,19 @@ async function startContext(traceFile = undefined) {
       executablePath: util['browserPath'],
       viewport: null,
       ignoreHTTPSErrors: true,
+      acceptDownloads: true,
+      downloadsPath: getDownloadDir(),
       args: util['browserArgs'].split(' ').concat(extraBrowserArgs.split(' ')),
     });
     let page = await context.newPage();
     page.on('console', async msg => {
       for (let i = 0; i < msg.args().length; ++i) {
-        const consoleError =
-            `[console] ${i}: ${await msg.args()[i].jsonValue()}`;
+        const msgStr = await msg.args()[i].jsonValue();
+        const consoleError = `[console] ${i}: ${msgStr}`;
+        // This is only used when e2e turns on dump.
+        if (msgStr.startsWith('dump')) {
+          await downloadFile(page);
+        }
         util.log(consoleError);
         errorMsg += `${consoleError.substring(0, errorMsgMaxLength)}<br>`;
       }
