@@ -22,9 +22,11 @@ async function getConfig() {
   // GPU
   const gpuData = await si.graphics();
   let gpuModel = 'Unknown GPU';
-  // For remote desktop, there is no gpuData.controllers
-  if (gpuData.controllers.length >= 1) {
-    gpuModel = gpuData.controllers.slice(-1)[0].model;
+  for (let i=0; i < gpuData.controllers.length; i++) {
+    if (gpuData.controllers[i].vendor == 'Microsoft') {
+      continue;
+    }
+    gpuModel = gpuData.controllers[i].model;
   }
   const gpuName = gpuModel.replace('(TM)', '').replace('(R)', '');
 
