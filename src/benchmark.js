@@ -233,6 +233,7 @@ async function runBenchmark(target) {
         }
       }
       url += `&${util.benchmarkUrlArgs}`;
+      console.log(url);
 
       await page.goto(url);
 
