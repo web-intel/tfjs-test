@@ -250,7 +250,7 @@ async function report(results) {
            of ['benchmarkUrl', 'benchmarkUrlArgs', 'browserArgs', 'browserPath',
                'chromeRevision', 'chromeVersion', 'clientRepoCommit',
                'clientRepoDate', 'cpuName', 'duration', 'gpuDeviceId',
-               'gpuDriverVersion', 'gpuName', 'hostname', 'platform',
+               'gpuDriverVersion', 'gpuName', 'hostname', 'osVersion', 'platform',
                'powerPlan', 'pthreadPoolSize', 'screenResolution',
                'serverBuildDate', 'serverRepoCommit', 'serverRepoDate',
                'wasmMultithread', 'wasmSIMD']) {

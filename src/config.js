@@ -55,6 +55,17 @@ async function getConfig() {
     });
   }
 
+  // os version
+  if (util['platform'] === 'win32') {
+    util['osVersion'] = await new Promise((resolve, reject) => {
+      exec(
+        'ver',
+        (error, stdout, stderr) => {
+          resolve(stdout);
+        });
+    });
+  }
+
   util['cpuName'] = cpuName;
   util['pthreadPoolSize'] = pthreadPoolSize;
   util['gpuName'] = gpuName;
