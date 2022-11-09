@@ -309,7 +309,7 @@ async function main() {
 
   if (util.platform === 'linux') {
     util.browserArgs +=
-        ' --enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan'
+        ' --use-angle=vulkan --enable-features=Vulkan'
   }
   if ('browser-args' in util.args) {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
