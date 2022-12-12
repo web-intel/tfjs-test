@@ -1,6 +1,6 @@
 'use strict';
 
-const {exec} = require('child_process');
+const {exec, execSync} = require('child_process');
 const {chromium} = require('playwright');
 const si = require('systeminformation');
 const util = require('./util.js');
@@ -17,45 +17,47 @@ async function getConfig() {
     // 4700U
     cpuName = cpuName.split(' ').slice(0, 3).join(' ');
   }
-  let pthreadPoolSize = Math.min(4, Number(cpuData.physicalCores));
+  util['cpuName'] = cpuName;
+  util['pthreadPoolSize'] = Math.min(4, Number(cpuData.physicalCores));
 
   // GPU
-  const gpuData = await si.graphics();
-  let gpuModel = 'Unknown GPU';
-  for (let i=0; i < gpuData.controllers.length; i++) {
-    if (gpuData.controllers[i].vendor == 'Microsoft') {
-      continue;
-    }
-    gpuModel = gpuData.controllers[i].model;
-  }
-  const gpuName = gpuModel.replace('(TM)', '').replace('(R)', '');
-
-  // power plan
-  let powerPlan = 'Unknown Power Plan';
   if (util['platform'] === 'win32') {
-    powerPlan = await new Promise((resolve, reject) => {
-      // `cmd /c chcp 65001>nul &&`: this command sets cmd's console output to
-      // utf-8) at start of my exec command
-      exec(
-          'cmd /c chcp 65001>nul && powercfg /GetActiveScheme',
-          (error, stdout, stderr) => {
-            if (stdout.includes('Balanced') || stdout.includes('平衡')) {
-              resolve('Balanced');
-            } else if (
-                stdout.includes('High performance') ||
-                stdout.includes('高性能')) {
-              resolve('High performance');
-            } else if (
-                stdout.includes('Power saver') || stdout.includes('省电')) {
-              resolve('Power saver');
-            } else {
-              resolve('Unknown Power Plan');
-            }
-          });
-    });
+    const info = execSync('wmic path win32_VideoController get Name,DriverVersion,Status,PNPDeviceID /value').toString().split('\n');
+    for (let i = 1; i < info.length; i++) {
+      let match;
+      match = info[i].match('DriverVersion=(.*)');
+      if (match) {
+        util['gpuDriverVersion'] = match[1];
+      }
+      match = info[i].match('Name=(.*)');
+      if (match) {
+        util['gpuName'] = match[1];
+      }
+      match = info[i].match('PNPDeviceID=.*DEV_(.{4})');
+      if (match) {
+        util['gpuDeviceId'] = match[1];
+      }
+      match = info[i].match('Status=(.*)');
+      if (match) {
+        if (util['gpuName'].match('Microsoft')) {
+          continue;
+        }
+        if (match[1] == 'OK') {
+          break;
+        }
+      }
+    }
+  } else {
+    const gpuData = await si.graphics();
+    for (let i = 0; i < gpuData.controllers.length; i++) {
+      if (gpuData.controllers[i].vendor == 'Microsoft') {
+        continue;
+      }
+      util['gpuName'] = gpuData.controllers[i].model;
+    }
   }
 
-  // os version
+  // OS version
   if (util['platform'] === 'win32') {
     util['osVersion'] = await new Promise((resolve, reject) => {
       exec(
@@ -66,22 +68,22 @@ async function getConfig() {
     });
   }
 
-  util['cpuName'] = cpuName;
-  util['pthreadPoolSize'] = pthreadPoolSize;
-  util['gpuName'] = gpuName;
-  util['powerPlan'] = powerPlan;
+  // Chrome
+  if (util['platform'] === 'win32') {
+    const info = execSync(`reg query "HKEY_CURRENT_USER\\Software\\Google\\` + util['chromePath'] + `\\BLBeacon" /v version`).toString();
+    const match = info.match('REG_SZ (.*)');
+    util['chromeVersion'] = match[1];
+  }
 
-  await getExtraConfig();
+  if (util['platform'] !== 'win32') {
+    getExtraConfig();
+  }
 }
 
 /*
  * Get extra config info via Chrome
  */
 async function getExtraConfig() {
-  if (util.dryrun) {
-    util['gpuDeviceId'] = 'ffff';
-    return;
-  }
   const browser = await chromium.launchPersistentContext(util.userDataDir, {
     headless: false,
     executablePath: util.browserPath,
@@ -109,7 +111,7 @@ async function getExtraConfig() {
   util['chromeVersion'] =
       await versionElement.evaluate(element => element.innerText);
 
-  // GPU driver version
+  // gpuDriverVersion and gpuDeviceId
   await page.goto('chrome://gpu');
   let gpuInfo = await page.evaluate(() => {
     try {
@@ -142,15 +144,6 @@ async function getExtraConfig() {
   }
 
   util['gpuDriverVersion'] = gpuInfo[1];
-
-  // screen resolution
-  util['screenResolution'] = await page.evaluate(() => {
-    const screenResolutionX = window.screen.width;
-    const screenResolutionY = window.screen.height;
-    const scaleRatio = window.devicePixelRatio;
-    return screenResolutionX * scaleRatio + 'x' +
-        screenResolutionY * scaleRatio;
-  });
 
   await browser.close();
 }

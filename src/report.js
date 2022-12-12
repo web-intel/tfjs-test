@@ -249,9 +249,8 @@ async function report(results) {
   for (let category
            of ['benchmarkUrl', 'benchmarkUrlArgs', 'browserArgs', 'browserPath',
                'chromeRevision', 'chromeVersion', 'clientRepoCommit',
-               'clientRepoDate', 'cpuName', 'duration', 'gpuDeviceId',
-               'gpuDriverVersion', 'gpuName', 'hostname', 'osVersion', 'platform',
-               'powerPlan', 'pthreadPoolSize', 'screenResolution',
+               'clientRepoDate', 'cpuName', 'duration', 'gpuDeviceId', 'gpuDriverVersion',
+               'gpuName', 'hostname', 'osVersion', 'platform', 'pthreadPoolSize',
                'serverBuildDate', 'serverRepoCommit', 'serverRepoDate',
                'wasmMultithread', 'wasmSIMD']) {
     configTable += `<tr><td>${category}</td><td>${util[category]}</td></tr>`;
