@@ -92,7 +92,7 @@ util.args =
         .option('local-build', {
           type: 'string',
           describe: 'local build packages instead of npm ones',
-          default: 'webgl,webgpu,core',
+          default: 'core,converter,cpu,wasm,webgl,webgpu',
         })
         .option('new-context', {
           type: 'boolean',
