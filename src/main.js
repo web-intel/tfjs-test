@@ -92,7 +92,7 @@ util.args =
         .option('local-build', {
           type: 'string',
           describe: 'local build packages instead of npm ones',
-          default: 'core,converter,cpu,wasm,webgl,webgpu',
+          default: 'core,converter,cpu,webgl,webgpu',
         })
         .option('new-context', {
           type: 'boolean',
@@ -248,7 +248,8 @@ async function main() {
     } else if (util.platform === 'win32') {
       browserPath = `${
           process.env.LOCALAPPDATA}/Google/Chrome SxS/Application/chrome.exe`;
-      userDataDir = `${process.env.LOCALAPPDATA}/Google/${util['chromePath']}/User Data`;
+      userDataDir =
+          `${process.env.LOCALAPPDATA}/Google/${util['chromePath']}/User Data`;
     }
   } else if (util.args['browser'] === 'chrome_dev') {
     util['chromePath'] = 'Chrome Dev';
@@ -265,7 +266,8 @@ async function main() {
     } else if (util.platform === 'win32') {
       browserPath = `${
           process.env.PROGRAMFILES}/Google/Chrome Dev/Application/chrome.exe`;
-      userDataDir = `${process.env.LOCALAPPDATA}/Google/${util['chromePath']}/User Data`;
+      userDataDir =
+          `${process.env.LOCALAPPDATA}/Google/${util['chromePath']}/User Data`;
     }
   } else if (util.args['browser'] === 'chrome_beta') {
     util['chromePath'] = 'Chrome Beta';
@@ -282,7 +284,8 @@ async function main() {
     } else if (util.platform === 'win32') {
       browserPath = `${
           process.env.PROGRAMFILES}/Google/Chrome Beta/Application/chrome.exe`;
-      userDataDir = `${process.env.LOCALAPPDATA}/Google/${util['chromePath']}/User Data`;
+      userDataDir =
+          `${process.env.LOCALAPPDATA}/Google/${util['chromePath']}/User Data`;
     }
   } else if (util.args['browser'] === 'chrome_stable') {
     util['chromePath'] = 'Chrome';
@@ -299,7 +302,8 @@ async function main() {
     } else if (util.platform === 'win32') {
       browserPath =
           `${process.env.PROGRAMFILES}/Google/Chrome/Application/chrome.exe`;
-      userDataDir = `${process.env.LOCALAPPDATA}/Google/${util['chromePath']}/User Data`;
+      userDataDir =
+          `${process.env.LOCALAPPDATA}/Google/${util['chromePath']}/User Data`;
     }
   } else {
     browserPath = util.args['browser'];
@@ -312,8 +316,7 @@ async function main() {
   console.log(`Use user-data-dir at ${userDataDir}`);
 
   if (util.platform === 'linux') {
-    util.browserArgs +=
-        ' --use-angle=vulkan --enable-features=Vulkan'
+    util.browserArgs += ' --use-angle=vulkan --enable-features=Vulkan'
   }
   if ('browser-args' in util.args) {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
