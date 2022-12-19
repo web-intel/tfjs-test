@@ -55,6 +55,10 @@ async function startContext(traceFile = undefined) {
       for (let i = 0; i < msg.args().length; ++i) {
         const consoleError =
             `[console] ${i}: ${await msg.args()[i].jsonValue()}`;
+        if (consoleError.search(
+                'Blocking on the main thread is very dangerous')) {
+          continue;
+        }
         util.log(consoleError);
         errorMsg += `${consoleError.substring(0, errorMsgMaxLength)}<br>`;
       }
