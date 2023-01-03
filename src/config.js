@@ -22,7 +22,11 @@ async function getConfig() {
 
   // GPU
   if (util['platform'] === 'win32') {
-    const info = execSync('wmic path win32_VideoController get Name,DriverVersion,Status,PNPDeviceID /value').toString().split('\n');
+    const info =
+        execSync(
+            'wmic path win32_VideoController get Name,DriverVersion,Status,PNPDeviceID /value')
+            .toString()
+            .split('\n');
     for (let i = 1; i < info.length; i++) {
       let match;
       match = info[i].match('DriverVersion=(.*)');
@@ -60,17 +64,18 @@ async function getConfig() {
   // OS version
   if (util['platform'] === 'win32') {
     util['osVersion'] = await new Promise((resolve, reject) => {
-      exec(
-        'ver',
-        (error, stdout, stderr) => {
-          resolve(stdout);
-        });
+      exec('ver', (error, stdout, stderr) => {
+        resolve(stdout);
+      });
     });
   }
 
   // Chrome
-  if (util['platform'] === 'win32') {
-    const info = execSync(`reg query "HKEY_CURRENT_USER\\Software\\Google\\` + util['chromePath'] + `\\BLBeacon" /v version`).toString();
+  if (util['platform'] === 'win32' && util.args['browser'].match('chrome_')) {
+    const info = execSync(
+                     `reg query "HKEY_CURRENT_USER\\Software\\Google\\` +
+                     util['chromePath'] + `\\BLBeacon" /v version`)
+                     .toString();
     const match = info.match('REG_SZ (.*)');
     util['chromeVersion'] = match[1];
   }
