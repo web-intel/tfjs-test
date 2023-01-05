@@ -39,7 +39,7 @@ async function getConfig() {
       }
       match = info[i].match('PNPDeviceID=.*DEV_(.{4})');
       if (match) {
-        util['gpuDeviceId'] = match[1];
+        util['gpuDeviceId'] = match[1].toUpperCase();
       }
       match = info[i].match('Status=(.*)');
       if (match) {
@@ -135,16 +135,16 @@ async function getExtraConfig() {
     }
   });
 
-  util['gpuDeviceId'] = gpuInfo[0];
+  util['gpuDeviceId'] = gpuInfo[0].toUpperCase();
   // Could not get device id
   const hostname = util['hostname'];
-  if (gpuInfo[0] === 'ffff') {
+  if (gpuInfo[0] === 'FFFF') {
     if (hostname === 'shwde7779') {
-      util['gpuDeviceId'] = '9a49';
+      util['gpuDeviceId'] = '9A49';
     } else if (hostname === 'bjwdeotc009') {
-      util['gpuDeviceId'] = '3e98';
+      util['gpuDeviceId'] = '3E98';
     } else if (hostname === 'wp-42') {
-      util['gpuDeviceId'] = '9a49';
+      util['gpuDeviceId'] = '9A49';
     }
   }
 
