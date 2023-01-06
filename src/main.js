@@ -12,6 +12,7 @@ const runDemo = require('./demo.js');
 const report = require('./report.js');
 const parseTrace = require('./trace.js');
 const runUnit = require('./unit.js');
+const upload = require('./upload.js');
 const util = require('./util.js');
 
 util.args =
@@ -130,7 +131,7 @@ util.args =
         .option('target', {
           type: 'string',
           describe:
-              'test target, split by comma, can be conformance, performance, unit, trace, demo and so on.',
+              'test target, split by comma, can be conformance, performance, unit, trace, demo, upload and so on.',
           default: 'conformance,performance,unit,demo',
         })
         .option('tfjs-dir', {
@@ -381,9 +382,7 @@ async function main() {
     fs.mkdirSync(util.outDir, {recursive: true});
   }
 
-  if ((targets.indexOf('conformance') >= 0 ||
-       targets.indexOf('performance') >= 0 || targets.indexOf('unit') >= 0) &&
-      !util.args['skip-config']) {
+  if (!util.args['skip-config']) {
     await config();
   }
 
@@ -439,6 +438,8 @@ async function main() {
       await report(results);
     }
   }
+
+  await upload();
 }
 
 main();
