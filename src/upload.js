@@ -6,7 +6,7 @@ const {spawnSync} = require('child_process')
 
 const util = require('./util.js')
 
-let startDate = '20220101'
+let startDate = '20230101'
 let endDate = '20230105'
 
 async function upload() {
