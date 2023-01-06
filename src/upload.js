@@ -29,30 +29,27 @@ async function upload() {
         parseInt(folderDate) > parseInt(endDate)) {
       continue;
     }
+    let fileName = `${folderDate}.json`;
 
     // check if file exists
-    fullPath = path.join(fullPath, `${folderDate}.json`);
+    fullPath = path.join(fullPath, fileName);
     if (!fs.existsSync(fullPath)) {
       continue;
     }
 
     // check if file exists in remote
-    result = spawnSync('ssh', [
-      'wp@wp-27.sh.intel.com',
-      `ls /workspace/project/work/tfjs/perf/${util.platform}/${
-          util['gpuDeviceId']}/${folderDate}.json`
-    ]);
+    let serverFolder = `/workspace/project/work/tfjs/perf/${util.platform}/${
+        util['gpuDeviceId']}`;
+    result = spawnSync(
+        'ssh', ['wp@wp-27.sh.intel.com', `ls ${serverFolder}/${fileName}`]);
     if (result.status == 0) {
       util.log(`[INFO] ${fullPath} already exists in server`);
       continue;
     }
 
     // upload the file
-    result = spawnSync('scp', [
-      fullPath,
-      `wp@wp-27.sh.intel.com:/workspace/project/work/tfjs/perf/${
-          util.platform}/${util['gpuDeviceId']}`
-    ]);
+    result =
+        spawnSync('scp', [fullPath, `wp@wp-27.sh.intel.com:${serverFolder}`]);
     if (result.status !== 0) {
       util.log(`[ERROR] ${fullPath} Failed to upload`);
     } else {
