@@ -52,14 +52,8 @@ async function report(results) {
   const neutralStyle = 'style=color:black';
   let backendsLength = util.backends.length;
 
-  let html = '<style> \
-		* {font-family: Calibri (Body);} \
-	  table {border-collapse: collapse;} \
-	  table, td, th {border: 1px solid black; vertical-align: top;} \
-	  th {background-color: #0071c5; color: #ffffff; font-weight: normal;} \
-    </style>';
-
   // main performance and conformance tables
+  let benchmarkTables = '';
   for (let target of ['performance', 'conformance']) {
     if (!(target in results)) {
       continue;
@@ -77,43 +71,44 @@ async function report(results) {
     } else {
       unit = '';
     }
+
     for (let metricIndex = 0; metricIndex < metrics.length; metricIndex++) {
       let metric = metrics[metricIndex];
-      let resultsTable = `<table>`;
+      let benchmarkTable = `<table>`;
 
       // header
-      resultsTable += `<tr><th>${target} (${metric})</th>`;
+      benchmarkTable += `<tr><th>${target} (${metric})</th>`;
       for (let backendIndex = 0; backendIndex < backendsLength;
            backendIndex++) {
         let backend = util.backends[backendIndex];
         if (metric === 'Subsequent average') {
-          resultsTable +=
+          benchmarkTable +=
               `<th>${backend} total${unit}</th><th>${backend} ops${unit}</th>`;
         } else {
-          resultsTable += `<th>${backend}${unit}</th>`;
+          benchmarkTable += `<th>${backend}${unit}</th>`;
           if (target === 'conformance') {
-            resultsTable += `<th>${backend} error</th>`;
+            benchmarkTable += `<th>${backend} error</th>`;
           }
         }
 
         if (target === 'performance' && backend !== 'webgpu') {
           if (metric === 'Subsequent average') {
-            resultsTable += `<th>webgpu total vs ${
+            benchmarkTable += `<th>webgpu total vs ${
                 backend} total (%)</th><th>webgpu ops vs ${
                 backend} ops (%)</th>`;
           } else {
-            resultsTable += `<th>webgpu vs ${backend} (%)</th>`;
+            benchmarkTable += `<th>webgpu vs ${backend} (%)</th>`;
           }
         }
       }
-      resultsTable += '</tr>';
+      benchmarkTable += '</tr>';
 
       // body
       for (let resultIndex = 0; resultIndex < targetResults.length;
            resultIndex++) {
         let result = targetResults[resultIndex];
         let opsResult = result[result.length - 1];
-        resultsTable += `<tr><td>${result[0]}</td>`;
+        benchmarkTable += `<tr><td>${result[0]}</td>`;
 
         let webgpuTotalValue = 'NA';
         let webgpuOpsValue = 'NA';
@@ -139,13 +134,13 @@ async function report(results) {
               style = goodStyle;
             }
           }
-          resultsTable += `<td ${style}>${backendTotalValue}</td>`;
+          benchmarkTable += `<td ${style}>${backendTotalValue}</td>`;
           if (target === 'conformance') {
-            resultsTable += `<td>${
+            benchmarkTable += `<td>${
                 result[backendIndex * metricsLength + metricIndex + 2]}</td>`;
           }
           if (metric === 'Subsequent average') {
-            resultsTable += `<td>${backendOpsValue}</td>`
+            benchmarkTable += `<td>${backendOpsValue}</td>`
           }
           if (target === 'performance' && backend !== 'webgpu') {
             let totalPercent = 'NA';
@@ -156,7 +151,7 @@ async function report(results) {
                       .toFixed(2);
               totalStyle = totalPercent > 100 ? goodStyle : badStyle;
             }
-            resultsTable += `<td ${totalStyle}>${totalPercent}</td>`;
+            benchmarkTable += `<td ${totalStyle}>${totalPercent}</td>`;
 
             if (metric === 'Subsequent average') {
               let opsPercent = 'NA';
@@ -166,29 +161,30 @@ async function report(results) {
                                  .toFixed(2);
                 opsStyle = opsPercent > 100 ? goodStyle : badStyle;
               }
-              resultsTable += `<td ${opsStyle}>${opsPercent}</td>`;
+              benchmarkTable += `<td ${opsStyle}>${opsPercent}</td>`;
             }
           }
         }
-        resultsTable += '</tr>';
+        benchmarkTable += '</tr>';
       }
 
-      resultsTable += '</table><br>';
-      html += resultsTable;
+      benchmarkTable += '</table><br>';
+      benchmarkTables += benchmarkTable;
     }
   }
 
   // unit table
+  let unitTable = '';
   if ('unit' in results) {
     let targetResults = results['unit'];
-    let resultsTable = `<table><tr><th>unit</th><th>webgpu</th>`;
+    unitTable = `<table><tr><th>unit</th><th>webgpu</th>`;
     for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
       let backend = util.backends[backendIndex];
-      resultsTable += `<th>${backend}</th>`;
+      unitTable += `<th>${backend}</th>`;
     }
-    resultsTable += '</tr>';
+    unitTable += '</tr>';
 
-    resultsTable += '<tr><td></td>';
+    unitTable += '<tr><td></td>';
     for (let backendIndex = 0; backendIndex < backendsLength; backendIndex++) {
       let style;
       if (targetResults[backendIndex] === 'NA') {
@@ -198,35 +194,34 @@ async function report(results) {
       } else {
         style = goodStyle;
       }
-      resultsTable += `<td ${style}>${targetResults[backendIndex]}</td>`;
+      unitTable += `<td ${style}>${targetResults[backendIndex]}</td>`;
     }
-    resultsTable += '</tr></table><br>';
-    html += resultsTable;
+    unitTable += '</tr></table><br>';
   }
 
   // demo table
+  let demoTable = '';
   if ('demo' in results) {
     let targetResults = results['demo'];
-    let resultsTable = `<table><tr><th>demo</th><th>webgpu</th>`;
+    demoTable = `<table><tr><th>demo</th><th>webgpu</th>`;
     for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
       let backend = util.backends[backendIndex];
-      resultsTable += `<th>${backend}</th>`;
+      demoTable += `<th>${backend}</th>`;
     }
-    resultsTable += '</tr>';
+    demoTable += '</tr>';
 
     for (let resultIndex = 0; resultIndex < targetResults.length;
          resultIndex++) {
       let result = targetResults[resultIndex];
-      resultsTable += `<tr><td>${result[0]}</td>`;
+      demoTable += `<tr><td>${result[0]}</td>`;
       for (let backendIndex = 0; backendIndex < backendsLength;
            backendIndex++) {
         let style = neutralStyle;
-        resultsTable += `<td ${style}><a href=${result[backendIndex + 1][1]}>${
+        demoTable += `<td ${style}><a href=${result[backendIndex + 1][1]}>${
             result[backendIndex + 1][0]}</a></td>`;
       }
     }
-    resultsTable += '</tr></table><br>';
-    html += resultsTable;
+    demoTable += '</tr></table><br>';
   }
 
   // config table
@@ -234,7 +229,7 @@ async function report(results) {
   if ('upload' in util.args || 'server-info' in util.args) {
     util['serverRepoDate'] =
         execSync(
-            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=\"%cd\""')
+            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=%ci"')
             .toString();
     util['serverRepoCommit'] =
         execSync(
@@ -242,23 +237,24 @@ async function report(results) {
             .toString();
     util['serverBuildDate'] =
         execSync(
-            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && stat dist/bin/tfjs-backend-webgpu/dist/tf-backend-webgpu.js |grep Modify"')
+            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && stat --format=%y dist/bin/tfjs-backend-webgpu/dist/tf-backend-webgpu.js"')
             .toString();
   }
 
   for (let category
            of ['benchmarkUrl', 'benchmarkUrlArgs', 'browserArgs', 'browserPath',
                'chromeRevision', 'chromeVersion', 'clientRepoCommit',
-               'clientRepoDate', 'cpuName', 'duration', 'gpuDeviceId', 'gpuDriverVersion',
-               'gpuName', 'hostname', 'osVersion', 'platform', 'pthreadPoolSize',
-               'serverBuildDate', 'serverRepoCommit', 'serverRepoDate',
-               'wasmMultithread', 'wasmSIMD']) {
+               'clientRepoDate', 'cpuName', 'duration', 'gpuDeviceId',
+               'gpuDriverVersion', 'gpuName', 'hostname', 'osVersion',
+               'platform', 'pthreadPoolSize', 'serverBuildDate',
+               'serverRepoDate', 'serverRepoCommit', 'wasmMultithread',
+               'wasmSIMD']) {
     configTable += `<tr><td>${category}</td><td>${util[category]}</td></tr>`;
   }
   configTable += '</table><br>'
-  html += configTable;
 
   // performance breakdown table
+  let breakdownTable = '';
   let target = 'performance';
   if (target in results && !('disable-breakdown' in util.args)) {
     let targetResults = results[target];
@@ -266,7 +262,7 @@ async function report(results) {
     let metricsLength = util.targetMetrics[target].length;
     let unit = ' (ms)';
     let style = neutralStyle;
-    let breakdownTable =
+    breakdownTable =
         `<table><tr><th>benchmark</th><th>op</th><th>webgpu${unit}</th>`;
     for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
       let backend = util.backends[backendIndex];
@@ -318,13 +314,30 @@ async function report(results) {
       }
     }
     breakdownTable += '</table><br>';
-    html += breakdownTable;
   }
+
+  let style = '<style> \
+		* {font-family: Calibri (Body);} \
+	  table {border-collapse: collapse;} \
+	  table, td, th {border: 1px solid black; vertical-align: top;} \
+	  th {background-color: #0071c5; color: #ffffff; font-weight: normal;} \
+    </style>';
+
+  let html = style + configTable + unitTable + benchmarkTables + demoTable +
+      breakdownTable;
 
   fs.writeFileSync(
       path.join(util.timestampDir, `${util.timestamp}.html`), html);
+
   if ('email' in util.args) {
     let subject = '[TFJS Test] ' + util['hostname'] + ' ' + util.timestamp;
+    if (util['serverRepoDate'] && util['serverBuildDate']) {
+      if (new Date(util['serverRepoDate']) >
+          new Date(util['serverBuildDate'])) {
+        subject += ' (server build failed)'
+      }
+    }
+
     await sendMail(util.args['email'], subject, html);
   }
 }

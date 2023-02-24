@@ -206,6 +206,9 @@ util.args =
           [
             'node $0 --target conformance --conformance-backend webgpu --benchmark MobileNetV3 --architecture small_075 --timestamp day --skip-config // single test'
           ],
+          [
+            'node $0 --target performance --performance-backend webgpu --benchmark MobileNetV3 --architecture small_075 --timestamp day --skip-config // single test'
+          ],
         ])
         .help()
         .wrap(180)
@@ -438,8 +441,9 @@ async function main() {
       await report(results);
     }
   }
-
-  await upload();
+  if ('upload' in util.args) {
+    await upload();
+  }
 }
 
 main();

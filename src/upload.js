@@ -10,6 +10,9 @@ let startDate = '20230101'
 let endDate = '20230105'
 
 async function upload() {
+  if (!util['gpuDeviceId']) {
+    return;
+  }
   let folders = fs.readdirSync(util.outDir);
   let fullPath, stat, result;
   for (let folder of folders) {

@@ -27,7 +27,7 @@ async function runUnit() {
     }
   }
   util['clientRepoDate'] =
-      execSync(`cd ${tfjsDir} && git log -1 --format=\"%cd\"`).toString();
+      execSync(`cd ${tfjsDir} && git log -1 --format=%ci`).toString();
   util['clientRepoCommit'] =
       execSync(`cd ${tfjsDir} && git rev-parse HEAD`).toString();
 
@@ -66,8 +66,11 @@ async function runUnit() {
       if (backend === 'webgpu') {
         if (!(util.args['unit-skip-build'])) {
           process.chdir(path.join(tfjsDir, `link-package`));
-          //TODO: Remove core and cpu after https://github.com/tensorflow/tfjs/pull/6763 check in
-          shellCmd = `yarn build-deps-for tfjs-backend-webgpu tfjs-core tfjs-backend-cpu > ${logFile}`;
+          // TODO: Remove core and cpu after
+          // https://github.com/tensorflow/tfjs/pull/6763 check in
+          shellCmd =
+              `yarn build-deps-for tfjs-backend-webgpu tfjs-core tfjs-backend-cpu > ${
+                  logFile}`;
           util.log(`[cmd] ${shellCmd}`);
           ret = spawnSync(shell, [shellOption, shellCmd], {
             env: process.env,
