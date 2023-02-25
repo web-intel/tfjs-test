@@ -65,6 +65,19 @@ async function runUnit() {
       let ret, shellCmd;
       if (backend === 'webgpu') {
         if (!(util.args['unit-skip-build'])) {
+          process.chdir(tfjsDir);
+          shellCmd = 'yarn';
+          util.log(`[cmd] ${shellCmd}`);
+          ret = spawnSync(shell, [shellOption, shellCmd], {
+            env: process.env,
+            stdio: [process.stdin, process.stdout, process.stderr],
+            timeout: timeout
+          });
+          if (ret.status) {
+            util.log(ret);
+            continue;
+          }
+
           process.chdir(path.join(tfjsDir, `link-package`));
           // TODO: Remove core and cpu after
           // https://github.com/tensorflow/tfjs/pull/6763 check in
