@@ -227,15 +227,15 @@ async function report(results) {
   // config table
   let configTable = '<table><tr><th>Category</th><th>Info</th></tr>';
   if ('upload' in util.args || 'server-info' in util.args) {
-    util['serverRepoDate'] =
-        execSync(
-            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=%ci"')
-            .toString();
     util['serverRepoCommit'] =
         execSync(
             'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git rev-parse HEAD"')
             .toString();
-    util['serverBuildDate'] =
+    util['serverRepoWebGPUDate'] =
+        execSync(
+            'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && git log -1 --format=%ci tfjs-backend-webgpu"')
+            .toString();
+    util['serverBuildWebGPUDate'] =
         execSync(
             'ssh wp@wp-27.sh.intel.com "cd /workspace/project/tfjswebgpu/tfjs && stat --format=%y dist/bin/tfjs-backend-webgpu/dist/tf-backend-webgpu.js"')
             .toString();
@@ -246,9 +246,9 @@ async function report(results) {
                'chromeRevision', 'chromeVersion', 'clientRepoCommit',
                'clientRepoDate', 'cpuName', 'duration', 'gpuDeviceId',
                'gpuDriverVersion', 'gpuName', 'hostname', 'osVersion',
-               'platform', 'pthreadPoolSize', 'serverBuildDate',
-               'serverRepoDate', 'serverRepoCommit', 'wasmMultithread',
-               'wasmSIMD']) {
+               'platform', 'pthreadPoolSize', 'serverRepoCommit',
+               'serverRepoWebGPUDate', 'serverBuildWebGPUDate',
+               'wasmMultithread', 'wasmSIMD']) {
     configTable += `<tr><td>${category}</td><td>${util[category]}</td></tr>`;
   }
   configTable += '</table><br>'
@@ -331,10 +331,10 @@ async function report(results) {
 
   if ('email' in util.args) {
     let subject = '[TFJS Test] ' + util['hostname'] + ' ' + util.timestamp;
-    if (util['serverRepoDate'] && util['serverBuildDate']) {
-      if (new Date(util['serverRepoDate']) >
-          new Date(util['serverBuildDate'])) {
-        subject += ' (server build failed)'
+    if (util['serverRepoWebGPUDate'] && util['serverBuildWebGPUDate']) {
+      if (new Date(util['serverRepoWebGPUDate']) >
+          new Date(util['serverBuildWebGPUDate'])) {
+        subject += ' (WebGPU build failed in server)'
       }
     }
 
