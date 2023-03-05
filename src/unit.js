@@ -49,10 +49,11 @@ async function runUnit() {
     let logFile =
         path.join(util.timestampDir, `${util.timestamp}-unit-${backend}.log`)
             .replace(/\\/g, '/');
+    util.ensureNoFile(logFile);
 
     if (util.platform === 'linux' || util.platform === 'darwin') {
       try {
-        execSync(`${cmd} > ${logFile}`, {
+        execSync(`${cmd} >> ${logFile}`, {
           env: process.env,
           stdio: [process.stdin, process.stdout, process.stderr],
           timeout: timeout
@@ -82,7 +83,7 @@ async function runUnit() {
           // TODO: Remove core and cpu after
           // https://github.com/tensorflow/tfjs/pull/6763 check in
           shellCmd =
-              `yarn build-deps-for tfjs-backend-webgpu tfjs-core tfjs-backend-cpu > ${
+              `yarn build-deps-for tfjs-backend-webgpu tfjs-core tfjs-backend-cpu >> ${
                   logFile}`;
           util.log(`[cmd] ${shellCmd}`);
           ret = spawnSync(shell, [shellOption, shellCmd], {
@@ -97,7 +98,7 @@ async function runUnit() {
 
           process.chdir(path.join(tfjsDir, `tfjs-backend-${backend}`));
           shellCmd = `yarn && yarn --cwd .. bazel build tfjs-backend-${
-              backend}/src:tests > ${logFile}`;
+              backend}/src:tests >> ${logFile}`;
           util.log(`[cmd] ${shellCmd}`);
           ret = spawnSync(shell, [shellOption, shellCmd], {
             env: process.env,
@@ -128,7 +129,7 @@ async function runUnit() {
             shell,
             [
               shellOption,
-              `yarn karma start --browsers=chrome_webgpu${filter} > ${logFile}`
+              `yarn karma start --browsers=chrome_webgpu${filter} >> ${logFile}`
             ],
             {
               env: process.env,
@@ -136,7 +137,7 @@ async function runUnit() {
               timeout: timeout
             });
       } else {
-        spawnSync(shell, [shellOption, `${cmd} > ${logFile}`], {
+        spawnSync(shell, [shellOption, `${cmd} >> ${logFile}`], {
           env: process.env,
           stdio: [process.stdin, process.stdout, process.stderr],
           timeout: timeout
@@ -144,7 +145,7 @@ async function runUnit() {
       }
     }
 
-    var lines = fs.readFileSync(logFile, 'utf-8').split('\n').filter(Boolean);
+    let lines = fs.readFileSync(logFile, 'utf-8').split('\n').filter(Boolean);
     for (let line of lines) {
       if (line.includes('Executed') && line.includes('skipped')) {
         results[backendIndex] = line;

@@ -39,6 +39,12 @@ function ensureDir(dir) {
   }
 }
 
+function ensureNoFile(file) {
+  if (fs.existsSync(file)) {
+    fs.unlinkSync(file);
+  }
+}
+
 function getDuration(start, end) {
   let diff = Math.abs(start - end);
   const hours = Math.floor(diff / 3600000);
@@ -76,6 +82,7 @@ module.exports = {
   'timeout': 180 * 1000,
   capitalize: capitalize,
   ensureDir: ensureDir,
+  ensureNoFile: ensureNoFile,
   getDuration: getDuration,
   log: log,
   sleep: sleep,
