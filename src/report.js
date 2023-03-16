@@ -330,7 +330,7 @@ async function report(results) {
       path.join(util.timestampDir, `${util.timestamp}.html`), html);
 
   if ('email' in util.args) {
-    let subject = '[TFJS Test] ' + util['hostname'] + ' ' + util.timestamp;
+    let subject = '[TFJSTest] ' + util['hostname'] + ' ' + util.timestamp;
     if (util['serverRepoWebGPUDate'] && util['serverBuildWebGPUDate']) {
       if (new Date(util['serverRepoWebGPUDate']) >
           new Date(util['serverBuildWebGPUDate'])) {
