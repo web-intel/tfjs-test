@@ -2,8 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const {spawnSync} = require('child_process')
-const {chromium} = require('playwright');
+const {spawnSync} = require('child_process');
+const puppeteer = require('puppeteer');
 const readline = require('readline');
 
 const parseTrace = require('./trace.js');
@@ -43,12 +43,13 @@ async function startContext(traceFile = undefined) {
   }
 
   if (!util.dryrun) {
-    let context = await chromium.launchPersistentContext(util.userDataDir, {
-      headless: false,
-      executablePath: util['browserPath'],
-      viewport: null,
-      ignoreHTTPSErrors: true,
+    let context = await puppeteer.launch({
       args: util['browserArgs'].split(' ').concat(extraBrowserArgs.split(' ')),
+      defaultViewport: null,
+      executablePath: util['browserPath'],
+      headless: false,
+      ignoreHTTPSErrors: true,
+      userDataDir: util.userDataDir,
     });
     let page = await context.newPage();
     page.on('console', async msg => {
@@ -249,12 +250,13 @@ async function runBenchmark(target) {
         // 4th line is conformance result
         childIndex = 4;
       }
-      await Promise.any([
-        page.waitForSelector(
+
+      try {
+        await page.waitForSelector(
             `#timings > tbody > tr:nth-child(${childIndex})`,
-            {timeout: util.timeout}),
-        page.waitForEvent('pageerror', {timeout: util.timeout})
-      ]);
+            {timeout: util.timeout});
+      } catch (error) {
+      }
 
       // handle errorMsg
       if (target === 'conformance') {

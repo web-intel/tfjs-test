@@ -1,7 +1,7 @@
 'use strict';
 
 const {exec, execSync} = require('child_process');
-const {chromium} = require('playwright');
+const puppeteer = require('puppeteer');
 const si = require('systeminformation');
 const util = require('./util.js');
 
@@ -89,13 +89,15 @@ async function getConfig() {
  * Get extra config info via Chrome
  */
 async function getExtraConfig() {
-  const browser = await chromium.launchPersistentContext(util.userDataDir, {
+  const context = await puppeteer.launch({
+    defaultViewport: null,
+    executablePath: util['browserPath'],
     headless: false,
-    executablePath: util.browserPath,
-    viewport: null,
+    ignoreHTTPSErrors: true,
+    userDataDir: util.userDataDir,
   });
 
-  const page = await browser.newPage();
+  const page = await context.newPage();
 
   // Chrome version and revision
   await page.goto('chrome://version');
@@ -130,7 +132,7 @@ async function getExtraConfig() {
       let match =
           value.match('DEVICE=0x([A-Za-z0-9]{4}).*DRIVER_VERSION=(.*) ');
       return [match[1], match[2]];
-    } catch (err) {
+    } catch (error) {
       return ['ffff', 'NA'];
     }
   });
@@ -150,7 +152,7 @@ async function getExtraConfig() {
 
   util['gpuDriverVersion'] = gpuInfo[1];
 
-  await browser.close();
+  await context.close();
 }
 
 module.exports = getConfig;

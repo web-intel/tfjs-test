@@ -2,19 +2,20 @@
 
 const fs = require('fs');
 const path = require('path');
-const {chromium} = require('playwright');
+const puppeteer = require('puppeteer');
 const readline = require('readline');
 
-const util = require('./util.js')
+const util = require('./util.js');
 
 async function startContext() {
   if (!util.dryrun) {
-    let context = await chromium.launchPersistentContext(util.userDataDir, {
-      headless: false,
-      executablePath: util['browserPath'],
-      viewport: null,
-      ignoreHTTPSErrors: true,
+    let context = await puppeteer.launch({
       args: util['browserArgs'].split(' '),
+      defaultViewport: null,
+      executablePath: util['browserPath'],
+      headless: false,
+      ignoreHTTPSErrors: true,
+      userDataDir: util.userDataDir,
     });
     let page = await context.newPage();
     return [context, page];
@@ -120,7 +121,7 @@ async function runDemo() {
             }
 
             results[results.length - 1][backendIndex + 1][0] = fps;
-          } catch (err) {
+          } catch (error) {
           }
         }
 

@@ -1,5 +1,5 @@
 ## Introduction
-This is an automation test framework for TFJS end2end tests based on [Playwright](https://github.com/microsoft/playwright)
+This is an automation test framework for TFJS
 
 ## Supported OS
 
