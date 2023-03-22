@@ -49,6 +49,10 @@ util.args =
           type: 'string',
           describe: 'extra browser args',
         })
+        .option('cleanup-user-data-dir', {
+          type: 'boolean',
+          describe: 'cleanup user data dir',
+        })
         .option('conformance-backend', {
           type: 'string',
           describe: 'backend for conformance, split by comma',
@@ -318,6 +322,10 @@ async function main() {
   console.log(`Use browser at ${browserPath}`);
   util.userDataDir = userDataDir;
   console.log(`Use user-data-dir at ${userDataDir}`);
+  if ('cleanup-user-data-dir' in util.args) {
+    console.log('Cleanup user data dir');
+    util.ensureNoDir(userDataDir);
+  }
 
   if (util.platform === 'linux') {
     util.browserArgs += ' --use-angle=vulkan --enable-features=Vulkan'

@@ -39,6 +39,10 @@ function ensureDir(dir) {
   }
 }
 
+function ensureNoDir(dir) {
+  fs.rmSync(dir, {recursive: true, force: true});
+}
+
 function ensureNoFile(file) {
   if (fs.existsSync(file)) {
     fs.unlinkSync(file);
@@ -82,6 +86,7 @@ module.exports = {
   'timeout': 180 * 1000,
   capitalize: capitalize,
   ensureDir: ensureDir,
+  ensureNoDir: ensureNoDir,
   ensureNoFile: ensureNoFile,
   getDuration: getDuration,
   log: log,
