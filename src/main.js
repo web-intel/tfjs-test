@@ -345,7 +345,7 @@ async function main() {
   }
   // shwde7777 encounters device lost with timestamp query
   if (util['hostname'] === 'shwde7777') {
-    util.browserArgs = util.browserArgs.replace(' --enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis', '');
+    util.browserArgs = util.browserArgs.replace(' --enable-unsafe-webgpu', '');
   }
 
   let warmupTimes;
