@@ -59,6 +59,11 @@ async function getConfig() {
       }
       util['gpuName'] = gpuData.controllers[i].model;
     }
+
+    if (util['platform'] === 'darwin') {
+      const osInfo = await si.osInfo();
+      util['gpuDriverVersion'] = osInfo.release;
+    }
   }
 
   // OS version
@@ -68,6 +73,9 @@ async function getConfig() {
         resolve(stdout);
       });
     });
+  } else if (util['platform'] === 'darwin') {
+    const osInfo = await si.osInfo();
+    util['osVersion'] = osInfo.release;
   }
 
   // Chrome
@@ -80,7 +88,7 @@ async function getConfig() {
     util['chromeVersion'] = match[1];
   }
 
-  if (util['platform'] !== 'win32') {
+  if (util['platform'] !== 'win32' && util['platform'] !== 'darwin') {
     getExtraConfig();
   }
 }
