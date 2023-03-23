@@ -84,6 +84,7 @@ module.exports = {
   'demoUrl':
       'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos',
   'timeout': 180 * 1000,
+  'breakdown': true,
   capitalize: capitalize,
   ensureDir: ensureDir,
   ensureNoDir: ensureNoDir,

@@ -113,7 +113,7 @@ util.args =
         })
         .option('profile-times', {
           type: 'number',
-          describe: 'profile times',
+          describe: 'profile times. 0 also implies no breakdown data.',
         })
         .option('repeat', {
           type: 'number',
@@ -337,7 +337,7 @@ async function main() {
     util.browserArgs += ' --enable-dawn-features=use_dxc';
   }
   if ('trace' in util.args) {
-    util.args['disable-breakdown'] = true;
+    util.breakdown = false;
     util.args['new-context'] = true;
     util.benchmarkUrlArgs += '&trace=true';
     util.browserArgs +=
@@ -373,6 +373,13 @@ async function main() {
     profileTimes = 50;
   }
   util.profileTimes = profileTimes;
+
+  if (util.profileTimes === 0) {
+    util.breakdown = false;
+  }
+  if ('disable-breakdown' in util.args) {
+    util.breakdown = false;
+  }
 
   util.benchmarkUrlArgs += `&warmup=${warmupTimes}&run=${runTimes}&profile=${
       profileTimes}&localBuild=${util.args['local-build']}`;

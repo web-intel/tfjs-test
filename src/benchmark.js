@@ -201,7 +201,7 @@ async function runBenchmark(target) {
     if (benchmarkName != previousBenchmarkName) {
       let placeholder = [benchmarkName].concat(
           Array(backendsLength * resultMetricsLength).fill(defaultValue));
-      if (target === 'performance') {
+      if (target === 'performance' && util.breakdown) {
         placeholder = placeholder.concat({});
       }
       results.push(placeholder);
@@ -310,8 +310,7 @@ async function runBenchmark(target) {
       }
 
       // get breakdown data
-      if (target === 'performance' && !('disable-breakdown' in util.args) &&
-          util.profileTimes !== 0) {
+      if (target === 'performance' && util.breakdown) {
         try {
           await page.waitForSelector(
               '#kernels > tbody > tr:nth-child(1)', {timeout: util.timeout});
