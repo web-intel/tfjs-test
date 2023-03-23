@@ -256,7 +256,8 @@ async function report(results) {
   // performance breakdown table
   let breakdownTable = '';
   let target = 'performance';
-  if (target in results && !('disable-breakdown' in util.args)) {
+  if (target in results && !('disable-breakdown' in util.args) &&
+      util.profileTimes !== 0) {
     let targetResults = results[target];
     let backendsLength = util.backends.length;
     let metricsLength = util.targetMetrics[target].length;

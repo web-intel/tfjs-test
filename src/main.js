@@ -180,7 +180,7 @@ util.args =
           describe: 'warmup times',
         })
         .example([
-          ['node $0 --email <email> // Send report to <email>'],
+          ['node $0 --email a@intel.com;b@intel.com // Send report to emails'],
           [
             'node $0 --target performance --benchmark-url http://127.0.0.1/workspace/project/tfjswebgpu/tfjs'
           ],
@@ -342,6 +342,10 @@ async function main() {
     util.benchmarkUrlArgs += '&trace=true';
     util.browserArgs +=
         ' --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion --trace-startup-format=json --enable-tracing=disabled-by-default-gpu.dawn'
+  }
+  // shwde7777 encounters device lost with timestamp query
+  if (util['hostname'] === 'shwde7777') {
+    util.browserArgs = util.browserArgs.replace(' --enable-unsafe-webgpu --disable-dawn-features=disallow_unsafe_apis', '');
   }
 
   let warmupTimes;
