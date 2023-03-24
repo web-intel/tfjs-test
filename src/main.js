@@ -263,7 +263,7 @@ async function main() {
     util['chromePath'] = 'Chrome Dev';
     if (util.platform === 'darwin') {
       browserPath =
-          '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Dev';
+          '/Applications/Google Chrome Dev.app/Contents/MacOS/Google Chrome Dev';
       userDataDir = `/Users/${
           os.userInfo()
               .username}/Library/Application Support/Google/Chrome Dev`;
@@ -281,7 +281,7 @@ async function main() {
     util['chromePath'] = 'Chrome Beta';
     if (util.platform === 'darwin') {
       browserPath =
-          '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Beta';
+          '/Applications/Google Chrome Beta.app/Contents/MacOS/Google Chrome Beta';
       userDataDir = `/Users/${
           os.userInfo()
               .username}/Library/Application Support/Google/Chrome Beta`;
@@ -299,10 +299,10 @@ async function main() {
     util['chromePath'] = 'Chrome';
     if (util.platform === 'darwin') {
       browserPath =
-          '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Stable';
+          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
       userDataDir = `/Users/${
           os.userInfo()
-              .username}/Library/Application Support/Google/Chrome Stable`;
+              .username}/Library/Application Support/Google/Chrome`;
     } else if (util.platform === 'linux') {
       browserPath = '/usr/bin/google-chrome-stable';
       userDataDir =
