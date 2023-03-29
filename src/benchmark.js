@@ -103,13 +103,24 @@ async function runBenchmark(target) {
       if ('conformance-backend' in util.args) {
         config['backend'] = util.args['conformance-backend'].split(',');
       } else {
+        // backends in json file are ignored for conformance
         config['backend'] = ['webgpu', 'webgl', 'wasm'];
+      }
+      for (let backend of config['backend']) {
+        if (util.conformanceBackends.indexOf(backend) < 0) {
+          util.conformanceBackends.push(backend);
+        }
       }
     } else if (target === 'performance') {
       if ('performance-backend' in util.args) {
         config['backend'] = util.args['performance-backend'].split(',');
       } else if (!('backend' in config)) {
-        config['backend'] = util.backends;
+        config['backend'] = ['webgpu', 'webgl', 'wasm'];
+      }
+      for (let backend of config['backend']) {
+        if (util.performanceBackends.indexOf(backend) < 0) {
+          util.performanceBackends.push(backend);
+        }
       }
     }
 
@@ -149,12 +160,13 @@ async function runBenchmark(target) {
   // run benchmarks
   let benchmarksLength = benchmarks.length;
   let previousBenchmarkName = '';
-  let results =
-      [];  // format: testName, warmup_webgpu, average_webgpu, best_webgpu,
-           // warmup_webgl, average_webgl, best_webgl, warmup_wasm,
-           // average_wasm, best_wasm, {op: {webgpu, webgl, wasm}}
+
+  // format: testName, warmup_webgpu, average_webgpu, best_webgpu, warmup_webgl,
+  // average_webgl, best_webgl, warmup_wasm, average_wasm, best_wasm,
+  // warmup_cpu, average_cpu, best_cpu {op: {webgpu, webgl, wasm, cpu}}
+  let results = [];
   let defaultValue = 'NA';
-  let backendsLength = util.backends.length;
+  let backendsLength = util.allBackends.length;
   let metrics = util.targetMetrics[target];
   if (target === 'performance' && util.runTimes === 0) {
     metrics.length = 1;
@@ -184,7 +196,7 @@ async function runBenchmark(target) {
     let benchmark = benchmarks[i];
     let benchmarkName = benchmark.slice(0, -1).join('-');
     let backend = benchmark[benchmark.length - 1];
-    let backendIndex = util.backends.indexOf(backend);
+    let backendIndex = util.allBackends.indexOf(backend);
 
     util.log(`[${i + 1}/${benchmarksLength}] ${benchmark}`);
 

@@ -6,7 +6,7 @@ const path = require('path');
 const util = require('./util.js')
 
 async function runUnit() {
-  let backendsLength = util.backends.length;
+  let backendsLength = util.allBackends.length;
   let defaultValue = 'NA';
   let results = Array(backendsLength).fill(defaultValue);
   let backends = [];
@@ -15,6 +15,7 @@ async function runUnit() {
   } else {
     backends = ['webgpu', 'webgl'];
   }
+  util.unitBackends = backends;
 
   let tfjsDir = '';
   if ('tfjs-dir' in util.args) {
@@ -33,7 +34,7 @@ async function runUnit() {
 
   for (let i = 0; i < backends.length; i++) {
     let backend = backends[i];
-    let backendIndex = util.backends.indexOf(backend);
+    let backendIndex = util.allBackends.indexOf(backend);
     let cmd;
     let timeout = 600 * 1000;
     if (util.dryrun) {

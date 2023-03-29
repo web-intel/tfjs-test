@@ -14,7 +14,7 @@ let parameters = [
 
 let platform = os.platform();
 
-let backends = ['webgpu', 'webgl', 'wasm'];
+let allBackends = ['webgpu', 'webgl', 'wasm', 'cpu'];
 
 // please make sure these metrics are shown up in order
 let targetMetrics = {
@@ -74,13 +74,12 @@ module.exports = {
   'hostname': os.hostname(),
   'parameters': parameters,
   'platform': platform,
-  'backends': backends,
+  'allBackends': allBackends,
   'targetMetrics': targetMetrics,
   'outDir': outDir,
   'benchmarkUrl':
       'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs',
-  'benchmarkUrlArgs':
-      'CHECK_COMPUTATION_FOR_ERRORS=false',
+  'benchmarkUrlArgs': 'CHECK_COMPUTATION_FOR_ERRORS=false',
   'demoUrl':
       'https://wp-27.sh.intel.com/workspace/project/tfjswebgpu/tfjs-models/pose-detection/demos',
   'timeout': 180 * 1000,
@@ -93,4 +92,8 @@ module.exports = {
   log: log,
   sleep: sleep,
   uncapitalize: uncapitalize,
+  conformanceBackends: [],
+  demoBackends: [],
+  performanceBackends: [],
+  unitBackends: [],
 };

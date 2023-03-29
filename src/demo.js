@@ -36,7 +36,7 @@ async function runDemo() {
   let page;
   let results = [];
   let timeout = 20 * 1000;
-  let backendsLength = util.backends.length;
+  let backendsLength = util.allBackends.length;
 
   let runDemos;
   if ('demo' in util.args) {
@@ -52,6 +52,7 @@ async function runDemo() {
   } else {
     runBackends = ['webgpu', 'webgl'];
   }
+  util.demoBackends = runBackends;
 
   if (!('new-context' in util.args)) {
     [context, page] = await startContext();
@@ -86,7 +87,7 @@ async function runDemo() {
       for (let runBackendIndex = 0; runBackendIndex < runBackends.length;
            runBackendIndex++) {
         let runBackend = runBackends[runBackendIndex];
-        let backendIndex = util.backends.indexOf(runBackend);
+        let backendIndex = util.allBackends.indexOf(runBackend);
         if ('new-context' in util.args) {
           [context, page] = await startContext(traceFile);
         }

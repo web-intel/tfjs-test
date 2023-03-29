@@ -50,7 +50,7 @@ async function report(results) {
   const goodStyle = 'style=color:green';
   const badStyle = 'style=color:red';
   const neutralStyle = 'style=color:black';
-  let backendsLength = util.backends.length;
+  let backendsLength = util.allBackends.length;
 
   // main performance and conformance tables
   let benchmarkTables = '';
@@ -80,7 +80,14 @@ async function report(results) {
       benchmarkTable += `<tr><th>${target} (${metric})</th>`;
       for (let backendIndex = 0; backendIndex < backendsLength;
            backendIndex++) {
-        let backend = util.backends[backendIndex];
+        let backend = util.allBackends[backendIndex];
+        if ((target === 'conformance' &&
+             util.conformanceBackends.indexOf(backend) < 0) ||
+            (target === 'performance' &&
+             util.performanceBackends.indexOf(backend) < 0)) {
+          continue;
+        }
+
         if (metric === 'Subsequent average') {
           benchmarkTable +=
               `<th>${backend} total${unit}</th><th>${backend} ops${unit}</th>`;
@@ -114,7 +121,14 @@ async function report(results) {
         let webgpuOpsValue = 'NA';
         for (let backendIndex = 0; backendIndex < backendsLength;
              backendIndex++) {
-          let backend = util.backends[backendIndex];
+          let backend = util.allBackends[backendIndex];
+          if ((target === 'conformance' &&
+               util.conformanceBackends.indexOf(backend) < 0) ||
+              (target === 'performance' &&
+               util.performanceBackends.indexOf(backend) < 0)) {
+            continue;
+          }
+
           let backendTotalValue =
               result[backendIndex * metricsLength + metricIndex + 1];
           let backendOpsValue = 0.0;
@@ -179,7 +193,7 @@ async function report(results) {
     let targetResults = results['unit'];
     unitTable = `<table><tr><th>unit</th><th>webgpu</th>`;
     for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
-      let backend = util.backends[backendIndex];
+      let backend = util.allBackends[backendIndex];
       unitTable += `<th>${backend}</th>`;
     }
     unitTable += '</tr>';
@@ -205,7 +219,7 @@ async function report(results) {
     let targetResults = results['demo'];
     demoTable = `<table><tr><th>demo</th><th>webgpu</th>`;
     for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
-      let backend = util.backends[backendIndex];
+      let backend = util.allBackends[backendIndex];
       demoTable += `<th>${backend}</th>`;
     }
     demoTable += '</tr>';
@@ -258,14 +272,14 @@ async function report(results) {
   let target = 'performance';
   if (target in results && util.breakdown) {
     let targetResults = results[target];
-    let backendsLength = util.backends.length;
+    let backendsLength = util.allBackends.length;
     let metricsLength = util.targetMetrics[target].length;
     let unit = ' (ms)';
     let style = neutralStyle;
     breakdownTable =
         `<table><tr><th>benchmark</th><th>op</th><th>webgpu${unit}</th>`;
     for (let backendIndex = 1; backendIndex < backendsLength; backendIndex++) {
-      let backend = util.backends[backendIndex];
+      let backend = util.allBackends[backendIndex];
       breakdownTable += `<th>${backend}${unit}</th>`;
       breakdownTable += `<th>webgpu vs ${backend} (%)</th>`;
     }

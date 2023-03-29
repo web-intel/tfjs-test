@@ -24,7 +24,7 @@ function parseTrace() {
   for (let result of results) {
     let benchmarkName = result[0];
 
-    for (let backend of util.backends) {
+    for (let backend of util.allBackends) {
       let traceFile = `${benchmarkName}-${backend}-trace.json`;
       let timelineJson = [];
       timeShift = 0;
