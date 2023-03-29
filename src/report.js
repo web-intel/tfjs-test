@@ -89,8 +89,10 @@ async function report(results) {
         }
 
         if (metric === 'Subsequent average') {
-          benchmarkTable +=
-              `<th>${backend} total${unit}</th><th>${backend} ops${unit}</th>`;
+          benchmarkTable += `<th>${backend} total${unit}</th>`;
+          if (util.breakdown) {
+            benchmarkTable += `<th>${backend} ops${unit}</th>`;
+          }
         } else {
           benchmarkTable += `<th>${backend}${unit}</th>`;
           if (target === 'conformance') {
@@ -100,9 +102,10 @@ async function report(results) {
 
         if (target === 'performance' && backend !== 'webgpu') {
           if (metric === 'Subsequent average') {
-            benchmarkTable += `<th>webgpu total vs ${
-                backend} total (%)</th><th>webgpu ops vs ${
-                backend} ops (%)</th>`;
+            benchmarkTable += `<th>webgpu total vs ${backend} total (%)</th>`
+            if (util.breakdown) {
+              benchmarkTable += `<th>webgpu ops vs ${backend} ops (%)</th>`;
+            }
           } else {
             benchmarkTable += `<th>webgpu vs ${backend} (%)</th>`;
           }
@@ -153,7 +156,7 @@ async function report(results) {
             benchmarkTable += `<td>${
                 result[backendIndex * metricsLength + metricIndex + 2]}</td>`;
           }
-          if (metric === 'Subsequent average') {
+          if (metric === 'Subsequent average' && util.breakdown) {
             benchmarkTable += `<td>${backendOpsValue}</td>`
           }
           if (target === 'performance' && backend !== 'webgpu') {
@@ -167,7 +170,7 @@ async function report(results) {
             }
             benchmarkTable += `<td ${totalStyle}>${totalPercent}</td>`;
 
-            if (metric === 'Subsequent average') {
+            if (metric === 'Subsequent average' && util.breakdown) {
               let opsPercent = 'NA';
               let opsStyle = neutralStyle;
               if (backendOpsValue !== 'NA' && webgpuOpsValue !== 'NA') {
