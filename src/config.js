@@ -1,6 +1,7 @@
 'use strict';
 
 const {exec, execSync} = require('child_process');
+const { exit } = require('process');
 const puppeteer = require('puppeteer');
 const si = require('systeminformation');
 const util = require('./util.js');
@@ -63,6 +64,8 @@ async function getConfig() {
     if (util['platform'] === 'darwin') {
       const osInfo = await si.osInfo();
       util['gpuDriverVersion'] = osInfo.release;
+    } else if (util['platform'] === 'linux') {
+      util['gpuDriverVersion'] = execSync('glxinfo |grep "OpenGL version"').toString().trim().split(' ').pop();
     }
   }
 
@@ -73,7 +76,7 @@ async function getConfig() {
         resolve(stdout);
       });
     });
-  } else if (util['platform'] === 'darwin') {
+  } else if (util['platform'] === 'darwin' || util['platform'] === 'linux') {
     const osInfo = await si.osInfo();
     util['osVersion'] = osInfo.release;
   }
@@ -88,7 +91,7 @@ async function getConfig() {
     util['chromeVersion'] = match[1];
   }
 
-  if (util['platform'] !== 'win32' && util['platform'] !== 'darwin') {
+  if (util['platform'] !== 'win32' && util['platform'] !== 'darwin' && util['platform'] !== 'linux') {
     getExtraConfig();
   }
 }
