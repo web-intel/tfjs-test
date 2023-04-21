@@ -54,7 +54,11 @@ async function runUnit() {
 
     if (util.platform === 'linux' || util.platform === 'darwin') {
       try {
-        execSync(`${cmd} >> ${logFile}`, {
+        let filter = '';
+        if ('unit-filter' in util.args) {
+          filter = ` --//:grep="${util.args['unit-filter']}"`;
+        }
+        execSync(`${cmd}${filter} >> ${logFile}`, {
           env: process.env,
           stdio: [process.stdin, process.stdout, process.stderr],
           timeout: timeout
