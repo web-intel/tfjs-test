@@ -301,8 +301,7 @@ async function main() {
       browserPath =
           '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
       userDataDir = `/Users/${
-          os.userInfo()
-              .username}/Library/Application Support/Google/Chrome`;
+          os.userInfo().username}/Library/Application Support/Google/Chrome`;
     } else if (util.platform === 'linux') {
       browserPath = '/usr/bin/google-chrome-stable';
       userDataDir =
@@ -342,10 +341,6 @@ async function main() {
     util.benchmarkUrlArgs += '&trace=true';
     util.browserArgs +=
         ' --enable-dawn-features=record_detailed_timing_in_trace_events,disable_timestamp_query_conversion --trace-startup-format=json --enable-tracing=disabled-by-default-gpu.dawn'
-  }
-  // shwde7777 encounters device lost with timestamp query
-  if (util['hostname'] === 'shwde7777') {
-    util.browserArgs = util.browserArgs.replace(' --enable-unsafe-webgpu', '');
   }
 
   let warmupTimes;
