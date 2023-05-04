@@ -213,6 +213,7 @@ util.args =
           [
             'node $0 --target performance --performance-backend webgpu --benchmark MobileNetV3 --architecture small_075 --timestamp day --skip-config // single test'
           ],
+          ['node $0 --target unit --unit-backend webgpu --timestamp day'],
         ])
         .help()
         .wrap(180)
@@ -327,7 +328,8 @@ async function main() {
   }
 
   if (util.platform === 'linux') {
-    util.browserArgs += ' --use-angle=vulkan --enable-features=Vulkan'
+    util.browserArgs +=
+        ' --enable-unsafe-webgpu --use-angle=vulkan --enable-features=Vulkan';
   }
   if ('browser-args' in util.args) {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
