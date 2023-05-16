@@ -331,6 +331,9 @@ async function main() {
     util.browserArgs +=
         ' --enable-unsafe-webgpu --use-angle=vulkan --enable-features=Vulkan';
   }
+  if (util.platform === 'darwin') {
+    util.browserArgs += ' --use-mock-keychain';
+  }
   if ('browser-args' in util.args) {
     util.browserArgs = `${util.browserArgs} ${util.args['browser-args']}`;
   }
