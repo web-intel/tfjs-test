@@ -19,7 +19,7 @@ let allBackends = ['webgpu', 'webgl', 'wasm', 'cpu'];
 // please make sure these metrics are shown up in order
 let targetMetrics = {
   'conformance': ['Prediction'],
-  'performance': ['Warmup time', 'Subsequent average', 'Best time']
+  'performance': ['1st inference time', 'Subsequent average', 'Best time']
 };
 
 const outDir = path.join(path.resolve(__dirname), '../out');

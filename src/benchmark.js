@@ -161,9 +161,9 @@ async function runBenchmark(target) {
   let benchmarksLength = benchmarks.length;
   let previousBenchmarkName = '';
 
-  // format: testName, warmup_webgpu, average_webgpu, best_webgpu, warmup_webgl,
-  // average_webgl, best_webgl, warmup_wasm, average_wasm, best_wasm,
-  // warmup_cpu, average_cpu, best_cpu {op: {webgpu, webgl, wasm, cpu}}
+  // format: testName, first_webgpu, average_webgpu, best_webgpu, first_webgl,
+  // average_webgl, best_webgl, first_wasm, average_wasm, best_wasm,
+  // first_cpu, average_cpu, best_cpu {op: {webgpu, webgl, wasm, cpu}}
   let results = [];
   let defaultValue = 'NA';
   let backendsLength = util.allBackends.length;
